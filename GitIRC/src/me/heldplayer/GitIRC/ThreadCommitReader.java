@@ -32,8 +32,8 @@ public class ThreadCommitReader extends Thread {
 					pos = 0;
 					
 					try {
-						URL oracle = new URL("http://dsiwars.co.cc/Git/retrieve.php");
-				        BufferedReader in = new BufferedReader(new InputStreamReader(oracle.openStream()));
+						URL changes = new URL("http://dsiwars.co.cc/Git/retrieve.php");
+				        BufferedReader in = new BufferedReader(new InputStreamReader(changes.openStream()));
 
 				        String inputLine;
 				        while ((inputLine = in.readLine()) != null) {
