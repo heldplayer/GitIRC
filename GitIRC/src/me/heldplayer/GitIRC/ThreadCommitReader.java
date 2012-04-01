@@ -6,7 +6,7 @@ import java.net.URL;
 
 public class ThreadCommitReader extends Thread {
 	private ConsoleMessageReciever reciever;
-	private byte pos = 60;
+	private byte pos = 0;
 	private static boolean launched = false;
 	private String chan;
 
@@ -32,7 +32,7 @@ public class ThreadCommitReader extends Thread {
 					pos = 0;
 					
 					try {
-						URL oracle = new URL("http://localhost/Git/retrieve.php");
+						URL oracle = new URL("http://dsiwars.co.cc/Git/retrieve.php");
 				        BufferedReader in = new BufferedReader(new InputStreamReader(oracle.openStream()));
 
 				        String inputLine;
