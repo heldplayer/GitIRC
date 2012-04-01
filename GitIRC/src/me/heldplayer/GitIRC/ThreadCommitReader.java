@@ -28,7 +28,7 @@ public class ThreadCommitReader extends Thread {
 			while (reciever.isRunning()) {
 				pos++;
 				
-				if(pos >= 30){
+				if(pos >= 60){
 					pos = 0;
 					
 					try {
