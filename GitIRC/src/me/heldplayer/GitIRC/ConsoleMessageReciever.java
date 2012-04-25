@@ -57,7 +57,7 @@ public class ConsoleMessageReciever extends MessageReciever {
 
 		send("CAP LS");
 		send("NICK " + nick);
-		send("USER " + nick + " 0 * :" + nick);
+		send("USER GitIRC 0 * :" + nick);
 
 		running = true;
 	}
