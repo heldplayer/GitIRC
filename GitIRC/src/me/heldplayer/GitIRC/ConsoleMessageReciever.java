@@ -3,7 +3,8 @@ package me.heldplayer.GitIRC;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map.Entry;
 
 import me.heldplayer.GitIRC.client.IncomingMessage;
 
@@ -13,11 +14,12 @@ public class ConsoleMessageReciever extends MessageReciever {
 	private boolean running = false;
 	private final BufferedReader in;
 	private String nick;
-	protected final ArrayList<String> inputBuffer;
+	protected final HashMap<Integer, String> inputBuffer;
+	protected int index = 0;
 
 	public ConsoleMessageReciever() {
 		in = new BufferedReader(new InputStreamReader(System.in));
-		inputBuffer = new ArrayList<String>();
+		inputBuffer = new HashMap<Integer, String>();
 	}
 
 	public void recieve(String message) {
@@ -63,8 +65,8 @@ public class ConsoleMessageReciever extends MessageReciever {
 	}
 
 	public void parse() throws IOException {
-		while (inputBuffer.size() > 0) {
-			String command = inputBuffer.remove(0);
+		for (Entry<Integer, String> entry : inputBuffer.entrySet()) {
+			String command = entry.getValue();
 			
 			if(command.startsWith("/join")){
 				send("JOIN " + command.split(" ")[1]);
@@ -121,6 +123,8 @@ public class ConsoleMessageReciever extends MessageReciever {
 			
 			send(command);
 		}
+
+		inputBuffer.clear();
 
 		super.parse();
 	}

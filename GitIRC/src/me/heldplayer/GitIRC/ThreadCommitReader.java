@@ -40,7 +40,7 @@ public class ThreadCommitReader extends Thread {
 				        	if(inputLine.equalsIgnoreCase("0")){
 				        		break;
 				        	}
-				        	reciever.inputBuffer.add("/say " + chan + " " + inputLine);
+				        	reciever.inputBuffer.put(reciever.index++, "/say " + chan + " " + inputLine);
 				        }
 				        in.close();
 					} catch (Exception ex) {
