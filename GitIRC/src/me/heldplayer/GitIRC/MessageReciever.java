@@ -36,13 +36,13 @@ public abstract class MessageReciever {
 	}
 
 	public void parse() throws IOException {
-		if(lastRead + 190000L < System.currentTimeMillis()){
+		if (lastRead + 190000L < System.currentTimeMillis()) {
 			throw new IOException("Connection closed");
 		}
 		while (client.in.ready()) {
 			String message = client.in.readLine();
 			recieve(message);
-			
+
 			lastRead = System.currentTimeMillis();
 		}
 	}

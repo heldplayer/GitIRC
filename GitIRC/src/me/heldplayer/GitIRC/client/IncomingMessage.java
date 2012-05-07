@@ -222,7 +222,7 @@ public class IncomingMessage {
 			if (result.startsWith(":")) {
 				result = result.substring(1);
 			}
-			
+
 			System.out.println(result);
 			return true;
 		}
