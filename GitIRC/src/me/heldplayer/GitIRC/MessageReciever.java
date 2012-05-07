@@ -10,6 +10,7 @@ public abstract class MessageReciever {
 	protected IRCClient client;
 	public static MessageReciever instance;
 	public String adress;
+	private long lastRead;
 
 	public MessageReciever() {
 		instance = this;
@@ -30,15 +31,19 @@ public abstract class MessageReciever {
 		this.adress = adress;
 		client = new IRCClient();
 		client.connect(adress, 6669);
+		client.socket.setKeepAlive(true);
+		lastRead = System.currentTimeMillis();
 	}
 
 	public void parse() throws IOException {
-		if (client.socket.isClosed()) {
+		if(lastRead + 190000L < System.currentTimeMillis()){
 			throw new IOException("Connection closed");
 		}
 		while (client.in.ready()) {
 			String message = client.in.readLine();
 			recieve(message);
+			
+			lastRead = System.currentTimeMillis();
 		}
 	}
 }
