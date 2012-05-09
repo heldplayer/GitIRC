@@ -36,8 +36,8 @@ public abstract class MessageReciever {
 	}
 
 	public void parse() throws IOException {
-		if (lastRead + 190000L < System.currentTimeMillis()) {
-			throw new IOException("Connection closed");
+		if (lastRead + 200000L < System.currentTimeMillis()) {
+			throw new IOException("Connection timed out");
 		}
 		while (client.in.ready()) {
 			String message = client.in.readLine();
