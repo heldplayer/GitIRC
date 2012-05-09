@@ -36,7 +36,7 @@ public abstract class MessageReciever {
 	}
 
 	public void parse() throws IOException {
-		if (lastRead + 200000L < System.currentTimeMillis()) {
+		if (lastRead + 360000L < System.currentTimeMillis()) {
 			throw new IOException("Connection timed out");
 		}
 		while (client.in.ready()) {
