@@ -43,7 +43,6 @@ public class IncomingMessage {
 	public boolean parse(MessageReciever reciever) {
 		if (type.equalsIgnoreCase("PING")) {
 			reciever.send("PONG " + argString);
-			System.out.println("PING > PONG");
 			return true;
 		}
 		if (type.equalsIgnoreCase("NOTICE")) {
