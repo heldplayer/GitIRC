@@ -45,6 +45,9 @@ public class IncomingMessage {
 			reciever.send("PONG " + argString);
 			return true;
 		}
+		if (type.equalsIgnoreCase("PONG")) {
+			return true;
+		}
 		if (type.equalsIgnoreCase("NOTICE")) {
 			String result = "";
 			for (int i = 1; i < args.length; i++) {
