@@ -36,8 +36,9 @@ public abstract class MessageReciever {
 	}
 
 	public void parse() throws IOException {
-		if (lastRead + 360000L < System.currentTimeMillis()) {
-			throw new IOException("Connection timed out");
+		if (lastRead + 300000L < System.currentTimeMillis()) {
+			send("PING :" + adress);
+			lastRead = System.currentTimeMillis();
 		}
 		while (client.in.ready()) {
 			String message = client.in.readLine();
