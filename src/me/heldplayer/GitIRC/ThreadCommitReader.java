@@ -33,7 +33,7 @@ public class ThreadCommitReader extends Thread {
                     pos = 0;
 
                     try {
-                        URL changes = new URL("http://dsiwars.co.cc/Git/retrieve.php");
+                        URL changes = new URL("http://dsiwars.x10.mx/Git/retrieve.php");
                         BufferedReader in = new BufferedReader(new InputStreamReader(changes.openStream()));
 
                         String inputLine;
