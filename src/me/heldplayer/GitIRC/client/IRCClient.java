@@ -1,3 +1,4 @@
+
 package me.heldplayer.GitIRC.client;
 
 import java.io.BufferedReader;
@@ -9,19 +10,18 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 public class IRCClient {
-	public Socket socket;
-	public PrintWriter out;
-	public BufferedReader in;
+    public Socket socket;
+    public PrintWriter out;
+    public BufferedReader in;
 
-	public IRCClient() {
-	}
+    public IRCClient() {}
 
-	public void connect(String host, int port) throws UnknownHostException, IOException {
-		InetSocketAddress adrr = new InetSocketAddress(host, port);
+    public void connect(String host, int port) throws UnknownHostException, IOException {
+        InetSocketAddress adrr = new InetSocketAddress(host, port);
 
-		socket = new Socket(adrr.getAddress(), adrr.getPort());
-		//socket = new Socket(host, port);
-		out = new PrintWriter(socket.getOutputStream(), true);
-		in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-	}
+        socket = new Socket(adrr.getAddress(), adrr.getPort());
+        //socket = new Socket(host, port);
+        out = new PrintWriter(socket.getOutputStream(), true);
+        in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+    }
 }

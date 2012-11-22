@@ -1,3 +1,4 @@
+
 package me.heldplayer.GitIRC;
 
 import java.io.BufferedReader;
@@ -10,162 +11,168 @@ import me.heldplayer.GitIRC.client.IncomingMessage;
 
 public class ConsoleMessageReciever extends MessageReciever {
 
-	public static ConsoleMessageReciever instance;
-	private boolean running = false;
-	private final BufferedReader in;
-	private String nick;
-	protected volatile HashMap<Integer, String> inputBuffer;
-	protected int index = 0;
+    public static ConsoleMessageReciever instance;
+    private boolean running = false;
+    private final BufferedReader in;
+    private String nick;
+    protected volatile HashMap<Integer, String> inputBuffer;
+    protected int index = 0;
 
-	public ConsoleMessageReciever() {
-		in = new BufferedReader(new InputStreamReader(System.in));
-		inputBuffer = new HashMap<Integer, String>();
-	}
+    public ConsoleMessageReciever() {
+        in = new BufferedReader(new InputStreamReader(System.in));
+        inputBuffer = new HashMap<Integer, String>();
+    }
 
-	public void recieve(String message) {
-		IncomingMessage msg = new IncomingMessage(message);
+    public void recieve(String message) {
+        IncomingMessage msg = new IncomingMessage(message);
 
-		if (!msg.parse(this)) {
-			System.out.println(message);
-		}
-	}
+        if (!msg.parse(this)) {
+            System.out.println(message);
+        }
+    }
 
-	public String getNick() {
-		return nick;
-	}
+    public String getNick() {
+        return nick;
+    }
 
-	public void setNick(String newNick) {
-		nick = newNick;
-		send("NICK " + nick);
-	}
+    public void setNick(String newNick) {
+        nick = newNick;
+        send("NICK " + nick);
+    }
 
-	public void stop() throws IOException {
-		running = false;
-		client.in.close();
-		client.out.close();
-		client.socket.close();
-	}
+    public void stop() throws IOException {
+        running = false;
+        client.in.close();
+        client.out.close();
+        client.socket.close();
+    }
 
-	public void init() throws IOException {
-		System.out.print("Enter an IRC server to connect to: ");
+    public void init() throws IOException {
+        System.out.print("Enter an IRC server to connect to: ");
 
-		String adress = in.readLine();
+        String adress = in.readLine();
 
-		System.out.print("Enter a nickname: ");
+        System.out.print("Enter a nickname: ");
 
-		nick = in.readLine();
+        nick = in.readLine();
 
-		super.init(adress);
+        super.init(adress);
 
-		send("CAP LS");
-		send("NICK " + nick);
-		send("USER GitIRC 0 * :" + nick);
+        send("CAP LS");
+        send("NICK " + nick);
+        send("USER GitIRC 0 * :" + nick);
 
-		running = true;
-	}
+        running = true;
+    }
 
-	public void parse() throws IOException {
-		for (Entry<Integer, String> entry : inputBuffer.entrySet()) {
-			String command = entry.getValue();
-			
-			if(command.startsWith("/join")){
-				send("JOIN " + command.split(" ")[1]);
-				continue;
-			} else if(command.startsWith("/me")){
-				String[] args = command.split(" ");
-				
-				String result = "";
-				for (int i = 2; i < args.length; i++) {
-					if (i != 2) {
-						result += " ";
-					}
-					result += args[i];
-				}
-				
-				send("PRIVMSG " + args[1] + " :\u0001ACTION " + result + "\u0001");
-				System.out.println("[" + args[1] + "] * " + nick + " " + result);
-				continue;
-			} else if(command.startsWith("/say")){
-				String[] args = command.split(" ");
-				
-				String result = "";
-				for (int i = 2; i < args.length; i++) {
-					if (i != 2) {
-						result += " ";
-					}
-					result += args[i];
-				}
-				
-				send("PRIVMSG " + args[1] + " :" + result);
-				System.out.println("[" + args[1] + "] <" + nick + "> " + result);
-				continue;
-			} else if(command.startsWith("/quit")){
-				String[] args = command.split(" ");
-				
-				String result = "";
-				for (int i = 1; i < args.length; i++) {
-					if (i != 1) {
-						result += " ";
-					}
-					result += args[i];
-				}
-				
-				send("QUIT :" + result);
-				stop();
-				return;
-			} else if(command.startsWith("/setupbot")){
-				ThreadCommitReader commitReader = new ThreadCommitReader(this, command.substring(10));
-				commitReader.setDaemon(true);
-				commitReader.start();
-				
-				continue;
-			}
-			
-			send(command);
-		}
+    public void parse() throws IOException {
+        for (Entry<Integer, String> entry : inputBuffer.entrySet()) {
+            String command = entry.getValue();
 
-		inputBuffer.clear();
+            if (command.startsWith("/join")) {
+                send("JOIN " + command.split(" ")[1]);
+                continue;
+            }
+            else if (command.startsWith("/me")) {
+                String[] args = command.split(" ");
 
-		super.parse();
-	}
+                String result = "";
+                for (int i = 2; i < args.length; i++) {
+                    if (i != 2) {
+                        result += " ";
+                    }
+                    result += args[i];
+                }
 
-	public boolean isRunning() {
-		return running;
-	}
+                send("PRIVMSG " + args[1] + " :\u0001ACTION " + result + "\u0001");
+                System.out.println("[" + args[1] + "] * " + nick + " " + result);
+                continue;
+            }
+            else if (command.startsWith("/say")) {
+                String[] args = command.split(" ");
 
-	public static void main(String[] args) {
-		instance = new ConsoleMessageReciever();
+                String result = "";
+                for (int i = 2; i < args.length; i++) {
+                    if (i != 2) {
+                        result += " ";
+                    }
+                    result += args[i];
+                }
 
-		try {
-			instance.init();
-		} catch (IOException ex) {
-			System.err.println("Unexpected IO error! Stopping!");
-			ex.printStackTrace();
-			try {
-				instance.stop();
-			} catch (IOException e) {
-			}
-		}
-		
-		ThreadCommandReader commandReader = new ThreadCommandReader(instance);
-		commandReader.setDaemon(true);
-		commandReader.start();
+                send("PRIVMSG " + args[1] + " :" + result);
+                System.out.println("[" + args[1] + "] <" + nick + "> " + result);
+                continue;
+            }
+            else if (command.startsWith("/quit")) {
+                String[] args = command.split(" ");
 
-		while (instance.running) {
-			try {
-				instance.parse();
-				Thread.sleep(1L);
-			} catch (InterruptedException ex) {
-			} catch (Exception ex) {
-				System.err.println("Unexpected error! Stopping!");
-				ex.printStackTrace();
-				try {
-					instance.stop();
-				} catch (IOException e) {
-				}
-			}
-		}
+                String result = "";
+                for (int i = 1; i < args.length; i++) {
+                    if (i != 1) {
+                        result += " ";
+                    }
+                    result += args[i];
+                }
 
-		System.out.println("Disconneted.");
-	}
+                send("QUIT :" + result);
+                stop();
+                return;
+            }
+            else if (command.startsWith("/setupbot")) {
+                ThreadCommitReader commitReader = new ThreadCommitReader(this, command.substring(10));
+                commitReader.setDaemon(true);
+                commitReader.start();
+
+                continue;
+            }
+
+            send(command);
+        }
+
+        inputBuffer.clear();
+
+        super.parse();
+    }
+
+    public boolean isRunning() {
+        return running;
+    }
+
+    public static void main(String[] args) {
+        instance = new ConsoleMessageReciever();
+
+        try {
+            instance.init();
+        }
+        catch (IOException ex) {
+            System.err.println("Unexpected IO error! Stopping!");
+            ex.printStackTrace();
+            try {
+                instance.stop();
+            }
+            catch (IOException e) {}
+        }
+
+        ThreadCommandReader commandReader = new ThreadCommandReader(instance);
+        commandReader.setDaemon(true);
+        commandReader.start();
+
+        while (instance.running) {
+            try {
+                instance.parse();
+                Thread.sleep(1L);
+            }
+            catch (InterruptedException ex) {}
+            catch (Exception ex) {
+                System.err.println("Unexpected error! Stopping!");
+                ex.printStackTrace();
+                try {
+                    instance.stop();
+                }
+                catch (IOException e) {}
+            }
+        }
+
+        System.out.println("Disconneted.");
+    }
 }
