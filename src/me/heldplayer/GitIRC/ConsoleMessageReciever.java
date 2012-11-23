@@ -15,8 +15,8 @@ public class ConsoleMessageReciever extends MessageReciever {
     private boolean running = false;
     private final BufferedReader in;
     private String nick;
-    protected volatile HashMap<Integer, String> inputBuffer;
-    protected int index = 0;
+    public volatile HashMap<Integer, String> inputBuffer;
+    public int index = 0;
 
     public ConsoleMessageReciever() {
         in = new BufferedReader(new InputStreamReader(System.in));

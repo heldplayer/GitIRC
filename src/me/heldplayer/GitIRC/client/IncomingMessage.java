@@ -9,6 +9,7 @@ import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import me.heldplayer.GitIRC.ConsoleMessageReciever;
 import me.heldplayer.GitIRC.MessageReciever;
 
 public class IncomingMessage {
@@ -257,7 +258,9 @@ public class IncomingMessage {
                 while (reader.ready()) {
                     String line = reader.readLine();
 
-                    reciever.send(String.format(line, reciever.getNick()));
+                    ConsoleMessageReciever rec = (ConsoleMessageReciever) reciever;
+
+                    rec.inputBuffer.put(rec.index++, String.format(line, reciever.getNick()));
                 }
 
                 reader.close();
