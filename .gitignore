@@ -18,3 +18,6 @@
 
 # jars
 *.jar
+
+#project specific
+/src/perform.txt

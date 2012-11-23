@@ -1,6 +1,11 @@
 
 package me.heldplayer.GitIRC.client;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -228,6 +233,39 @@ public class IncomingMessage {
             }
 
             System.out.println(result);
+            return true;
+        }
+        if (type.equalsIgnoreCase("302")) {
+            String host = "";
+
+            for (int i = 1; i < args.length; i++) {
+                if (i == 1)
+                    host += args[i].substring(1);
+                else
+                    host += " " + args[i];
+            }
+
+            System.out.println(args[0] + " is " + host);
+
+            System.out.println("Performing startup commands...");
+
+            try {
+                FileReader fileReader = new FileReader(new File(IncomingMessage.class.getResource("/perform.txt").toURI()));
+
+                BufferedReader reader = new BufferedReader(fileReader);
+
+                while (reader.ready()) {
+                    String line = reader.readLine();
+
+                    reciever.send(String.format(line, reciever.getNick()));
+                }
+
+                reader.close();
+                fileReader.close();
+            }
+            catch (URISyntaxException e) {}
+            catch (IOException e) {}
+
             return true;
         }
 
