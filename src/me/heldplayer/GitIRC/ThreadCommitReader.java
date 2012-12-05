@@ -8,8 +8,8 @@ import java.net.URL;
 public class ThreadCommitReader extends Thread {
     private ConsoleMessageReciever reciever;
     private byte pos = 0;
-    private static boolean launched = false;
-    private String chan;
+    protected static boolean launched = false;
+    protected String chan;
 
     public ThreadCommitReader(ConsoleMessageReciever parent, String channel) {
         super("Commit reader");

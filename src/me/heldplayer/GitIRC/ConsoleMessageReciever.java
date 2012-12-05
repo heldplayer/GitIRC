@@ -17,6 +17,7 @@ public class ConsoleMessageReciever extends MessageReciever {
     private String nick;
     public volatile HashMap<Integer, String> inputBuffer;
     public int index = 0;
+    public ThreadCommitReader commitReader;
 
     public ConsoleMessageReciever() {
         in = new BufferedReader(new InputStreamReader(System.in));
@@ -119,9 +120,17 @@ public class ConsoleMessageReciever extends MessageReciever {
                 return;
             }
             else if (command.startsWith("/setupbot")) {
-                ThreadCommitReader commitReader = new ThreadCommitReader(this, command.substring(10));
-                commitReader.setDaemon(true);
-                commitReader.start();
+                if (!ThreadCommitReader.launched) {
+                    commitReader = new ThreadCommitReader(this, command.substring(10));
+                    commitReader.setDaemon(true);
+                    commitReader.start();
+
+                    continue;
+                }
+            }
+            else if (command.startsWith("/changechan")) {
+                if (commitReader != null)
+                    commitReader.chan = command.substring(12);
 
                 continue;
             }
