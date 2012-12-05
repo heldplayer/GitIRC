@@ -125,12 +125,16 @@ public class ConsoleMessageReciever extends MessageReciever {
                     commitReader.setDaemon(true);
                     commitReader.start();
 
+                    System.out.println("Started commit reading thread");
+
                     continue;
                 }
             }
             else if (command.startsWith("/changechan")) {
                 if (commitReader != null)
                     commitReader.chan = command.substring(12);
+
+                System.out.println("Changed commit reading thread output");
 
                 continue;
             }
