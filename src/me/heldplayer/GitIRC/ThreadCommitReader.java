@@ -41,7 +41,9 @@ public class ThreadCommitReader extends Thread {
                             if (inputLine.equalsIgnoreCase("0")) {
                                 break;
                             }
-                            reciever.inputBuffer.put(reciever.index++, "/say " + chan + " " + inputLine);
+                            synchronized (reciever.inputBuffer) {
+                                reciever.inputBuffer.put(reciever.index++, "/say " + chan + " " + inputLine);
+                            }
                         }
                         in.close();
                     }

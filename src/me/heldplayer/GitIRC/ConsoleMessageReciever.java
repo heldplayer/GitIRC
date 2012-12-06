@@ -67,84 +67,91 @@ public class ConsoleMessageReciever extends MessageReciever {
     }
 
     public void parse() throws IOException {
-        for (Entry<Integer, String> entry : inputBuffer.entrySet()) {
-            String command = entry.getValue();
+        synchronized (inputBuffer) {
+            for (Entry<Integer, String> entry : inputBuffer.entrySet()) {
+                String command = entry.getValue();
 
-            if (command.startsWith("/join")) {
-                send("JOIN " + command.split(" ")[1]);
-                continue;
-            }
-            else if (command.startsWith("/me")) {
-                String[] args = command.split(" ");
-
-                String result = "";
-                for (int i = 2; i < args.length; i++) {
-                    if (i != 2) {
-                        result += " ";
-                    }
-                    result += args[i];
+                if (command.startsWith("/join")) {
+                    send("JOIN " + command.split(" ")[1]);
+                    continue;
                 }
+                else if (command.startsWith("/me")) {
+                    String[] args = command.split(" ");
 
-                send("PRIVMSG " + args[1] + " :\u0001ACTION " + result + "\u0001");
-                System.out.println("[" + args[1] + "] * " + nick + " " + result);
-                continue;
-            }
-            else if (command.startsWith("/say")) {
-                String[] args = command.split(" ");
-
-                String result = "";
-                for (int i = 2; i < args.length; i++) {
-                    if (i != 2) {
-                        result += " ";
+                    String result = "";
+                    for (int i = 2; i < args.length; i++) {
+                        if (i != 2) {
+                            result += " ";
+                        }
+                        result += args[i];
                     }
-                    result += args[i];
+
+                    send("PRIVMSG " + args[1] + " :\u0001ACTION " + result + "\u0001");
+                    System.out.println("[" + args[1] + "] * " + nick + " " + result);
+                    continue;
                 }
+                else if (command.startsWith("/say")) {
+                    String[] args = command.split(" ");
 
-                send("PRIVMSG " + args[1] + " :" + result);
-                System.out.println("[" + args[1] + "] <" + nick + "> " + result);
-                continue;
-            }
-            else if (command.startsWith("/quit")) {
-                String[] args = command.split(" ");
-
-                String result = "";
-                for (int i = 1; i < args.length; i++) {
-                    if (i != 1) {
-                        result += " ";
+                    String result = "";
+                    for (int i = 2; i < args.length; i++) {
+                        if (i != 2) {
+                            result += " ";
+                        }
+                        result += args[i];
                     }
-                    result += args[i];
+
+                    send("PRIVMSG " + args[1] + " :" + result);
+                    System.out.println("[" + args[1] + "] <" + nick + "> " + result);
+                    continue;
                 }
+                else if (command.startsWith("/quit")) {
+                    String[] args = command.split(" ");
 
-                send("QUIT :" + result);
-                stop();
-                return;
-            }
-            else if (command.startsWith("/setupbot")) {
-                if (!ThreadCommitReader.launched) {
-                    commitReader = new ThreadCommitReader(this, command.substring(10));
-                    commitReader.setDaemon(true);
-                    commitReader.start();
+                    String result = "";
+                    for (int i = 1; i < args.length; i++) {
+                        if (i != 1) {
+                            result += " ";
+                        }
+                        result += args[i];
+                    }
 
-                    System.out.println("Started commit reading thread");
+                    send("QUIT :" + result);
+                    stop();
+                    return;
+                }
+                else if (command.startsWith("/setupbot")) {
+                    if (!ThreadCommitReader.launched) {
+                        commitReader = new ThreadCommitReader(this, command.substring(10));
+                        commitReader.setDaemon(true);
+                        commitReader.start();
+
+                        System.out.println("Started commit reading thread");
+
+                        continue;
+                    }
+                }
+                else if (command.startsWith("/changechan")) {
+                    if (commitReader != null)
+                        commitReader.chan = command.substring(12);
+
+                    System.out.println("Changed commit reading thread output");
 
                     continue;
                 }
+
+                send(command);
+
+                try {
+                    Thread.sleep(500L);
+                }
+                catch (InterruptedException e) {}
             }
-            else if (command.startsWith("/changechan")) {
-                if (commitReader != null)
-                    commitReader.chan = command.substring(12);
 
-                System.out.println("Changed commit reading thread output");
+            inputBuffer.clear();
 
-                continue;
-            }
-
-            send(command);
+            super.parse();
         }
-
-        inputBuffer.clear();
-
-        super.parse();
     }
 
     public boolean isRunning() {
