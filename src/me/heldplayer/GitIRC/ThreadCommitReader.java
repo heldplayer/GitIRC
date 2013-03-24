@@ -38,12 +38,17 @@ public class ThreadCommitReader extends Thread {
 
                         String inputLine;
                         while ((inputLine = in.readLine()) != null) {
+                            if (!inputLine.startsWith("#")) {
+                                continue;
+                            }
+
                             if (inputLine.equalsIgnoreCase("0")) {
                                 break;
                             }
                             synchronized (reciever.inputBuffer) {
-                                reciever.inputBuffer.put(reciever.index++, "/say " + chan + " " + inputLine);
+                                reciever.inputBuffer.put(reciever.index++, "/say " + chan + " " + inputLine.substring(1));
                             }
+                            Thread.sleep(500L);
                         }
                         in.close();
                     }
