@@ -19,9 +19,9 @@ public class IRCClient {
     public void connect(String host, int port) throws UnknownHostException, IOException {
         InetSocketAddress adrr = new InetSocketAddress(host, port);
 
-        socket = new Socket(adrr.getAddress(), adrr.getPort());
+        this.socket = new Socket(adrr.getAddress(), adrr.getPort());
         //socket = new Socket(host, port);
-        out = new PrintWriter(socket.getOutputStream(), true);
-        in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        this.out = new PrintWriter(this.socket.getOutputStream(), true);
+        this.in = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
     }
 }

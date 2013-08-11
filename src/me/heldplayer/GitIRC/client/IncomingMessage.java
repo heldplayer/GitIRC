@@ -26,9 +26,9 @@ public class IncomingMessage {
                 return;
             }
 
-            source = editable.substring(1, editable.indexOf(" "));
+            this.source = editable.substring(1, editable.indexOf(" "));
 
-            editable = editable.substring(source.length() + 1).trim();
+            editable = editable.substring(this.source.length() + 1).trim();
         }
 
         String[] split = editable.split(" ");
@@ -37,51 +37,51 @@ public class IncomingMessage {
             return;
         }
 
-        type = split[0];
+        this.type = split[0];
 
-        editable = editable.substring(type.length()).trim();
+        editable = editable.substring(this.type.length()).trim();
 
-        argString = editable;
-        args = argString.split(" ");
+        this.argString = editable;
+        this.args = this.argString.split(" ");
 
         //System.err.println("Source: " + source + "\tType: " + type + "\tArgs: " + argString);
     }
 
     public boolean parse(MessageReciever reciever) {
-        if (type.equalsIgnoreCase("PING")) {
-            reciever.send("PONG " + argString);
+        if (this.type.equalsIgnoreCase("PING")) {
+            reciever.send("PONG " + this.argString);
             return true;
         }
-        if (type.equalsIgnoreCase("PONG")) {
+        if (this.type.equalsIgnoreCase("PONG")) {
             return true;
         }
-        if (type.equalsIgnoreCase("NOTICE")) {
+        if (this.type.equalsIgnoreCase("NOTICE")) {
             String result = "";
-            for (int i = 1; i < args.length; i++) {
+            for (int i = 1; i < this.args.length; i++) {
                 if (i != 1) {
                     result += " ";
                 }
-                result += args[i];
+                result += this.args[i];
             }
 
             if (result.startsWith(":")) {
                 result = result.substring(1);
             }
 
-            System.err.println("[NOTICE: " + args[0] + "]: " + result);
+            System.err.println("[NOTICE: " + this.args[0] + "]: " + result);
             return true;
         }
-        if (type.equalsIgnoreCase("CAP")) {
-            if (args.length < 3) {
+        if (this.type.equalsIgnoreCase("CAP")) {
+            if (this.args.length < 3) {
                 return false;
             }
-            if (args[0].equalsIgnoreCase("*") && args[1].equalsIgnoreCase("LS")) {
+            if (this.args[0].equalsIgnoreCase("*") && this.args[1].equalsIgnoreCase("LS")) {
                 String result = "";
-                for (int i = 2; i < args.length; i++) {
+                for (int i = 2; i < this.args.length; i++) {
                     if (i != 2) {
                         result += " ";
                     }
-                    result += args[i];
+                    result += this.args[i];
                 }
 
                 if (result.startsWith(":")) {
@@ -98,135 +98,135 @@ public class IncomingMessage {
                 }
                 return false;
             }
-            else if (args[0].equalsIgnoreCase(reciever.getNick()) && args[1].equalsIgnoreCase("ACK")) {
+            else if (this.args[0].equalsIgnoreCase(reciever.getNick()) && this.args[1].equalsIgnoreCase("ACK")) {
                 reciever.send("CAP END");
                 return true;
             }
             return false;
         }
-        if (type.equalsIgnoreCase("PRIVMSG")) {
+        if (this.type.equalsIgnoreCase("PRIVMSG")) {
             String result = "";
-            for (int i = 1; i < args.length; i++) {
+            for (int i = 1; i < this.args.length; i++) {
                 if (i != 1) {
                     result += " ";
                 }
-                result += args[i];
+                result += this.args[i];
             }
 
             if (result.startsWith(":")) {
                 result = result.substring(1);
             }
 
-            System.out.println("[" + args[0] + "] <" + source.split("!")[0] + "> " + result);
+            System.out.println("[" + this.args[0] + "] <" + this.source.split("!")[0] + "> " + result);
             //reciever.send("PRIVMSG " + args[0] + " :" + result);
             return true;
         }
-        if (type.equalsIgnoreCase("MODE")) {
+        if (this.type.equalsIgnoreCase("MODE")) {
             String result = "";
-            for (int i = 1; i < args.length; i++) {
+            for (int i = 1; i < this.args.length; i++) {
                 if (i != 1) {
                     result += " ";
                 }
-                result += args[i];
+                result += this.args[i];
             }
 
             if (result.startsWith(":")) {
                 result = result.substring(1);
             }
 
-            System.out.println("[" + args[0] + "] " + source.split("!")[0] + " sets mode " + result);
+            System.out.println("[" + this.args[0] + "] " + this.source.split("!")[0] + " sets mode " + result);
             return true;
         }
-        if (type.equalsIgnoreCase("KICK")) {
+        if (this.type.equalsIgnoreCase("KICK")) {
             String result = "";
-            for (int i = 2; i < args.length; i++) {
+            for (int i = 2; i < this.args.length; i++) {
                 if (i != 2) {
                     result += " ";
                 }
-                result += args[i];
+                result += this.args[i];
             }
 
             if (result.startsWith(":")) {
                 result = result.substring(1);
             }
 
-            System.out.println("[" + args[0] + "] " + source.split("!")[0] + " has kicked " + args[1] + " (" + result + ")");
+            System.out.println("[" + this.args[0] + "] " + this.source.split("!")[0] + " has kicked " + this.args[1] + " (" + result + ")");
             return true;
         }
-        if (type.equalsIgnoreCase("QUIT")) {
+        if (this.type.equalsIgnoreCase("QUIT")) {
             String result = "";
-            for (int i = 0; i < args.length; i++) {
+            for (int i = 0; i < this.args.length; i++) {
                 if (i != 0) {
                     result += " ";
                 }
-                result += args[i];
+                result += this.args[i];
             }
 
             if (result.startsWith(":")) {
                 result = result.substring(1);
             }
 
-            System.out.println(source.split("!")[0] + " has quit (" + result + ")");
+            System.out.println(this.source.split("!")[0] + " has quit (" + result + ")");
             return true;
         }
-        if (type.equalsIgnoreCase("PART")) {
+        if (this.type.equalsIgnoreCase("PART")) {
             String result = "";
-            for (int i = 1; i < args.length; i++) {
+            for (int i = 1; i < this.args.length; i++) {
                 if (i != 1) {
                     result += " ";
                 }
-                result += args[i];
+                result += this.args[i];
             }
 
             if (result.startsWith(":")) {
                 result = result.substring(1);
             }
 
-            System.out.println("[" + args[0] + "] " + source.split("!")[0] + " parts (" + result + ")");
+            System.out.println("[" + this.args[0] + "] " + this.source.split("!")[0] + " parts (" + result + ")");
             return true;
         }
-        if (type.equalsIgnoreCase("JOIN")) {
-            System.out.println("[" + args[0] + "] " + source.split("!")[0] + " has joined");
+        if (this.type.equalsIgnoreCase("JOIN")) {
+            System.out.println("[" + this.args[0] + "] " + this.source.split("!")[0] + " has joined");
             return true;
         }
 
-        if (type.equalsIgnoreCase("001")) {
+        if (this.type.equalsIgnoreCase("001")) {
             reciever.send("USERHOST " + reciever.getNick());
             return true;
         }
-        if (type.equalsIgnoreCase("332")) {
+        if (this.type.equalsIgnoreCase("332")) {
             String result = "";
-            for (int i = 2; i < args.length; i++) {
+            for (int i = 2; i < this.args.length; i++) {
                 if (i != 2) {
                     result += " ";
                 }
-                result += args[i];
+                result += this.args[i];
             }
 
             if (result.startsWith(":")) {
                 result = result.substring(1);
             }
 
-            System.out.println("[" + args[1] + "] Topic: " + result);
+            System.out.println("[" + this.args[1] + "] Topic: " + result);
             return true;
         }
-        if (type.equalsIgnoreCase("333")) {
-            if (args.length < 3) {
+        if (this.type.equalsIgnoreCase("333")) {
+            if (this.args.length < 3) {
                 return false;
             }
 
             SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 
-            System.out.println("[" + args[1] + "] Set by " + args[2] + " on " + format.format(new Date(Long.parseLong(args[3]) * 1000L)));
+            System.out.println("[" + this.args[1] + "] Set by " + this.args[2] + " on " + format.format(new Date(Long.parseLong(this.args[3]) * 1000L)));
             return true;
         }
-        if (type.equalsIgnoreCase("372")) {
+        if (this.type.equalsIgnoreCase("372")) {
             String result = "";
-            for (int i = 1; i < args.length; i++) {
+            for (int i = 1; i < this.args.length; i++) {
                 if (i != 1) {
                     result += " ";
                 }
-                result += args[i];
+                result += this.args[i];
             }
 
             if (result.startsWith(":")) {
@@ -236,17 +236,19 @@ public class IncomingMessage {
             System.out.println(result);
             return true;
         }
-        if (type.equalsIgnoreCase("302")) {
+        if (this.type.equalsIgnoreCase("302")) {
             String host = "";
 
-            for (int i = 1; i < args.length; i++) {
-                if (i == 1)
-                    host += args[i].substring(1);
-                else
-                    host += " " + args[i];
+            for (int i = 1; i < this.args.length; i++) {
+                if (i == 1) {
+                    host += this.args[i].substring(1);
+                }
+                else {
+                    host += " " + this.args[i];
+                }
             }
 
-            System.out.println(args[0] + " is " + host);
+            System.out.println(this.args[0] + " is " + host);
 
             System.out.println("Performing startup commands...");
 

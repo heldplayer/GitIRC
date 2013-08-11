@@ -25,27 +25,27 @@ public abstract class MessageReciever {
 
     public void send(String message) {
         message.trim();
-        client.out.println(message);
+        this.client.out.println(message);
     }
 
     public void init(String adress) throws UnknownHostException, IOException {
         this.adress = adress;
-        client = new IRCClient();
-        client.connect(adress, 6669);
-        client.socket.setKeepAlive(true);
-        lastRead = System.currentTimeMillis();
+        this.client = new IRCClient();
+        this.client.connect(adress, 6669);
+        this.client.socket.setKeepAlive(true);
+        this.lastRead = System.currentTimeMillis();
     }
 
     public void parse() throws IOException {
-        if (lastRead + 300000L < System.currentTimeMillis()) {
-            send("PING :" + adress);
-            lastRead = System.currentTimeMillis();
+        if (this.lastRead + 300000L < System.currentTimeMillis()) {
+            this.send("PING :" + this.adress);
+            this.lastRead = System.currentTimeMillis();
         }
-        while (client.in.ready()) {
-            String message = client.in.readLine();
-            recieve(message);
+        while (this.client.in.ready()) {
+            String message = this.client.in.readLine();
+            this.recieve(message);
 
-            lastRead = System.currentTimeMillis();
+            this.lastRead = System.currentTimeMillis();
         }
     }
 }

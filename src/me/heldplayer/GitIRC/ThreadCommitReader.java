@@ -13,12 +13,13 @@ public class ThreadCommitReader extends Thread {
 
     public ThreadCommitReader(ConsoleMessageReciever parent, String channel) {
         super("Commit reader");
-        reciever = parent;
-        chan = channel;
+        this.reciever = parent;
+        this.chan = channel;
 
         launched = !launched;
     }
 
+    @Override
     public void run() {
         if (!launched) {
             launched = true;
@@ -26,11 +27,11 @@ public class ThreadCommitReader extends Thread {
         }
 
         try {
-            while (reciever.isRunning()) {
-                pos++;
+            while (this.reciever.isRunning()) {
+                this.pos++;
 
-                if (pos == 60) {
-                    pos = 0;
+                if (this.pos == 60) {
+                    this.pos = 0;
 
                     try {
                         URL changes = new URL("http://dsiwars.x10.mx/Git/retrieve.php");
@@ -45,8 +46,8 @@ public class ThreadCommitReader extends Thread {
                             if (inputLine.equalsIgnoreCase("0")) {
                                 break;
                             }
-                            synchronized (reciever.inputBuffer) {
-                                reciever.inputBuffer.put(reciever.index++, "/say " + chan + " " + inputLine.substring(1));
+                            synchronized (this.reciever.inputBuffer) {
+                                this.reciever.inputBuffer.put(this.reciever.index++, "/say " + this.chan + " " + inputLine.substring(1));
                             }
                             Thread.sleep(500L);
                         }

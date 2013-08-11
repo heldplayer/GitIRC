@@ -20,10 +20,11 @@ public class ConsoleMessageReciever extends MessageReciever {
     public ThreadCommitReader commitReader;
 
     public ConsoleMessageReciever() {
-        in = new BufferedReader(new InputStreamReader(System.in));
-        inputBuffer = new HashMap<Integer, String>();
+        this.in = new BufferedReader(new InputStreamReader(System.in));
+        this.inputBuffer = new HashMap<Integer, String>();
     }
 
+    @Override
     public void recieve(String message) {
         IncomingMessage msg = new IncomingMessage(message);
 
@@ -32,47 +33,50 @@ public class ConsoleMessageReciever extends MessageReciever {
         }
     }
 
+    @Override
     public String getNick() {
-        return nick;
+        return this.nick;
     }
 
+    @Override
     public void setNick(String newNick) {
-        nick = newNick;
-        send("NICK " + nick);
+        this.nick = newNick;
+        this.send("NICK " + this.nick);
     }
 
     public void stop() throws IOException {
-        running = false;
-        client.in.close();
-        client.out.close();
-        client.socket.close();
+        this.running = false;
+        this.client.in.close();
+        this.client.out.close();
+        this.client.socket.close();
     }
 
     public void init() throws IOException {
         System.out.print("Enter an IRC server to connect to: ");
 
-        String adress = in.readLine();
+        String adress = this.in.readLine();
 
         System.out.print("Enter a nickname: ");
 
-        nick = in.readLine();
+        this.nick = this.in.readLine();
 
         super.init(adress);
 
-        send("CAP LS");
-        send("NICK " + nick);
-        send("USER GitIRC 0 * :" + nick);
+        this.send("CAP LS");
+        this.send("NICK " + this.nick);
+        this.send("USER GitIRC 0 * :" + this.nick);
 
-        running = true;
+        this.running = true;
     }
 
+    @Override
     public void parse() throws IOException {
-        synchronized (inputBuffer) {
-            for (Entry<Integer, String> entry : inputBuffer.entrySet()) {
+        synchronized (this.inputBuffer) {
+            for (Entry<Integer, String> entry : this.inputBuffer.entrySet()) {
                 String command = entry.getValue();
 
                 if (command.startsWith("/join")) {
-                    send("JOIN " + command.split(" ")[1]);
+                    this.send("JOIN " + command.split(" ")[1]);
                     continue;
                 }
                 else if (command.startsWith("/me")) {
@@ -86,8 +90,8 @@ public class ConsoleMessageReciever extends MessageReciever {
                         result += args[i];
                     }
 
-                    send("PRIVMSG " + args[1] + " :\u0001ACTION " + result + "\u0001");
-                    System.out.println("[" + args[1] + "] * " + nick + " " + result);
+                    this.send("PRIVMSG " + args[1] + " :\u0001ACTION " + result + "\u0001");
+                    System.out.println("[" + args[1] + "] * " + this.nick + " " + result);
                     continue;
                 }
                 else if (command.startsWith("/say")) {
@@ -101,8 +105,8 @@ public class ConsoleMessageReciever extends MessageReciever {
                         result += args[i];
                     }
 
-                    send("PRIVMSG " + args[1] + " :" + result);
-                    System.out.println("[" + args[1] + "] <" + nick + "> " + result);
+                    this.send("PRIVMSG " + args[1] + " :" + result);
+                    System.out.println("[" + args[1] + "] <" + this.nick + "> " + result);
                     continue;
                 }
                 else if (command.startsWith("/quit")) {
@@ -116,15 +120,15 @@ public class ConsoleMessageReciever extends MessageReciever {
                         result += args[i];
                     }
 
-                    send("QUIT :" + result);
-                    stop();
+                    this.send("QUIT :" + result);
+                    this.stop();
                     return;
                 }
                 else if (command.startsWith("/setupbot")) {
                     if (!ThreadCommitReader.launched) {
-                        commitReader = new ThreadCommitReader(this, command.substring(10));
-                        commitReader.setDaemon(true);
-                        commitReader.start();
+                        this.commitReader = new ThreadCommitReader(this, command.substring(10));
+                        this.commitReader.setDaemon(true);
+                        this.commitReader.start();
 
                         System.out.println("Started commit reading thread");
 
@@ -132,15 +136,16 @@ public class ConsoleMessageReciever extends MessageReciever {
                     }
                 }
                 else if (command.startsWith("/changechan")) {
-                    if (commitReader != null)
-                        commitReader.chan = command.substring(12);
+                    if (this.commitReader != null) {
+                        this.commitReader.chan = command.substring(12);
+                    }
 
                     System.out.println("Changed commit reading thread output");
 
                     continue;
                 }
 
-                send(command);
+                this.send(command);
 
                 try {
                     Thread.sleep(500L);
@@ -148,14 +153,14 @@ public class ConsoleMessageReciever extends MessageReciever {
                 catch (InterruptedException e) {}
             }
 
-            inputBuffer.clear();
+            this.inputBuffer.clear();
 
             super.parse();
         }
     }
 
     public boolean isRunning() {
-        return running;
+        return this.running;
     }
 
     public static void main(String[] args) {

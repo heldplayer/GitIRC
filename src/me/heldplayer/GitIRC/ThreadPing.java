@@ -8,11 +8,12 @@ public class ThreadPing extends Thread {
 
     public ThreadPing(ConsoleMessageReciever parent) {
         super("Ping thread");
-        reciever = parent;
+        this.reciever = parent;
 
         launched = !launched;
     }
 
+    @Override
     public void run() {
         if (!launched) {
             launched = true;
@@ -20,13 +21,13 @@ public class ThreadPing extends Thread {
         }
 
         try {
-            while (reciever.isRunning()) {
-                pos++;
+            while (this.reciever.isRunning()) {
+                this.pos++;
 
-                if (pos == 60) {
-                    pos = 0;
+                if (this.pos == 60) {
+                    this.pos = 0;
 
-                    reciever.inputBuffer.put(reciever.index++, "PING");
+                    this.reciever.inputBuffer.put(this.reciever.index++, "PING");
                 }
 
                 Thread.sleep(1000L);
