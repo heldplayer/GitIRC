@@ -27,7 +27,7 @@ public class ThreadPing extends Thread {
                 if (this.pos == 60) {
                     this.pos = 0;
 
-                    this.reciever.inputBuffer.put(this.reciever.index++, "PING");
+                    this.reciever.inputBuffer.add("PING");
                 }
 
                 Thread.sleep(1000L);

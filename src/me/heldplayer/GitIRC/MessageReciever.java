@@ -4,35 +4,29 @@ package me.heldplayer.GitIRC;
 import java.io.IOException;
 import java.net.UnknownHostException;
 
-import me.heldplayer.GitIRC.client.IRCClient;
+import me.heldplayer.GitIRC.client.Connection;
 
 public abstract class MessageReciever {
 
-    protected IRCClient client;
     public static MessageReciever instance;
     public String adress;
     private long lastRead;
+    public Connection con;
 
     public MessageReciever() {
         instance = this;
     }
 
-    public abstract void recieve(String message);
-
-    public abstract String getNick();
-
-    public abstract void setNick(String newNick);
-
     public void send(String message) {
         message.trim();
-        this.client.out.println(message);
+        this.con.out.println(message);
     }
 
     public void init(String adress) throws UnknownHostException, IOException {
         this.adress = adress;
-        this.client = new IRCClient();
-        this.client.connect(adress, 6669);
-        this.client.socket.setKeepAlive(true);
+        this.con = new Connection();
+        this.con.connect(adress, 6669);
+        this.con.socket.setKeepAlive(true);
         this.lastRead = System.currentTimeMillis();
     }
 
@@ -41,9 +35,9 @@ public abstract class MessageReciever {
             this.send("PING :" + this.adress);
             this.lastRead = System.currentTimeMillis();
         }
-        while (this.client.in.ready()) {
-            String message = this.client.in.readLine();
-            this.recieve(message);
+        while (this.con.in.ready()) {
+            String message = this.con.in.readLine();
+            System.out.println(message);
 
             this.lastRead = System.currentTimeMillis();
         }

@@ -20,7 +20,7 @@ public class ThreadCommandReader extends Thread {
 
         try {
             while (this.reciever.isRunning() && (s = bufferedreader.readLine()) != null) {
-                this.reciever.inputBuffer.put(this.reciever.index++, s);
+                this.reciever.inputBuffer.add(s);
             }
         }
         catch (IOException ioexception) {

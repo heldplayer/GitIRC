@@ -4,51 +4,28 @@ package me.heldplayer.GitIRC;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.Map.Entry;
-
-import me.heldplayer.GitIRC.client.IncomingMessage;
+import java.util.Iterator;
+import java.util.LinkedList;
 
 public class ConsoleMessageReciever extends MessageReciever {
 
     public static ConsoleMessageReciever instance;
     private boolean running = false;
     private final BufferedReader in;
-    private String nick;
-    public volatile HashMap<Integer, String> inputBuffer;
-    public int index = 0;
+    public volatile LinkedList<String> inputBuffer;
     public ThreadCommitReader commitReader;
+    public String nick;
 
     public ConsoleMessageReciever() {
         this.in = new BufferedReader(new InputStreamReader(System.in));
-        this.inputBuffer = new HashMap<Integer, String>();
-    }
-
-    @Override
-    public void recieve(String message) {
-        IncomingMessage msg = new IncomingMessage(message);
-
-        if (!msg.parse(this)) {
-            System.out.println(message);
-        }
-    }
-
-    @Override
-    public String getNick() {
-        return this.nick;
-    }
-
-    @Override
-    public void setNick(String newNick) {
-        this.nick = newNick;
-        this.send("NICK " + this.nick);
+        this.inputBuffer = new LinkedList<String>();
     }
 
     public void stop() throws IOException {
         this.running = false;
-        this.client.in.close();
-        this.client.out.close();
-        this.client.socket.close();
+        this.con.in.close();
+        this.con.out.close();
+        this.con.socket.close();
     }
 
     public void init() throws IOException {
@@ -72,8 +49,9 @@ public class ConsoleMessageReciever extends MessageReciever {
     @Override
     public void parse() throws IOException {
         synchronized (this.inputBuffer) {
-            for (Entry<Integer, String> entry : this.inputBuffer.entrySet()) {
-                String command = entry.getValue();
+            Iterator<String> iterator = this.inputBuffer.iterator();
+            while (iterator.hasNext()) {
+                String command = iterator.next();
 
                 if (command.startsWith("/join")) {
                     this.send("JOIN " + command.split(" ")[1]);
@@ -151,9 +129,9 @@ public class ConsoleMessageReciever extends MessageReciever {
                     Thread.sleep(500L);
                 }
                 catch (InterruptedException e) {}
-            }
 
-            this.inputBuffer.clear();
+                iterator.remove();
+            }
 
             super.parse();
         }

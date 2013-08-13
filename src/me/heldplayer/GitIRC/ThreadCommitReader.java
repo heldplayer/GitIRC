@@ -47,7 +47,7 @@ public class ThreadCommitReader extends Thread {
                                 break;
                             }
                             synchronized (this.reciever.inputBuffer) {
-                                this.reciever.inputBuffer.put(this.reciever.index++, "/say " + this.chan + " " + inputLine.substring(1));
+                                this.reciever.inputBuffer.add("/say " + this.chan + " " + inputLine.substring(1));
                             }
                             Thread.sleep(500L);
                         }
