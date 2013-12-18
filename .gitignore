@@ -1,23 +1,5 @@
 # Eclipse stuff
-/.classpath
-/.project
-/.settings
-
-# netbeans
-/nbproject
-
-# maven
-/target
-
-# ant
-/bin
-/dist
-
-# vim
-.*.sw[a-p]
+/GitIRC/*
 
 # jars
 *.jar
-
-#project specific
-/src/perform.txt
