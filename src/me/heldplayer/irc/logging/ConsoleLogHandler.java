@@ -15,13 +15,7 @@ public class ConsoleLogHandler extends ConsoleHandler {
 
     @Override
     public void publish(LogRecord record) {
-        stream.println(this.getFormatter().format(record));
-
-        Throwable thrown = record.getThrown();
-
-        if (thrown != null) {
-            thrown.printStackTrace();
-        }
+        this.stream.println(this.getFormatter().format(record));
     }
 
 }

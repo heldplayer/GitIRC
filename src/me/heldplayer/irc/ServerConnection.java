@@ -12,7 +12,9 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
 
+import me.heldplayer.irc.api.BotAPI;
 import me.heldplayer.irc.api.IServerConnection;
 
 class ServerConnection implements IServerConnection {
@@ -31,7 +33,7 @@ class ServerConnection implements IServerConnection {
         this.initialized = false;
     }
 
-    public void connect(String host, int port, String localHost) throws UnknownHostException, IOException {
+    public void connect(String host, int port, String localHost, String nickname) throws UnknownHostException, IOException {
         InetAddress remote = InetAddress.getByName(host);
 
         if (localHost != null && !localHost.isEmpty()) {
@@ -45,32 +47,52 @@ class ServerConnection implements IServerConnection {
         this.socket.setKeepAlive(true);
         this.out = new PrintWriter(this.socket.getOutputStream(), true);
         this.in = new BufferedReader(new InputStreamReader(this.socket.getInputStream(), "UTF-8"));
+
+        this.addToSendQueue("NICK " + nickname);
+        this.addToSendQueue("USER HeldBot 0 * :" + nickname);
     }
 
     @Override
     public void addToSendQueue(String command) {
-        this.sendQueue.add(command);
+        synchronized (this.sendQueue) {
+            this.sendQueue.add(command);
+        }
     }
 
     @Override
     public void processQueue() {
-        if (!connected && this.socket.isConnected()) {
-            connected = true;
+        if (!this.connected && this.socket.isConnected()) {
+            this.connected = true;
         }
-        Iterator<String> iterator = this.sendQueue.iterator();
-        long incremental = 0L;
-        while (iterator.hasNext()) {
-            String command = iterator.next();
 
-            this.out.println(command.trim());
-
-            try {
-                Thread.sleep(250L * incremental);
+        try {
+            while (this.in.ready()) {
+                String line = this.in.readLine();
+                BotAPI.console.log(Level.FINER, "-> " + line);
             }
-            catch (InterruptedException e) {}
-            incremental++;
+        }
+        catch (IOException e) {
+            throw new RuntimeException("Error parsing incoming data", e);
+        }
 
-            iterator.remove();
+        synchronized (this.sendQueue) {
+            Iterator<String> iterator = this.sendQueue.iterator();
+            long incremental = 0L;
+            while (iterator.hasNext()) {
+                String command = iterator.next();
+
+                this.out.println(command.trim());
+
+                BotAPI.console.log(Level.FINER, "<- " + command);
+
+                try {
+                    Thread.sleep(250L * incremental);
+                }
+                catch (InterruptedException e) {}
+                incremental++;
+
+                iterator.remove();
+            }
         }
     }
 
@@ -94,14 +116,12 @@ class ServerConnection implements IServerConnection {
 
     @Override
     public void disconnect() {
-        // TODO Auto-generated method stub
-
+        this.addToSendQueue("QUIT");
     }
 
     @Override
     public void disconnect(String reason) {
-        // TODO Auto-generated method stub
-
+        this.addToSendQueue("QUIT :" + reason);
     }
 
     @Override

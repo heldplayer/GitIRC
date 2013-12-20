@@ -1,6 +1,8 @@
 
 package me.heldplayer.irc.logging;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Formatter;
@@ -21,9 +23,21 @@ public class LogFormatter extends Formatter {
         builder.append("[").append(this.dateFormat.format(new Date(record.getMillis()))).append("] ");
         builder.append("[").append(record.getLoggerName()).append("] ");
         builder.append("[").append(record.getLevel().getName()).append("] ");
-        builder.append(record.getMessage());
+        if (record.getParameters() != null) {
+            builder.append(String.format(record.getMessage(), record.getParameters()));
+        }
+        else {
+            builder.append(record.getMessage());
+        }
+        if (record.getThrown() != null) {
+            builder.append(LoggerOutputStream.LINE_SEPARATOR);
 
-        return builder.toString();
+            StringWriter sw = new StringWriter();
+            record.getThrown().printStackTrace(new PrintWriter(sw));
+            builder.append(sw.toString());
+        }
+
+        return builder.toString().trim();
     }
 
 }

@@ -15,9 +15,9 @@ class RunnableMainThread implements Runnable {
 
     @Override
     public void run() {
-        hasStopped = false;
+        this.hasStopped = false;
 
-        running = true;
+        this.running = true;
 
         while (this.running) {
             if (BotAPI.serverConnection != null) {
@@ -33,7 +33,7 @@ class RunnableMainThread implements Runnable {
             }
         }
 
-        hasStopped = true;
+        this.hasStopped = true;
     }
 
 }

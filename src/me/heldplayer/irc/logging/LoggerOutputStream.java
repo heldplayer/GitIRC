@@ -10,7 +10,7 @@ public class LoggerOutputStream extends ByteArrayOutputStream {
 
     private Logger log;
     private Level logLevel;
-    private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+    static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
     public LoggerOutputStream(Logger log, Level logLevel) {
         this.log = log;
@@ -23,9 +23,9 @@ public class LoggerOutputStream extends ByteArrayOutputStream {
             super.flush();
             String line = this.toString();
             if (line != null) {
-                line = line.replaceAll(LINE_SEPARATOR, "").replaceAll("\t", "    ");
+                line = line.replaceAll(LINE_SEPARATOR, "");
                 if (!line.isEmpty()) {
-                    log.log(this.logLevel, line);
+                    this.log.log(this.logLevel, line);
                 }
             }
             super.reset();
