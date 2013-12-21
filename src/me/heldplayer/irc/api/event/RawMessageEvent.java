@@ -14,4 +14,8 @@ public class RawMessageEvent extends CancellableEvent {
         this.message = message;
     }
 
+    public void setHandled() {
+        this.setCancelled(true);
+    }
+
 }

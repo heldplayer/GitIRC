@@ -27,9 +27,11 @@ public final class IRCBotLauncher {
         Logger stdout = Logger.getLogger("STDOUT");
         Logger stderr = Logger.getLogger("STDERR");
         Logger global = Logger.getLogger("");
+        Logger rawIRC = Logger.getLogger("RawIRC");
         stdout.setUseParentHandlers(false);
         stderr.setUseParentHandlers(false);
         global.setUseParentHandlers(false);
+        rawIRC.setUseParentHandlers(false);
 
         ConsoleLogHandler stdoutHandler = new ConsoleLogHandler(System.out);
         ConsoleLogHandler stderrHandler = new ConsoleLogHandler(System.err);
@@ -52,6 +54,11 @@ public final class IRCBotLauncher {
 
         FileLogHandler fileHandler = null;
         try {
+            fileHandler = new FileLogHandler("./raw.log", true);
+            fileHandler.setFormatter(new FileLogFormatter());
+            fileHandler.setLevel(Level.ALL);
+            rawIRC.addHandler(fileHandler);
+
             fileHandler = new FileLogHandler(IRCBotLauncher.config.getString("log-file"), true);
             fileHandler.setFormatter(new FileLogFormatter());
             fileHandler.setLevel(Level.ALL);

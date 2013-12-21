@@ -13,6 +13,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import me.heldplayer.irc.api.BotAPI;
 import me.heldplayer.irc.api.IRCMessage;
@@ -20,11 +21,14 @@ import me.heldplayer.irc.api.IServerConnection;
 import me.heldplayer.irc.api.Network;
 import me.heldplayer.irc.api.event.EventHandler;
 import me.heldplayer.irc.api.event.RawMessageEvent;
+import me.heldplayer.irc.api.event.chat.SelfNicknameChangedEvent;
 import me.heldplayer.irc.api.event.connection.ServerConnectedEvent;
 import me.heldplayer.irc.api.event.connection.ServerDisconnectedEvent;
 import me.heldplayer.irc.api.event.connection.ServerLoggedInEvent;
 
 class ServerConnection implements IServerConnection {
+
+    private static final Logger log = Logger.getLogger("RawIRC");
 
     private List<String> sendQueue;
     private boolean connected;
@@ -85,10 +89,6 @@ class ServerConnection implements IServerConnection {
         if (event.message.command.equals("PING")) {
             BotAPI.serverConnection.addToSendQueue("PONG :" + event.message.trailing);
         }
-        else if (event.message.command.equals("QUIT")) {
-            this.connected = this.initialized = false;
-            BotAPI.eventBus.postEvent(new ServerDisconnectedEvent(this));
-        }
         else if (event.message.command.equals("ERROR")) {
             this.connected = this.initialized = false;
             BotAPI.eventBus.postEvent(new ServerDisconnectedEvent(this));
@@ -143,6 +143,13 @@ class ServerConnection implements IServerConnection {
                 }
             }
         }
+        else if (event.message.command.equals("NICK")) {
+            BotAPI.eventBus.postEvent(new SelfNicknameChangedEvent(event.message.trailing, this.nickname));
+            this.nickname = event.message.trailing;
+        }
+        else if (event.message.command.equals("PRIVMSG")) {
+            event.setHandled();
+        }
     }
 
     @EventHandler
@@ -191,6 +198,7 @@ class ServerConnection implements IServerConnection {
                 if (BotAPI.eventBus.postEvent(event)) {
                     BotAPI.console.log(Level.FINER, "-> " + message.toString());
                 }
+                log.log(Level.INFO, "-> " + line);
                 this.lastRead = System.currentTimeMillis();
             }
         }
@@ -211,6 +219,7 @@ class ServerConnection implements IServerConnection {
                 this.out.println(command.trim());
 
                 BotAPI.console.log(Level.FINER, "<- " + command);
+                log.log(Level.INFO, "<- " + command);
 
                 try {
                     Thread.sleep(250L * incremental);
