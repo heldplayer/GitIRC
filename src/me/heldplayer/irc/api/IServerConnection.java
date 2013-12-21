@@ -1,6 +1,7 @@
 
 package me.heldplayer.irc.api;
 
+
 public interface IServerConnection {
 
     /**
@@ -15,12 +16,7 @@ public interface IServerConnection {
      */
     void processQueue();
 
-    /**
-     * Gets the name of the connected server
-     * 
-     * @return
-     */
-    String getServerName();
+    Network getNetwork();
 
     /**
      * Gets the nickname of the bot on the server

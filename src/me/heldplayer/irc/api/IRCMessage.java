@@ -1,5 +1,5 @@
 
-package me.heldplayer.irc.messages;
+package me.heldplayer.irc.api;
 
 public class IRCMessage {
 
@@ -19,11 +19,11 @@ public class IRCMessage {
      * crlf = %x0D %x0A ; "carriage return" "linefeed"
      */
 
-    public String message;
-    public String prefix;
-    public String command;
-    public String trailing;
-    public String[] params;
+    public final String message;
+    public final String prefix;
+    public final String command;
+    public final String trailing;
+    public final String[] params;
 
     public IRCMessage(String input) {
         String processing = input;
@@ -46,10 +46,32 @@ public class IRCMessage {
             this.trailing = processing.substring(processing.indexOf(" :") + 2);
             processing = processing.substring(0, processing.indexOf(" :"));
         }
+        else if (processing.indexOf(':') == 0) {
+            this.trailing = processing.substring(processing.indexOf(":") + 1);
+            processing = processing.substring(0, processing.indexOf(":"));
+        }
         else {
             this.trailing = null;
         }
-        this.params = processing.split(" ");
+        if (!processing.trim().isEmpty()) {
+            this.params = processing.split(" ");
+        }
+        else {
+            this.params = new String[0];
+        }
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append(this.command);
+        for (String param : params) {
+            builder.append(" ").append(param);
+        }
+        if (this.trailing != null) {
+            builder.append(" :").append(this.trailing);
+        }
+        return builder.toString();
     }
 
 }

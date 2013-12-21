@@ -8,12 +8,13 @@ import java.util.Date;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
-public class LogFormatter extends Formatter {
+public class ConsoleLogFormatter extends Formatter {
 
     private SimpleDateFormat dateFormat;
 
-    public LogFormatter() {
-        this.dateFormat = new SimpleDateFormat("WW/dd/yyyy HH:mm:ss");
+    public ConsoleLogFormatter() {
+        //this.dateFormat = new SimpleDateFormat("WW/dd/yyyy HH:mm:ss");
+        this.dateFormat = new SimpleDateFormat("HH:mm:ss");
     }
 
     @Override
@@ -21,8 +22,9 @@ public class LogFormatter extends Formatter {
         StringBuilder builder = new StringBuilder();
 
         builder.append("[").append(this.dateFormat.format(new Date(record.getMillis()))).append("] ");
-        builder.append("[").append(record.getLoggerName()).append("] ");
-        builder.append("[").append(record.getLevel().getName()).append("] ");
+        builder.append(record.getLoggerName()).append(": ");
+        //builder.append("[").append(record.getLoggerName()).append("] ");
+        //builder.append("[").append(record.getLevel().getName()).append("] ");
         if (record.getParameters() != null) {
             builder.append(String.format(record.getMessage(), record.getParameters()));
         }

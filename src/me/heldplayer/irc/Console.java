@@ -6,15 +6,19 @@ import java.util.logging.Logger;
 
 import me.heldplayer.irc.api.BotAPI;
 import me.heldplayer.irc.api.IConsole;
+import me.heldplayer.irc.api.event.chat.CommandEvent;
+import me.heldplayer.irc.logging.FileLogHandler;
 
 class Console implements IConsole {
 
     private final Logger stdout;
     private final Logger stderr;
+    private FileLogHandler logfileHandler;
 
-    public Console(Logger stdout, Logger stderr) {
+    public Console(Logger stdout, Logger stderr, FileLogHandler fileHandler) {
         this.stdout = stdout;
         this.stderr = stderr;
+        this.logfileHandler = fileHandler;
     }
 
     @Override
@@ -24,8 +28,17 @@ class Console implements IConsole {
 
     @Override
     public void handleConsoleInput(String input) {
-        // TODO Auto-generated method stub
-        BotAPI.serverConnection.addToSendQueue(input);
+        if (BotAPI.eventBus.postEvent(new CommandEvent(input))) {
+            BotAPI.serverConnection.addToSendQueue(input);
+        }
+    }
+
+    @Override
+    public void shutdown() {
+        if (this.logfileHandler != null) {
+            this.logfileHandler.close();
+        }
+        System.exit(0);
     }
 
     @Override

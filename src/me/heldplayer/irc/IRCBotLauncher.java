@@ -9,11 +9,13 @@ import java.util.logging.Logger;
 
 import me.heldplayer.irc.api.BotAPI;
 import me.heldplayer.irc.configuration.Configuration;
+import me.heldplayer.irc.logging.ConsoleLogFormatter;
 import me.heldplayer.irc.logging.ConsoleLogHandler;
-import me.heldplayer.irc.logging.LogFormatter;
+import me.heldplayer.irc.logging.FileLogFormatter;
+import me.heldplayer.irc.logging.FileLogHandler;
 import me.heldplayer.irc.logging.LoggerOutputStream;
 
-final class IRCBotLauncher {
+public final class IRCBotLauncher {
 
     static Thread mainThread;
     static Configuration config;
@@ -31,11 +33,11 @@ final class IRCBotLauncher {
 
         ConsoleLogHandler stdoutHandler = new ConsoleLogHandler(System.out);
         ConsoleLogHandler stderrHandler = new ConsoleLogHandler(System.err);
-        LogFormatter formatter = new LogFormatter();
+        ConsoleLogFormatter formatter = new ConsoleLogFormatter();
         stdoutHandler.setFormatter(formatter);
-        stdoutHandler.setLevel(Level.ALL);
+        stdoutHandler.setLevel(Level.FINER);
         stderrHandler.setFormatter(formatter);
-        stderrHandler.setLevel(Level.ALL);
+        stderrHandler.setLevel(Level.FINER);
 
         stdout.addHandler(stdoutHandler);
         stdout.setLevel(Level.ALL);
@@ -48,21 +50,36 @@ final class IRCBotLauncher {
         global.addHandler(stdoutHandler);
         global.setLevel(Level.ALL);
 
+        FileLogHandler fileHandler = null;
+        try {
+            fileHandler = new FileLogHandler(IRCBotLauncher.config.getString("log-file"), true);
+            fileHandler.setFormatter(new FileLogFormatter());
+            fileHandler.setLevel(Level.ALL);
+            stdout.addHandler(fileHandler);
+            stderr.addHandler(fileHandler);
+            global.addHandler(fileHandler);
+        }
+        catch (Throwable e) {
+            e.printStackTrace();
+        }
+
         System.setOut(new PrintStream(new LoggerOutputStream(stdout, Level.INFO), true));
         System.setErr(new PrintStream(new LoggerOutputStream(stderr, Level.WARNING), true));
 
-        BotAPI.console = new Console(stdout, stderr);
+        BotAPI.console = new Console(stdout, stderr, fileHandler);
         BotAPI.eventBus = new EventBus();
-        ServerConnection connection = new ServerConnection();
-        BotAPI.serverConnection = connection;
 
         String serverIp = IRCBotLauncher.config.getString("server-ip");
         int serverPort = IRCBotLauncher.config.getInt("server-port");
         String bindHost = IRCBotLauncher.config.getString("bind-host");
         String nickname = IRCBotLauncher.config.getString("nickname");
 
+        ServerConnection connection = new ServerConnection(serverIp, serverPort, bindHost);
+        BotAPI.serverConnection = connection;
+        BotAPI.eventBus.registerEventHandler(BotAPI.serverConnection);
+
         try {
-            connection.connect(serverIp, serverPort, bindHost, nickname);
+            connection.connect(nickname);
         }
         catch (Throwable e) {
             BotAPI.console.log(Level.SEVERE, "Failed connecting to the server", e);
