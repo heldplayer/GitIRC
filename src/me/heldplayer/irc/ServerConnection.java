@@ -88,6 +88,7 @@ class ServerConnection implements IServerConnection {
     public void onRawMessage(RawMessageEvent event) {
         if (event.message.command.equals("PING")) {
             BotAPI.serverConnection.addToSendQueue("PONG :" + event.message.trailing);
+            event.setHandled();
         }
         else if (event.message.command.equals("ERROR")) {
             this.connected = this.initialized = false;
@@ -149,6 +150,8 @@ class ServerConnection implements IServerConnection {
         }
         else if (event.message.command.equals("PRIVMSG")) {
             event.setHandled();
+            String[] sender = event.message.prefix.split("!");
+            BotAPI.console.sendMessageToConsole("[" + event.message.params[0] + "] <" + sender[0] + "> " + event.message.trailing);
         }
     }
 
@@ -191,7 +194,7 @@ class ServerConnection implements IServerConnection {
     @Override
     public void processQueue() {
         try {
-            while (this.in.ready()) {
+            while (this.connected && this.in.ready()) {
                 String line = this.in.readLine();
                 IRCMessage message = new IRCMessage(line);
                 RawMessageEvent event = new RawMessageEvent(message);
@@ -218,7 +221,9 @@ class ServerConnection implements IServerConnection {
 
                 this.out.println(command.trim());
 
-                BotAPI.console.log(Level.FINER, "<- " + command);
+                if (!command.startsWith("PING") && !command.startsWith("PONG")) {
+                    BotAPI.console.log(Level.FINER, "<- " + command);
+                }
                 log.log(Level.INFO, "<- " + command);
 
                 try {
