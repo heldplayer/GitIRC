@@ -209,31 +209,33 @@ class ServerConnection implements IServerConnection {
             throw new RuntimeException("Error parsing incoming data", e);
         }
 
-        if (System.currentTimeMillis() - this.lastRead > 300000L) {
-            this.disconnect("Connection timed out");
-            BotAPI.eventBus.postEvent(new ServerDisconnectedEvent(this));
-        }
-
-        synchronized (this.sendQueue) {
-            Iterator<String> iterator = this.sendQueue.iterator();
-            long incremental = 0L;
-            while (iterator.hasNext()) {
-                String command = iterator.next();
-
-                this.out.println(command.trim());
-
-                if (!command.startsWith("PING") && !command.startsWith("PONG")) {
-                    BotAPI.console.log(Level.FINER, "<- " + command);
-                }
-                log.log(Level.INFO, "<- " + command);
-
-                try {
-                    Thread.sleep(250L * incremental);
-                }
-                catch (InterruptedException e) {}
-                incremental++;
+        if (this.connected) {
+            if (System.currentTimeMillis() - this.lastRead > 300000L) {
+                this.disconnect("Connection timed out");
+                BotAPI.eventBus.postEvent(new ServerDisconnectedEvent(this));
             }
-            this.sendQueue.clear();
+
+            synchronized (this.sendQueue) {
+                Iterator<String> iterator = this.sendQueue.iterator();
+                long incremental = 0L;
+                while (iterator.hasNext()) {
+                    String command = iterator.next();
+
+                    this.out.println(command.trim());
+
+                    if (!command.startsWith("PING") && !command.startsWith("PONG")) {
+                        BotAPI.console.log(Level.FINER, "<- " + command);
+                    }
+                    log.log(Level.INFO, "<- " + command);
+
+                    try {
+                        Thread.sleep(250L * incremental);
+                    }
+                    catch (InterruptedException e) {}
+                    incremental++;
+                }
+                this.sendQueue.clear();
+            }
         }
 
         if (this.shouldQuit) {
@@ -263,13 +265,13 @@ class ServerConnection implements IServerConnection {
 
     @Override
     public void disconnect() {
-        this.addToSendQueue("QUIT");
+        this.sendQueue.add("QUIT");
         this.connected = this.initialized = false;
     }
 
     @Override
     public void disconnect(String reason) {
-        this.addToSendQueue("QUIT :" + reason);
+        this.sendQueue.add("QUIT :" + reason);
         this.connected = this.initialized = false;
     }
 
