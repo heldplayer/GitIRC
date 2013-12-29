@@ -211,6 +211,7 @@ class ServerConnection implements IServerConnection {
 
         if (System.currentTimeMillis() - this.lastRead > 300000L) {
             this.disconnect("Connection timed out");
+            BotAPI.eventBus.postEvent(new ServerDisconnectedEvent(this));
         }
 
         synchronized (this.sendQueue) {
@@ -263,11 +264,13 @@ class ServerConnection implements IServerConnection {
     @Override
     public void disconnect() {
         this.addToSendQueue("QUIT");
+        this.connected = this.initialized = false;
     }
 
     @Override
     public void disconnect(String reason) {
         this.addToSendQueue("QUIT :" + reason);
+        this.connected = this.initialized = false;
     }
 
     @Override

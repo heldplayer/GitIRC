@@ -29,20 +29,20 @@ public class IRCMessage {
         String processing = input;
         this.message = input;
         if (processing.startsWith(":")) {
-            this.prefix = processing.substring(1, processing.indexOf(' '));
-            processing = processing.substring(processing.indexOf(' ') + 1);
+            this.prefix = processing.substring(1, processing.indexOf(" "));
+            processing = processing.substring(processing.indexOf(" ") + 1);
         }
         else {
             this.prefix = null;
         }
-        if (processing.indexOf(' ') > 0) {
-            this.command = processing.substring(0, processing.indexOf(' '));
-            processing = processing.substring(processing.indexOf(' ') + 1);
+        if (processing.indexOf(" ") > 0) {
+            this.command = processing.substring(0, processing.indexOf(" "));
+            processing = processing.substring(processing.indexOf(" ") + 1);
         }
         else {
             this.command = processing;
         }
-        if (processing.indexOf(':') > 0) {
+        if (processing.indexOf(" :") > 0) {
             this.trailing = processing.substring(processing.indexOf(" :") + 2);
             processing = processing.substring(0, processing.indexOf(" :"));
         }
