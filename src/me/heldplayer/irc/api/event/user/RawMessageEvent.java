@@ -1,7 +1,8 @@
 
-package me.heldplayer.irc.api.event;
+package me.heldplayer.irc.api.event.user;
 
 import me.heldplayer.irc.api.IRCMessage;
+import me.heldplayer.irc.api.event.CancellableEvent;
 
 /**
  * Cancel me to stop default processing

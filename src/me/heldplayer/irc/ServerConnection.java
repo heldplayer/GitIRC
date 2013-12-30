@@ -20,11 +20,11 @@ import me.heldplayer.irc.api.IRCMessage;
 import me.heldplayer.irc.api.IServerConnection;
 import me.heldplayer.irc.api.Network;
 import me.heldplayer.irc.api.event.EventHandler;
-import me.heldplayer.irc.api.event.RawMessageEvent;
-import me.heldplayer.irc.api.event.chat.SelfNicknameChangedEvent;
 import me.heldplayer.irc.api.event.connection.ServerConnectedEvent;
 import me.heldplayer.irc.api.event.connection.ServerDisconnectedEvent;
 import me.heldplayer.irc.api.event.connection.ServerLoggedInEvent;
+import me.heldplayer.irc.api.event.user.RawMessageEvent;
+import me.heldplayer.irc.api.event.user.SelfNicknameChangedEvent;
 
 class ServerConnection implements IServerConnection {
 
@@ -119,7 +119,7 @@ class ServerConnection implements IServerConnection {
                     this.network.maxChannelModes = Integer.parseInt(parts[1]);
                 }
                 else if (parts[0].startsWith("CHANTYPES")) {
-                    this.network.channelTypes = parts[1].toCharArray();
+                    this.network.availableChannelTypes = parts[1].toCharArray();
                 }
                 else if (parts[0].startsWith("PREFIX")) {
                     String modeNames = parts[1].substring(parts[1].indexOf('(') + 1, parts[1].indexOf(')'));
@@ -139,11 +139,11 @@ class ServerConnection implements IServerConnection {
                             count--;
                         }
                     }
-                    this.network.channelModes = new char[count];
+                    this.network.availableChannelModes = new char[count];
                     count = 0;
                     for (char mode : modes) {
                         if (mode != ',') {
-                            this.network.channelModes[count] = mode;
+                            this.network.availableChannelModes[count] = mode;
                             count++;
                         }
                     }

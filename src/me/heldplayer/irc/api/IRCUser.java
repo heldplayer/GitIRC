@@ -1,9 +1,10 @@
 
-package me.heldplayer.irc;
+package me.heldplayer.irc.api;
 
 public class IRCUser {
 
     private String username;
+    public char[] userModes = new char[0];
 
     public String getUsername() {
         return this.username;

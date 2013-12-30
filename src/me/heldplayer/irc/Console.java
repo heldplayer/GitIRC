@@ -6,7 +6,7 @@ import java.util.logging.Logger;
 
 import me.heldplayer.irc.api.BotAPI;
 import me.heldplayer.irc.api.IConsole;
-import me.heldplayer.irc.api.event.chat.CommandEvent;
+import me.heldplayer.irc.api.event.user.CommandEvent;
 import me.heldplayer.irc.logging.FileLogHandler;
 
 class Console implements IConsole {
