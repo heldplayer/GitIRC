@@ -10,7 +10,7 @@ import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import me.heldplayer.irc.configuration.Configuration;
+import me.heldplayer.irc.api.configuration.Configuration;
 
 public final class Util {
 

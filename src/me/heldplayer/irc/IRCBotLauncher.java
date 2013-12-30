@@ -1,14 +1,19 @@
 
 package me.heldplayer.irc;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import me.heldplayer.irc.api.BotAPI;
-import me.heldplayer.irc.configuration.Configuration;
+import me.heldplayer.irc.api.configuration.Configuration;
 import me.heldplayer.irc.logging.ConsoleLogFormatter;
 import me.heldplayer.irc.logging.ConsoleLogHandler;
 import me.heldplayer.irc.logging.FileLogFormatter;
@@ -101,6 +106,39 @@ public final class IRCBotLauncher {
         consoleReader.setName("Console reader Thread");
         consoleReader.setDaemon(true);
         consoleReader.start();
+    }
+
+    public static List<String> readPerform() {
+        ArrayList<String> result = new ArrayList<String>();
+
+        File perform = new File("." + File.separator + "perform.txt");
+        if (!perform.exists()) {
+            return result;
+        }
+
+        BufferedReader reader = null;
+
+        try {
+            reader = new BufferedReader(new FileReader(perform));
+            if (reader != null) {
+                String line = "";
+
+                while ((line = reader.readLine()) != null) {
+                    result.add(line);
+                }
+            }
+        }
+        catch (IOException e) {}
+        finally {
+            try {
+                if (reader != null) {
+                    reader.close();
+                }
+            }
+            catch (IOException e) {}
+        }
+
+        return result;
     }
 
 }

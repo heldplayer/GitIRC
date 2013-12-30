@@ -1,5 +1,5 @@
 
-package me.heldplayer.irc.configuration;
+package me.heldplayer.irc.api.configuration;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -15,6 +15,14 @@ public class Configuration {
     public Configuration(File file) {
         if (file == null) {
             throw new IllegalArgumentException("file");
+        }
+        if (!file.exists() || !file.isFile()) {
+            try {
+                file.createNewFile();
+            }
+            catch (IOException e) {
+                throw new IllegalArgumentException("file", e);
+            }
         }
         this.file = file;
     }

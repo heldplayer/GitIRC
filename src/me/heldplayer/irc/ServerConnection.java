@@ -96,6 +96,12 @@ class ServerConnection implements IServerConnection {
         }
         else if (event.message.command.equals("001")) {
             this.initialized = true;
+
+            List<String> perform = IRCBotLauncher.readPerform();
+            for (String action : perform) {
+                BotAPI.console.handleConsoleInput(action);
+            }
+
             BotAPI.eventBus.postEvent(new ServerLoggedInEvent(this));
         }
         else if (event.message.command.equals("433")) {

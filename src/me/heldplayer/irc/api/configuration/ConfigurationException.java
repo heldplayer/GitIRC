@@ -1,5 +1,5 @@
 
-package me.heldplayer.irc.configuration;
+package me.heldplayer.irc.api.configuration;
 
 public class ConfigurationException extends RuntimeException {
 
