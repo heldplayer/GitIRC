@@ -9,20 +9,24 @@ import me.heldplayer.irc.api.BotAPI;
 
 class RunnableCommitReader implements Runnable {
 
-    private short counter = 0;
+    private short counter = 50;
+    private String channel;
+    public boolean running = true;
+
+    public RunnableCommitReader(String channel) {
+        this.channel = channel;
+    }
 
     @Override
     public void run() {
         try {
-            while (true) {
+            while (running) {
                 if (BotAPI.serverConnection != null) {
-                    this.counter++;
-
                     if (this.counter == 60) {
                         this.counter = 0;
 
                         try {
-                            URL changes = new URL("http://dsiwars.x10.mx/Git/retrieve.php");
+                            URL changes = new URL("http://dsiwars.specialattack.net/Git/retrieve.php");
                             BufferedReader in = new BufferedReader(new InputStreamReader(changes.openStream()));
 
                             String inputLine;
@@ -35,12 +39,14 @@ class RunnableCommitReader implements Runnable {
                                     break;
                                 }
 
-                                BotAPI.serverConnection.addToSendQueue("PRIVMSG #channel :" + inputLine.substring(1));
+                                BotAPI.serverConnection.addToSendQueue("PRIVMSG " + channel + " :" + inputLine.substring(1));
                             }
                             in.close();
                         }
                         catch (Exception ex) {}
                     }
+
+                    this.counter++;
 
                     Thread.sleep(1000L);
                 }

@@ -23,6 +23,7 @@ import me.heldplayer.irc.api.event.EventHandler;
 import me.heldplayer.irc.api.event.connection.ServerConnectedEvent;
 import me.heldplayer.irc.api.event.connection.ServerDisconnectedEvent;
 import me.heldplayer.irc.api.event.connection.ServerLoggedInEvent;
+import me.heldplayer.irc.api.event.user.CommandEvent;
 import me.heldplayer.irc.api.event.user.RawMessageEvent;
 import me.heldplayer.irc.api.event.user.SelfNicknameChangedEvent;
 
@@ -46,6 +47,8 @@ class ServerConnection implements IServerConnection {
     private int port;
     private String localHost;
     private String nickname;
+
+    private RunnableCommitReader commitReader;
 
     public ServerConnection(String host, int port, String localHost) {
         this.sendQueue = Collections.synchronizedList(new LinkedList<String>());
@@ -82,6 +85,23 @@ class ServerConnection implements IServerConnection {
 
         this.addToSendQueue("NICK " + nickname);
         this.addToSendQueue("USER HeldBot 0 * :" + nickname);
+    }
+
+    @EventHandler
+    public void onCommand(CommandEvent event) {
+        if (event.command.equals("GIT")) {
+            if (event.params.length == 1) {
+                this.commitReader = new RunnableCommitReader(event.params[0]);
+
+                Thread commitReader = new Thread(this.commitReader);
+                commitReader.setName("Commit Reader");
+                commitReader.start();
+            }
+            else {
+                BotAPI.console.log(Level.WARNING, "Expected 1 parameter for command /git");
+            }
+            event.setHandled();
+        }
     }
 
     @EventHandler
@@ -164,10 +184,37 @@ class ServerConnection implements IServerConnection {
     @EventHandler
     public void onServerDisconnected(ServerDisconnectedEvent event) {
         if (event.connection == this) {
+            this.commitReader.running = false;
             try {
-                this.in.close();
-                this.out.close();
-                this.socket.close();
+                try {
+                    // Try to send first
+                    synchronized (this.sendQueue) {
+                        Iterator<String> iterator = this.sendQueue.iterator();
+                        long incremental = 0L;
+                        while (iterator.hasNext()) {
+                            String command = iterator.next();
+
+                            this.out.println(command.trim());
+
+                            if (!command.startsWith("PING") && !command.startsWith("PONG")) {
+                                BotAPI.console.log(Level.FINER, "<- " + command);
+                            }
+                            log.log(Level.INFO, "<- " + command);
+
+                            try {
+                                Thread.sleep(250L * incremental);
+                            }
+                            catch (InterruptedException e) {}
+                            incremental++;
+                        }
+                        this.sendQueue.clear();
+                    }
+                }
+                finally {
+                    this.in.close();
+                    this.out.close();
+                    this.socket.close();
+                }
             }
             catch (IOException e) {
                 e.printStackTrace();
@@ -219,6 +266,7 @@ class ServerConnection implements IServerConnection {
             if (System.currentTimeMillis() - this.lastRead > 300000L) {
                 this.disconnect("Connection timed out");
                 BotAPI.eventBus.postEvent(new ServerDisconnectedEvent(this));
+                return;
             }
 
             synchronized (this.sendQueue) {

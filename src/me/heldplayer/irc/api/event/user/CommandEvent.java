@@ -13,7 +13,7 @@ public class CommandEvent extends CancellableEvent {
         if (parts[0].startsWith("/")) {
             parts[0] = parts[0].substring(1);
         }
-        this.command = parts[0];
+        this.command = parts[0].toUpperCase();
         this.params = new String[parts.length - 1];
         System.arraycopy(parts, 1, this.params, 0, params.length);
     }
