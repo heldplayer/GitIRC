@@ -211,6 +211,12 @@ class ServerConnection implements IServerConnection {
                     }
                 }
                 finally {
+                    try {
+                        Thread.sleep(100L);
+                    }
+                    catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                     this.in.close();
                     this.out.close();
                     this.socket.close();
