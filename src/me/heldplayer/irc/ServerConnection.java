@@ -186,41 +186,9 @@ class ServerConnection implements IServerConnection {
         if (event.connection == this) {
             this.commitReader.running = false;
             try {
-                try {
-                    // Try to send first
-                    synchronized (this.sendQueue) {
-                        Iterator<String> iterator = this.sendQueue.iterator();
-                        long incremental = 0L;
-                        while (iterator.hasNext()) {
-                            String command = iterator.next();
-
-                            this.out.println(command.trim());
-
-                            if (!command.startsWith("PING") && !command.startsWith("PONG")) {
-                                BotAPI.console.log(Level.FINER, "<- " + command);
-                            }
-                            log.log(Level.INFO, "<- " + command);
-
-                            try {
-                                Thread.sleep(250L * incremental);
-                            }
-                            catch (InterruptedException e) {}
-                            incremental++;
-                        }
-                        this.sendQueue.clear();
-                    }
-                }
-                finally {
-                    try {
-                        Thread.sleep(100L);
-                    }
-                    catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    this.in.close();
-                    this.out.close();
-                    this.socket.close();
-                }
+                this.in.close();
+                this.out.close();
+                this.socket.close();
             }
             catch (IOException e) {
                 e.printStackTrace();
@@ -238,11 +206,9 @@ class ServerConnection implements IServerConnection {
         synchronized (this.sendQueue) {
             IRCMessage message = new IRCMessage(command);
             if (message.command.equalsIgnoreCase("QUIT")) {
-                this.connected = this.initialized = false;
                 this.shouldQuit = true;
             }
             else if (message.command.equalsIgnoreCase("ERROR")) {
-                this.connected = this.initialized = false;
                 this.shouldQuit = true;
                 command = "QUIT :Errored: " + message.trailing;
             }
@@ -299,6 +265,12 @@ class ServerConnection implements IServerConnection {
         }
 
         if (this.shouldQuit) {
+            try {
+                Thread.sleep(1000L);
+            }
+            catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             BotAPI.console.shutdown();
         }
     }

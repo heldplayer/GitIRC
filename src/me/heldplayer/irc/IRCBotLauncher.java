@@ -38,6 +38,10 @@ public final class IRCBotLauncher {
         global.setUseParentHandlers(false);
         rawIRC.setUseParentHandlers(false);
 
+        // Disable stupid logger
+        Logger httpURLConnection = Logger.getLogger("sun.net.www.protocol.http.HttpURLConnection");
+        httpURLConnection.setLevel(Level.OFF);
+
         ConsoleLogHandler stdoutHandler = new ConsoleLogHandler(System.out);
         ConsoleLogHandler stderrHandler = new ConsoleLogHandler(System.err);
         ConsoleLogFormatter formatter = new ConsoleLogFormatter();
