@@ -42,9 +42,9 @@ public final class IRCBotLauncher {
         ConsoleLogHandler stderrHandler = new ConsoleLogHandler(System.err);
         ConsoleLogFormatter formatter = new ConsoleLogFormatter();
         stdoutHandler.setFormatter(formatter);
-        stdoutHandler.setLevel(Level.FINER);
+        stdoutHandler.setLevel(Level.INFO);
         stderrHandler.setFormatter(formatter);
-        stderrHandler.setLevel(Level.FINER);
+        stderrHandler.setLevel(Level.INFO);
 
         stdout.addHandler(stdoutHandler);
         stdout.setLevel(Level.ALL);
