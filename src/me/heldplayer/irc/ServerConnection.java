@@ -259,6 +259,7 @@ class ServerConnection implements IServerConnection {
                     }
                     catch (InterruptedException e) {}
                     incremental++;
+                    this.lastRead = System.currentTimeMillis();
                 }
                 this.sendQueue.clear();
             }

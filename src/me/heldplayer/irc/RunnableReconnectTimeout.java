@@ -14,7 +14,7 @@ class RunnableReconnectTimeout implements Runnable {
     @Override
     public void run() {
         try {
-            Thread.sleep(120000L);
+            Thread.sleep(60000L);
         }
         catch (InterruptedException e) {
             e.printStackTrace();
