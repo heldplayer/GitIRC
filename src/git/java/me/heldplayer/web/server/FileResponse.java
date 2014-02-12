@@ -19,15 +19,15 @@ public class FileResponse extends WebResponse {
 
     @Override
     public WebResponse writeResponse(RequestFlags flags) throws IOException {
-        Extension extension = Extension.fromFileName(file.getName());
+        Extension extension = Extension.fromFileName(this.file.getName());
 
-        out.writeBytes("HTTP/1.0 200 OK\r\n");
-        out.writeBytes("Connection: close\r\n");
-        out.writeBytes("Server: ModeratorGui\r\n");
-        out.writeBytes("Content-Type: " + extension.type + "\r\n");
-        out.writeBytes("\r\n");
+        this.out.writeBytes("HTTP/1.0 200 OK\r\n");
+        this.out.writeBytes("Connection: close\r\n");
+        this.out.writeBytes("Server: ModeratorGui\r\n");
+        this.out.writeBytes("Content-Type: " + extension.type + "\r\n");
+        this.out.writeBytes("\r\n");
 
-        FileInputStream input = new FileInputStream(file);
+        FileInputStream input = new FileInputStream(this.file);
 
         if (flags.method.hasBody) {
             while (true) {
@@ -35,7 +35,7 @@ public class FileResponse extends WebResponse {
                 if (b == -1) {
                     break;
                 }
-                out.write(b);
+                this.out.write(b);
             }
         }
 
@@ -71,7 +71,7 @@ public class FileResponse extends WebResponse {
             if (name.lastIndexOf(".") < 0) {
                 return TextPlain;
             }
-            String ext = name.substring(name.lastIndexOf("."));
+            String ext = name.substring(name.lastIndexOf(".") + 1);
 
             for (Extension extension : values()) {
                 if (extension.extensions.contains(ext)) {

@@ -9,4 +9,6 @@ public interface IEventBus {
 
     boolean postEvent(Event event);
 
+    void cleanup();
+
 }

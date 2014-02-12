@@ -14,8 +14,8 @@ public abstract class WebResponse {
     protected DataOutputStream out;
 
     public WebResponse() throws IOException {
-        baos = new ByteArrayOutputStream();
-        out = new DataOutputStream(baos);
+        this.baos = new ByteArrayOutputStream();
+        this.out = new DataOutputStream(this.baos);
     }
 
     public abstract WebResponse writeResponse(RequestFlags flags) throws IOException;
@@ -23,7 +23,7 @@ public abstract class WebResponse {
     public void flush(DataOutputStream stream) throws IOException {
         ByteArrayInputStream in = null;
         try {
-            in = new ByteArrayInputStream(baos.toByteArray());
+            in = new ByteArrayInputStream(this.baos.toByteArray());
             while (in.available() > 0) {
                 int bits = in.read();
                 stream.write(bits);
@@ -37,11 +37,11 @@ public abstract class WebResponse {
         }
         finally {
             try {
-                out.close();
+                this.out.close();
             }
             catch (IOException ex) {}
             try {
-                baos.close();
+                this.baos.close();
             }
             catch (IOException ex) {}
             try {

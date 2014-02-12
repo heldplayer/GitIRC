@@ -65,7 +65,7 @@ public class IRCMessage {
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append(this.command);
-        for (String param : params) {
+        for (String param : this.params) {
             builder.append(" ").append(param);
         }
         if (this.trailing != null) {

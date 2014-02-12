@@ -21,7 +21,7 @@ class RunnableCommitReader implements Runnable {
     @Override
     public void run() {
         try {
-            while (running) {
+            while (this.running) {
                 if (BotAPI.serverConnection != null) {
                     if (this.counter == 60) {
                         this.counter = 0;
@@ -41,7 +41,7 @@ class RunnableCommitReader implements Runnable {
                                     break;
                                 }
 
-                                BotAPI.serverConnection.addToSendQueue("PRIVMSG " + channel + " :" + inputLine.substring(1));
+                                BotAPI.serverConnection.addToSendQueue("PRIVMSG " + this.channel + " :" + inputLine.substring(1));
                             }
                             in.close();
                         }

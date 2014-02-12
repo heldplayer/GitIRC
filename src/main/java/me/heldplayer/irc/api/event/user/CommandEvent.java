@@ -15,7 +15,7 @@ public class CommandEvent extends CancellableEvent {
         }
         this.command = parts[0].toUpperCase();
         this.params = new String[parts.length - 1];
-        System.arraycopy(parts, 1, this.params, 0, params.length);
+        System.arraycopy(parts, 1, this.params, 0, this.params.length);
     }
 
     public CommandEvent(String command, String[] params) {

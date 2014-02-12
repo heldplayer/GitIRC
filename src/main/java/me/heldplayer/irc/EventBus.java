@@ -101,6 +101,14 @@ class EventBus implements IEventBus {
         }
     }
 
+    @Override
+    public void cleanup() {
+        methods.clear();
+        methods = null;
+        eventHandlers.clear();
+        eventHandlers = null;
+    }
+
     private static class Events {
 
         public MethodClassLink[] classes;

@@ -19,6 +19,7 @@ public class RunnableHttpResponse implements Runnable {
     private DataOutputStream out;
     private BufferedReader in;
     private long timeout = 0;
+    protected boolean finished = false;
 
     public RunnableHttpResponse(Socket socket) {
         this.socket = socket;
@@ -32,16 +33,16 @@ public class RunnableHttpResponse implements Runnable {
         main:
         {
             try {
-                out = new DataOutputStream(socket.getOutputStream());
-                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                this.out = new DataOutputStream(this.socket.getOutputStream());
+                this.in = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
 
                 TreeMap<Integer, String> input = new TreeMap<Integer, String>();
                 Integer i = 0;
 
-                while (!in.ready()) {
-                    timeout++;
+                while (!this.in.ready()) {
+                    this.timeout++;
 
-                    if (timeout > 30000L) {
+                    if (this.timeout > 30000L) {
                         break;
                     }
                     try {
@@ -52,13 +53,13 @@ public class RunnableHttpResponse implements Runnable {
                     }
                 }
 
-                while (in.ready()) {
-                    String line = in.readLine();
+                while (this.in.ready()) {
+                    String line = this.in.readLine();
                     input.put(i++, line);
                 }
 
                 if (input.size() <= 0) {
-                    new ErrorResponse(ErrorType.BadRequest).writeResponse(flags).flush(out);
+                    new ErrorResponse(ErrorType.BadRequest).writeResponse(flags).flush(this.out);
 
                     break main;
                 }
@@ -71,49 +72,49 @@ public class RunnableHttpResponse implements Runnable {
                 flags.method = RequestFlags.Method.fromString(method);
 
                 if (flags.method == RequestFlags.Method.NULL) {
-                    new ErrorResponse(ErrorType.NotImplemented).writeResponse(flags).flush(out);
+                    new ErrorResponse(ErrorType.NotImplemented).writeResponse(flags).flush(this.out);
 
                     break main;
                 }
 
                 if (!version.split("/")[1].equalsIgnoreCase("1.0") && !version.split("/")[1].equalsIgnoreCase("1.1")) {
-                    new ErrorResponse(ErrorType.HTTPVersionNotSupported).writeResponse(flags).flush(out);
+                    new ErrorResponse(ErrorType.HTTPVersionNotSupported).writeResponse(flags).flush(this.out);
 
                     break main;
                 }
 
                 location = URLDecoder.decode(location, "UTF-8");
 
-                while (!(location.indexOf("..") < 0)) {
-                    location = location.replaceAll("..", ".");
+                while (!(location.indexOf("\\.\\.") < 0)) {
+                    location = location.replaceAll("\\.\\.", ".");
                 }
 
                 if (location.endsWith("/")) {
                     location = location.concat("index.htm");
                 }
 
-                File root = new File("." + File.separator + "web");
+                File root = new File("web");
                 File file = new File(root, location).getAbsoluteFile();
 
                 if (file.isDirectory()) {
-                    new ErrorResponse(ErrorType.Forbidden).writeResponse(flags).flush(out);
+                    new ErrorResponse(ErrorType.Forbidden).writeResponse(flags).flush(this.out);
 
                     break main;
                 }
                 else if (file.exists()) {
-                    new FileResponse(file).writeResponse(flags).flush(out);
+                    new FileResponse(file).writeResponse(flags).flush(this.out);
 
                     break main;
                 }
                 else {
-                    new ErrorResponse(ErrorType.NotFound).writeResponse(flags).flush(out);
+                    new ErrorResponse(ErrorType.NotFound).writeResponse(flags).flush(this.out);
 
                     break main;
                 }
             }
             catch (WebGuiException ex) {
                 try {
-                    ex.response.writeResponse(flags).flush(out);
+                    ex.response.writeResponse(flags).flush(this.out);
                 }
                 catch (IOException e) {
                     RunnableWebserver.log.log(Level.SEVERE, "Exception while responding to web client", ex);
@@ -130,15 +131,16 @@ public class RunnableHttpResponse implements Runnable {
                 }
 
                 try {
-                    new ErrorResponse(ErrorType.InternalServerError).writeResponse(flags).flush(out);
+                    new ErrorResponse(ErrorType.InternalServerError).writeResponse(flags).flush(this.out);
                 }
                 catch (IOException e) {}
             }
             finally {
                 try {
-                    out.close();
-                    in.close();
-                    socket.close();
+                    this.out.close();
+                    this.in.close();
+                    this.socket.close();
+                    this.finished = true;
                     return;
                 }
                 catch (IOException e) {}
@@ -146,12 +148,15 @@ public class RunnableHttpResponse implements Runnable {
         }
 
         try {
-            out.close();
-            in.close();
-            socket.close();
+            this.out.close();
+            this.in.close();
+            this.socket.close();
+            this.finished = true;
             return;
         }
         catch (IOException e) {}
+
+        this.finished = true;
     }
 
 }

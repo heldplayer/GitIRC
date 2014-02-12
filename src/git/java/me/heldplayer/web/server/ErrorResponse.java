@@ -14,17 +14,17 @@ public class ErrorResponse extends WebResponse {
 
     @Override
     public WebResponse writeResponse(RequestFlags flags) throws IOException {
-        out.writeBytes("HTTP/1.0 " + type.code + " " + type.reason + "\r\n");
-        out.writeBytes("Connection: close\r\n");
-        out.writeBytes("Server: ModeratorGui\r\n");
-        out.writeBytes("Content-Type: text/plain\r\n");
-        out.writeBytes("\r\n");
+        this.out.writeBytes("HTTP/1.0 " + this.type.code + " " + this.type.reason + "\r\n");
+        this.out.writeBytes("Connection: close\r\n");
+        this.out.writeBytes("Server: ModeratorGui\r\n");
+        this.out.writeBytes("Content-Type: text/plain\r\n");
+        this.out.writeBytes("\r\n");
 
         if (flags.method.hasBody) {
-            out.writeBytes("Error code " + type.code + " - " + type.reason + "\r\n");
-            out.writeBytes("Unable to load the requested page :(\r\n");
-            out.writeBytes("\r\n");
-            out.writeBytes("Please try again later\r\n");
+            this.out.writeBytes("Error code " + this.type.code + " - " + this.type.reason + "\r\n");
+            this.out.writeBytes("Unable to load the requested page :(\r\n");
+            this.out.writeBytes("\r\n");
+            this.out.writeBytes("Please try again later\r\n");
         }
 
         return this;

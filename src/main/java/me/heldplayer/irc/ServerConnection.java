@@ -61,7 +61,7 @@ class ServerConnection implements IServerConnection {
     }
 
     public void connect(String nickname) throws UnknownHostException, IOException {
-        this.network = new Network(host);
+        this.network = new Network(this.host);
 
         InetAddress remote = InetAddress.getByName(this.host);
 
@@ -100,6 +100,10 @@ class ServerConnection implements IServerConnection {
             else {
                 BotAPI.console.log(Level.WARNING, "Expected 1 parameter for command /git");
             }
+            event.setHandled();
+        }
+        else if (event.command.equals("REHASH")) {
+            RunnableMainThread.instance.shouldReset = true;
             event.setHandled();
         }
     }

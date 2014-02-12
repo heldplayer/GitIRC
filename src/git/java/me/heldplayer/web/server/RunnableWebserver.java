@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.logging.Logger;
 
 public class RunnableWebserver implements Runnable {
@@ -14,9 +15,13 @@ public class RunnableWebserver implements Runnable {
 
     private ServerSocket serverSocket = null;
     public boolean running = false;
+    public boolean hasStopped = false;
 
     private final int port;
     private final String host;
+
+    private ThreadGroup threads;
+    private ArrayList<RunnableHttpResponse> runningRequests;
 
     public RunnableWebserver(int port, String host) {
         super();
@@ -24,12 +29,31 @@ public class RunnableWebserver implements Runnable {
         instance = this;
         this.port = port;
         this.host = host;
+
+        this.threads = new ThreadGroup("HTTP Responses");
+        this.runningRequests = new ArrayList<RunnableHttpResponse>();
     }
 
+    @SuppressWarnings("deprecation")
     public synchronized void disconnect() {
-        running = false;
+        this.running = false;
+
+        while (true) {
+            for (int i = 0; i < runningRequests.size(); i++) {
+                RunnableHttpResponse response = runningRequests.get(i);
+                if (response.finished) {
+                    runningRequests.remove(i);
+                }
+            }
+            if (runningRequests.isEmpty()) {
+                break;
+            }
+        }
+
+        this.threads.stop();
+        this.threads.destroy();
         try {
-            serverSocket.close();
+            this.serverSocket.close();
         }
         catch (IOException e) {}
     }
@@ -37,15 +61,15 @@ public class RunnableWebserver implements Runnable {
     @Override
     public void run() {
         try {
-            RunnableWebserver.log.info("Starting server on " + (host != "" ? host : "*") + ":" + port);
+            RunnableWebserver.log.info("Starting server on " + (this.host != null && !this.host.isEmpty() ? this.host : "*") + ":" + this.port);
 
             InetAddress adress = null;
 
-            if (host.length() > 0) {
-                InetAddress.getByName(host);
+            if (this.host != null && !this.host.isEmpty()) {
+                InetAddress.getByName(this.host);
             }
 
-            serverSocket = new ServerSocket(port, 0, adress);
+            this.serverSocket = new ServerSocket(this.port, 0, adress);
         }
         catch (Exception ex) {
             RunnableWebserver.log.severe("**** FAILED TO BIND TO PORT");
@@ -54,16 +78,24 @@ public class RunnableWebserver implements Runnable {
             return;
         }
 
-        while (running) {
-            try {
-                Socket socket = serverSocket.accept();
+        this.running = true;
 
-                new RunnableHttpResponse(socket);
+        while (this.running) {
+            try {
+                Socket socket = this.serverSocket.accept();
+
+                RunnableHttpResponse response = new RunnableHttpResponse(socket);
+                Thread responseThread = new Thread(this.threads, response);
+                responseThread.setDaemon(true);
+                responseThread.start();
+                runningRequests.add(response);
 
                 Thread.sleep(10L);
             }
             catch (IOException e) {}
             catch (InterruptedException e) {}
         }
+
+        this.hasStopped = true;
     }
 }
