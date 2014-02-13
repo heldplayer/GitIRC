@@ -1,5 +1,5 @@
 
-package me.heldplayer.web.server;
+package me.heldplayer.web.server.internal;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -11,7 +11,7 @@ import java.net.URLDecoder;
 import java.util.TreeMap;
 import java.util.logging.Level;
 
-import me.heldplayer.web.server.ErrorResponse.ErrorType;
+import me.heldplayer.web.server.internal.ErrorResponse.ErrorType;
 
 public class RunnableHttpResponse implements Runnable {
 

@@ -5,6 +5,7 @@ import java.io.File;
 
 import me.heldplayer.irc.api.IEntryPoint;
 import me.heldplayer.irc.api.configuration.Configuration;
+import me.heldplayer.web.server.internal.RunnableWebserver;
 
 public class WebServerEntryPoint implements IEntryPoint {
 

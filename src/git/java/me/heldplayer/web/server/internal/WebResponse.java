@@ -1,5 +1,5 @@
 
-package me.heldplayer.web.server;
+package me.heldplayer.web.server.internal;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

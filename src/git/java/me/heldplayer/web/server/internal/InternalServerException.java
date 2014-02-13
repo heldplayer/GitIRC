@@ -1,5 +1,5 @@
 
-package me.heldplayer.web.server;
+package me.heldplayer.web.server.internal;
 
 public class InternalServerException extends RuntimeException {
 
