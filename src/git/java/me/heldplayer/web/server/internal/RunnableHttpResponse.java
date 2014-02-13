@@ -112,15 +112,6 @@ public class RunnableHttpResponse implements Runnable {
                     break main;
                 }
             }
-            catch (WebGuiException ex) {
-                try {
-                    ex.response.writeResponse(flags).flush(this.out);
-                }
-                catch (IOException e) {
-                    RunnableWebserver.log.log(Level.SEVERE, "Exception while responding to web client", ex);
-                    RunnableWebserver.log.log(Level.SEVERE, "Request: " + location);
-                }
-            }
             catch (IOException e) {
                 e.printStackTrace();
             }
