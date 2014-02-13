@@ -26,6 +26,7 @@ import me.heldplayer.irc.api.event.connection.ServerLoggedInEvent;
 import me.heldplayer.irc.api.event.user.CommandEvent;
 import me.heldplayer.irc.api.event.user.RawMessageEvent;
 import me.heldplayer.irc.api.event.user.SelfNicknameChangedEvent;
+import me.heldplayer.irc.api.event.user.UserMessageEvent;
 
 class ServerConnection implements IServerConnection {
 
@@ -182,6 +183,7 @@ class ServerConnection implements IServerConnection {
             event.setHandled();
             String[] sender = event.message.prefix.split("!");
             BotAPI.console.sendMessageToConsole("[" + event.message.params[0] + "] <" + sender[0] + "> " + event.message.trailing);
+            BotAPI.eventBus.postEvent(new UserMessageEvent(this.network.getUser(sender[0]), event.message.params[0], event.message.trailing));
         }
     }
 

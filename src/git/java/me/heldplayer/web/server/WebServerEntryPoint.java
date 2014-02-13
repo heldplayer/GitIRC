@@ -3,8 +3,12 @@ package me.heldplayer.web.server;
 
 import java.io.File;
 
+import me.heldplayer.irc.api.BotAPI;
 import me.heldplayer.irc.api.IEntryPoint;
 import me.heldplayer.irc.api.configuration.Configuration;
+import me.heldplayer.irc.api.event.EventHandler;
+import me.heldplayer.irc.api.event.user.UserMessageEvent;
+import me.heldplayer.util.json.JSONObject;
 import me.heldplayer.web.server.internal.RunnableWebserver;
 
 public class WebServerEntryPoint implements IEntryPoint {
@@ -26,6 +30,8 @@ public class WebServerEntryPoint implements IEntryPoint {
         webServerThread = new Thread(webServer, "Web Server Host");
         webServerThread.setDaemon(true);
         webServerThread.start();
+
+        BotAPI.eventBus.registerEventHandler(this);
     }
 
     @Override
@@ -39,6 +45,37 @@ public class WebServerEntryPoint implements IEntryPoint {
             catch (InterruptedException e) {
                 e.printStackTrace();
                 break;
+            }
+        }
+    }
+
+    @EventHandler
+    public void commandEvent(UserMessageEvent event) {
+        if (event.message.startsWith("!")) {
+            String command = null;
+            if (event.message.indexOf(" ") >= 0) {
+                command = event.message.substring(1, event.message.indexOf(" "));
+            }
+            else {
+                command = event.message.substring(1);
+            }
+
+            if (command.equalsIgnoreCase("json")) {
+                if (event.message.indexOf(" ") < 0) {
+                    BotAPI.serverConnection.addToSendQueue("PRIVMSG " + event.channel + " :" + event.user.getUsername() + ": Requires a parameter");
+                    return;
+                }
+                try {
+                    new JSONObject(event.message.substring(event.message.indexOf(" ") + 1));
+                    BotAPI.serverConnection.addToSendQueue("PRIVMSG " + event.channel + " :" + event.user.getUsername() + ": Parsing succeeded!");
+                }
+                catch (Throwable e) {
+                    BotAPI.serverConnection.addToSendQueue("PRIVMSG " + event.channel + " :" + event.user.getUsername() + ": Error parsing JSON: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+            else {
+                BotAPI.serverConnection.addToSendQueue("PRIVMSG " + event.channel + " :" + event.user.getUsername() + ": Unknown command");
             }
         }
     }
