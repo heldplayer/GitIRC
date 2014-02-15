@@ -8,44 +8,80 @@ import java.io.IOException;
 import java.net.SocketException;
 import java.util.logging.Level;
 
+import me.heldplayer.web.server.RequestSource;
+import me.heldplayer.web.server.WebServerEntryPoint;
+
 public abstract class WebResponse {
 
-    private ByteArrayOutputStream baos;
-    protected DataOutputStream out;
+    private ByteArrayOutputStream headerBytes;
+    protected DataOutputStream header;
+    private ByteArrayOutputStream bodyBytes;
+    protected DataOutputStream body;
 
     public WebResponse() throws IOException {
-        this.baos = new ByteArrayOutputStream();
-        this.out = new DataOutputStream(this.baos);
+        this.headerBytes = new ByteArrayOutputStream();
+        this.header = new DataOutputStream(this.headerBytes);
+        this.bodyBytes = new ByteArrayOutputStream();
+        this.body = new DataOutputStream(this.bodyBytes);
     }
 
-    public abstract WebResponse writeResponse(RequestFlags flags) throws IOException;
+    public abstract WebResponse writeResponse(RequestSource source) throws IOException;
 
-    public void flush(DataOutputStream stream) throws IOException {
-        ByteArrayInputStream in = null;
+    public void flush(RequestSource source, DataOutputStream stream) throws IOException {
+        ByteArrayInputStream header = null;
+        ByteArrayInputStream body = null;
         try {
-            in = new ByteArrayInputStream(this.baos.toByteArray());
-            while (in.available() > 0) {
-                int bits = in.read();
+            byte[] bodyBytes = this.bodyBytes.toByteArray();
+
+            this.header.writeBytes("Content-Length: " + bodyBytes.length + "\r\n");
+            this.header.writeBytes("\r\n");
+            header = new ByteArrayInputStream(this.headerBytes.toByteArray());
+            while (header.available() > 0) {
+                int bits = header.read();
                 stream.write(bits);
+            }
+
+            if (source == null || source.method.hasBody) {
+                body = new ByteArrayInputStream(bodyBytes);
+                while (body.available() > 0) {
+                    int bits = body.read();
+                    stream.write(bits);
+                }
             }
         }
         catch (SocketException ex) {
-            RunnableWebserver.log.log(Level.WARNING, "Tried displaying page to a client, but the client closed the connection!", ex);
+            WebServerEntryPoint.log.log(Level.WARNING, "Tried displaying page to a client, but the client closed the connection!", ex);
         }
         catch (IOException ex) {
-            RunnableWebserver.log.log(Level.WARNING, "Tried displaying page to a client, but an error occoured", ex);
+            WebServerEntryPoint.log.log(Level.WARNING, "Tried displaying page to a client, but an error occoured", ex);
         }
         finally {
             try {
-                this.out.close();
+                if (header != null) {
+                    header.close();
+                }
             }
             catch (IOException ex) {}
             try {
-                this.baos.close();
+                this.header.close();
             }
             catch (IOException ex) {}
             try {
-                in.close();
+                this.headerBytes.close();
+            }
+            catch (IOException ex) {}
+            try {
+                if (body != null) {
+                    body.close();
+                }
+            }
+            catch (IOException ex) {}
+            try {
+                this.body.close();
+            }
+            catch (IOException ex) {}
+            try {
+                this.bodyBytes.close();
             }
             catch (IOException ex) {}
         }

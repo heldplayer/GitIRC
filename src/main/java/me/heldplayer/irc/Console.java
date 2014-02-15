@@ -38,6 +38,7 @@ class Console implements IConsole {
         if (this.logfileHandler != null) {
             this.logfileHandler.close();
         }
+        IRCBotLauncher.unloadPlugins();
         System.exit(0);
     }
 

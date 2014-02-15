@@ -3,6 +3,8 @@ package me.heldplayer.web.server.internal;
 
 import java.io.IOException;
 
+import me.heldplayer.web.server.RequestSource;
+
 public class ErrorResponse extends WebResponse {
 
     private ErrorType type;
@@ -13,18 +15,15 @@ public class ErrorResponse extends WebResponse {
     }
 
     @Override
-    public WebResponse writeResponse(RequestFlags flags) throws IOException {
-        this.out.writeBytes("HTTP/1.0 " + this.type.code + " " + this.type.reason + "\r\n");
-        this.out.writeBytes("Connection: close\r\n");
-        this.out.writeBytes("Server: ModeratorGui\r\n");
-        this.out.writeBytes("Content-Type: text/plain\r\n");
-        this.out.writeBytes("\r\n");
+    public WebResponse writeResponse(RequestSource source) throws IOException {
+        this.header.writeBytes("HTTP/1.0 " + this.type.code + " " + this.type.reason + "\r\n");
+        this.header.writeBytes("Connection: close\r\n");
+        this.header.writeBytes("Server: ModeratorGui\r\n");
+        this.header.writeBytes("Content-Type: text/plain\r\n");
 
-        if (flags.method.hasBody) {
-            this.out.writeBytes("Error code " + this.type.code + " - " + this.type.reason + "\r\n");
-            this.out.writeBytes("Unable to load the requested page :(\r\n");
-            this.out.writeBytes("\r\n");
-            this.out.writeBytes("Please try again later\r\n");
+        if (source == null || source.method.hasBody) {
+            this.body.writeBytes("Error code " + this.type.code + " - " + this.type.reason + "\r\n");
+            this.body.writeBytes("Unable to finish request\r\n");
         }
 
         return this;

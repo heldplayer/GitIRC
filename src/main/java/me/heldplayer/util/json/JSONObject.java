@@ -1,6 +1,10 @@
 
 package me.heldplayer.util.json;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,7 +13,23 @@ public class JSONObject {
     public Map<String, Object> values;
 
     public JSONObject(String input) {
-        this(new JSONParser(input));
+        this();
+
+        this.load(new JSONParser(input));
+    }
+
+    public JSONObject(File file) throws FileNotFoundException {
+        this();
+
+        FileReader reader;
+        this.load(new JSONParser(reader = new FileReader(file)));
+        try {
+            reader.close();
+        }
+        catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     public JSONObject() {
@@ -18,7 +38,10 @@ public class JSONObject {
 
     JSONObject(JSONParser parser) {
         this();
+        this.load(parser);
+    }
 
+    void load(JSONParser parser) {
         char c = parser.readNormalChar();
 
         if (c != '{') {
@@ -70,6 +93,85 @@ public class JSONObject {
                 throw new JSONException("Expected ',', ';' or '}' but got '" + c + "' at " + parser.createErrorLocation());
             }
         }
+    }
+
+    public Object getValue(String key) {
+        return this.values.get(key);
+    }
+
+    public String getString(String key) {
+        Object value = this.getValue(key);
+        if (value != null) {
+            if (value instanceof String) {
+                return (String) value;
+            }
+            else if (value.equals(null)) {
+                return "null";
+            }
+
+            throw new JSONException("Tried reading a String, got " + value.getClass().getSimpleName());
+        }
+        return null;
+    }
+
+    public boolean getBoolean(String key) {
+        Object value = this.getValue(key);
+        if (value != null) {
+            if (value instanceof Boolean) {
+                return ((Boolean) value).booleanValue();
+            }
+            else if (value.equals(null)) {
+                return false;
+            }
+
+            throw new JSONException("Tried reading a Boolean, got " + value.getClass().getSimpleName());
+        }
+        return false;
+    }
+
+    public Number getNumber(String key) {
+        Object value = this.getValue(key);
+        if (value != null) {
+            if (value instanceof Number) {
+                return (Number) value;
+            }
+            else if (value.equals(null)) {
+                return 0;
+            }
+
+            throw new JSONException("Tried reading a Number, got " + value.getClass().getSimpleName());
+        }
+        return 0;
+    }
+
+    public JSONObject getObject(String key) {
+        Object value = this.getValue(key);
+        if (value != null) {
+            if (value instanceof JSONObject) {
+                return (JSONObject) value;
+            }
+            else if (value.equals(null)) {
+                return null;
+            }
+
+            throw new JSONException("Tried reading an Object, got " + value.getClass().getSimpleName());
+        }
+        return null;
+    }
+
+    public JSONArray getArray(String key) {
+        Object value = this.getValue(key);
+        if (value != null) {
+            if (value instanceof JSONArray) {
+                return (JSONArray) value;
+            }
+            else if (value.equals(null)) {
+                return null;
+            }
+
+            throw new JSONException("Tried reading an Array, got " + value.getClass().getSimpleName());
+        }
+        return null;
     }
 
 }

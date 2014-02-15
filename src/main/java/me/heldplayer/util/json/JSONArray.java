@@ -55,4 +55,87 @@ public class JSONArray {
         }
     }
 
+    public int size() {
+        return this.values.size();
+    }
+
+    public Object getValue(int index) {
+        return this.values.get(index);
+    }
+
+    public String getString(int index) {
+        Object value = this.getValue(index);
+        if (value != null) {
+            if (value instanceof String) {
+                return (String) value;
+            }
+            else if (value.equals(null)) {
+                return "null";
+            }
+
+            throw new JSONException("Tried reading a String, got " + value.getClass().getSimpleName());
+        }
+        return null;
+    }
+
+    public boolean getBoolean(int index) {
+        Object value = this.getValue(index);
+        if (value != null) {
+            if (value instanceof Boolean) {
+                return ((Boolean) value).booleanValue();
+            }
+            else if (value.equals(null)) {
+                return false;
+            }
+
+            throw new JSONException("Tried reading a Boolean, got " + value.getClass().getSimpleName());
+        }
+        return false;
+    }
+
+    public Number getNumber(int index) {
+        Object value = this.getValue(index);
+        if (value != null) {
+            if (value instanceof Number) {
+                return (Number) value;
+            }
+            else if (value.equals(null)) {
+                return 0;
+            }
+
+            throw new JSONException("Tried reading a Number, got " + value.getClass().getSimpleName());
+        }
+        return 0;
+    }
+
+    public JSONObject getObject(int index) {
+        Object value = this.getValue(index);
+        if (value != null) {
+            if (value instanceof JSONObject) {
+                return (JSONObject) value;
+            }
+            else if (value.equals(null)) {
+                return null;
+            }
+
+            throw new JSONException("Tried reading an Object, got " + value.getClass().getSimpleName());
+        }
+        return null;
+    }
+
+    public JSONArray getArray(int index) {
+        Object value = this.getValue(index);
+        if (value != null) {
+            if (value instanceof JSONArray) {
+                return (JSONArray) value;
+            }
+            else if (value.equals(null)) {
+                return null;
+            }
+
+            throw new JSONException("Tried reading an Array, got " + value.getClass().getSimpleName());
+        }
+        return null;
+    }
+
 }

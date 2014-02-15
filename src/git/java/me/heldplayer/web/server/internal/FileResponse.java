@@ -8,6 +8,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import me.heldplayer.web.server.RequestSource;
+
 public class FileResponse extends WebResponse {
 
     private File file;
@@ -18,24 +20,23 @@ public class FileResponse extends WebResponse {
     }
 
     @Override
-    public WebResponse writeResponse(RequestFlags flags) throws IOException {
+    public WebResponse writeResponse(RequestSource source) throws IOException {
         Extension extension = Extension.fromFileName(this.file.getName());
 
-        this.out.writeBytes("HTTP/1.0 200 OK\r\n");
-        this.out.writeBytes("Connection: close\r\n");
-        this.out.writeBytes("Server: ModeratorGui\r\n");
-        this.out.writeBytes("Content-Type: " + extension.type + "\r\n");
-        this.out.writeBytes("\r\n");
+        this.header.writeBytes("HTTP/1.0 200 OK\r\n");
+        this.header.writeBytes("Connection: close\r\n");
+        this.header.writeBytes("Server: ModeratorGui\r\n");
+        this.header.writeBytes("Content-Type: " + extension.type + "\r\n");
 
         FileInputStream input = new FileInputStream(this.file);
 
-        if (flags.method.hasBody) {
+        if (source.method.hasBody) {
             while (true) {
                 int b = input.read();
                 if (b == -1) {
                     break;
                 }
-                this.out.write(b);
+                this.body.write(b);
             }
         }
 

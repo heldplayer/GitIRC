@@ -6,11 +6,12 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.logging.Logger;
+
+import me.heldplayer.web.server.WebServerEntryPoint;
+import me.heldplayer.web.server.internal.security.AccessManager;
 
 public class RunnableWebserver implements Runnable {
 
-    protected static Logger log = Logger.getLogger("Web");
     public static RunnableWebserver instance;
 
     private ServerSocket serverSocket = null;
@@ -23,6 +24,8 @@ public class RunnableWebserver implements Runnable {
     private ThreadGroup threads;
     private ArrayList<RunnableHttpResponse> runningRequests;
 
+    public AccessManager accessManager;
+
     public RunnableWebserver(int port, String host) {
         super();
 
@@ -32,6 +35,8 @@ public class RunnableWebserver implements Runnable {
 
         this.threads = new ThreadGroup("HTTP Responses");
         this.runningRequests = new ArrayList<RunnableHttpResponse>();
+
+        this.accessManager = new AccessManager();
     }
 
     @SuppressWarnings("deprecation")
@@ -56,12 +61,16 @@ public class RunnableWebserver implements Runnable {
             this.serverSocket.close();
         }
         catch (IOException e) {}
+
+        this.accessManager.cleanup();
+
+        instance = null;
     }
 
     @Override
     public void run() {
         try {
-            RunnableWebserver.log.info("Starting server on " + (this.host != null && !this.host.isEmpty() ? this.host : "*") + ":" + this.port);
+            WebServerEntryPoint.log.info("Starting server on " + (this.host != null && !this.host.isEmpty() ? this.host : "*") + ":" + this.port);
 
             InetAddress adress = null;
 
@@ -72,9 +81,9 @@ public class RunnableWebserver implements Runnable {
             this.serverSocket = new ServerSocket(this.port, 0, adress);
         }
         catch (Exception ex) {
-            RunnableWebserver.log.severe("**** FAILED TO BIND TO PORT");
-            RunnableWebserver.log.severe("The exception was: " + ex.toString());
-            RunnableWebserver.log.severe("Perhaps something is already running on that port?");
+            WebServerEntryPoint.log.severe("**** FAILED TO BIND TO PORT");
+            WebServerEntryPoint.log.severe("The exception was: " + ex.toString());
+            WebServerEntryPoint.log.severe("Perhaps something is already running on that port?");
             return;
         }
 
