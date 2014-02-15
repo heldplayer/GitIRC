@@ -233,7 +233,7 @@ class ServerConnection implements IServerConnection {
 
             synchronized (this.sendQueue) {
                 Iterator<String> iterator = this.sendQueue.iterator();
-                long incremental = 0L;
+                int count = 0;
                 while (iterator.hasNext()) {
                     String command = iterator.next();
 
@@ -245,10 +245,18 @@ class ServerConnection implements IServerConnection {
                     log.log(Level.INFO, "<- " + command);
 
                     try {
-                        Thread.sleep(250L * incremental);
+                        if (count > 2) {
+                            Thread.sleep(1000L);
+                        }
+                        else if (count > 5) {
+                            Thread.sleep(2000L);
+                        }
+                        else if (count > 10) {
+                            Thread.sleep(3000L);
+                        }
                     }
                     catch (InterruptedException e) {}
-                    incremental++;
+                    count++;
                     this.lastRead = System.currentTimeMillis();
                 }
                 this.sendQueue.clear();
