@@ -104,6 +104,11 @@ class ServerConnection implements IServerConnection {
         else if (event.message.command.equals("ERROR")) {
             this.connected = this.initialized = false;
             BotAPI.eventBus.postEvent(new ServerDisconnectedEvent(this));
+
+            Thread reconnectThread = new Thread(new RunnableReconnectTimeout(this));
+            reconnectThread.setName("Reconnect Thread");
+            reconnectThread.setDaemon(true);
+            reconnectThread.start();
         }
         else if (event.message.command.equals("001")) {
             this.initialized = true;
@@ -184,13 +189,6 @@ class ServerConnection implements IServerConnection {
             catch (IOException e) {
                 e.printStackTrace();
             }
-
-            if (!this.shouldQuit) {
-                Thread reconnectThread = new Thread(new RunnableReconnectTimeout(this));
-                reconnectThread.setName("Reconnect Thread");
-                reconnectThread.setDaemon(true);
-                reconnectThread.start();
-            }
         }
     }
 
@@ -231,6 +229,12 @@ class ServerConnection implements IServerConnection {
             if (System.currentTimeMillis() - this.lastRead > 300000L) {
                 this.disconnect("Connection timed out");
                 BotAPI.eventBus.postEvent(new ServerDisconnectedEvent(this));
+
+                Thread reconnectThread = new Thread(new RunnableReconnectTimeout(this));
+                reconnectThread.setName("Reconnect Thread");
+                reconnectThread.setDaemon(true);
+                reconnectThread.start();
+
                 return;
             }
 
@@ -249,6 +253,7 @@ class ServerConnection implements IServerConnection {
 
                     if (command.startsWith("QUIT")) {
                         BotAPI.eventBus.postEvent(new ServerDisconnectedEvent(this));
+                        return;
                     }
 
                     try {
