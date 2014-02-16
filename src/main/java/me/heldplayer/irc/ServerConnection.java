@@ -36,6 +36,7 @@ class ServerConnection implements IServerConnection {
     private boolean connected;
     private boolean initialized;
     private boolean shouldQuit;
+    private boolean isDisconnecting;
 
     private Network network;
 
@@ -190,7 +191,9 @@ class ServerConnection implements IServerConnection {
     @EventHandler
     public void onServerDisconnected(ServerDisconnectedEvent event) {
         if (event.connection == this) {
-            this.commitReader.running = false;
+            if (this.commitReader != null) {
+                this.commitReader.running = false;
+            }
             try {
                 this.in.close();
                 this.out.close();
@@ -200,10 +203,10 @@ class ServerConnection implements IServerConnection {
                 e.printStackTrace();
             }
 
-            Thread consoleReader = new Thread(new RunnableReconnectTimeout(this));
-            consoleReader.setName("Reconnect Thread");
-            consoleReader.setDaemon(true);
-            consoleReader.start();
+            Thread reconnectThread = new Thread(new RunnableReconnectTimeout(this));
+            reconnectThread.setName("Reconnect Thread");
+            reconnectThread.setDaemon(true);
+            reconnectThread.start();
         }
     }
 
@@ -240,7 +243,7 @@ class ServerConnection implements IServerConnection {
             throw new RuntimeException("Error parsing incoming data", e);
         }
 
-        if (this.connected) {
+        if (this.connected || this.isDisconnecting) {
             if (System.currentTimeMillis() - this.lastRead > 300000L) {
                 this.disconnect("Connection timed out");
                 BotAPI.eventBus.postEvent(new ServerDisconnectedEvent(this));
@@ -259,6 +262,10 @@ class ServerConnection implements IServerConnection {
                         BotAPI.console.log(Level.FINER, "<- " + command);
                     }
                     log.log(Level.INFO, "<- " + command);
+
+                    if (command.startsWith("QUIT")) {
+                        BotAPI.eventBus.postEvent(new ServerDisconnectedEvent(this));
+                    }
 
                     try {
                         if (count > 2) {
@@ -279,13 +286,9 @@ class ServerConnection implements IServerConnection {
             }
         }
 
+        this.isDisconnecting = false;
+
         if (this.shouldQuit) {
-            try {
-                Thread.sleep(1000L);
-            }
-            catch (InterruptedException e) {
-                e.printStackTrace();
-            }
             BotAPI.console.shutdown();
         }
     }
@@ -314,12 +317,14 @@ class ServerConnection implements IServerConnection {
     public void disconnect() {
         this.sendQueue.add("QUIT");
         this.connected = this.initialized = false;
+        this.isDisconnecting = true;
     }
 
     @Override
     public void disconnect(String reason) {
         this.sendQueue.add("QUIT :" + reason);
         this.connected = this.initialized = false;
+        this.isDisconnecting = true;
     }
 
     @Override

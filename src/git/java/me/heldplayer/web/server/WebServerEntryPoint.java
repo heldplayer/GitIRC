@@ -2,6 +2,7 @@
 package me.heldplayer.web.server;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.logging.Logger;
 
 import me.heldplayer.irc.api.BotAPI;
@@ -11,12 +12,17 @@ import me.heldplayer.irc.api.event.EventHandler;
 import me.heldplayer.irc.api.event.user.UserMessageEvent;
 import me.heldplayer.util.json.JSONObject;
 import me.heldplayer.web.server.event.AccessManagerInitEvent;
+import me.heldplayer.web.server.event.HttpRequestEvent;
+import me.heldplayer.web.server.internal.EmptyResponse;
+import me.heldplayer.web.server.internal.ErrorResponse.ErrorType;
+import me.heldplayer.web.server.internal.QueryString;
 import me.heldplayer.web.server.internal.RunnableWebserver;
 import me.heldplayer.web.server.internal.security.AccessManager;
-import me.heldplayer.web.server.internal.security.require.AllowAll;
-import me.heldplayer.web.server.internal.security.require.DenyAll;
+import me.heldplayer.web.server.internal.security.require.AllowFrom;
+import me.heldplayer.web.server.internal.security.require.BasicAuth;
+import me.heldplayer.web.server.internal.security.require.DenyFrom;
+import me.heldplayer.web.server.internal.security.require.IpRangeRule;
 import me.heldplayer.web.server.internal.security.require.RequireAll;
-import me.heldplayer.web.server.internal.security.require.RequireIp;
 import me.heldplayer.web.server.internal.security.require.RequireNone;
 import me.heldplayer.web.server.internal.security.require.RequireOne;
 
@@ -74,13 +80,42 @@ public class WebServerEntryPoint implements IEntryPoint {
     }
 
     @EventHandler
+    public void onHttpRequest(HttpRequestEvent event) {
+        if (event.source.path.equals("/github")) {
+            QueryString query = new QueryString(event.source.body);
+            if (query.values.containsKey("payload")) {
+                try {
+                    System.out.println("payload=" + query.values.get("payload"));
+                    JSONObject obj = new JSONObject(query.values.get("payload"));
+                }
+                catch (Throwable e) {
+                    e.printStackTrace();
+                    event.error = ErrorType.InternalServerError;
+                }
+
+                try {
+                    event.response = new EmptyResponse();
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                    event.error = ErrorType.InternalServerError;
+                }
+            }
+            else {
+                event.error = ErrorType.BadRequest;
+            }
+        }
+    }
+
+    @EventHandler
     public void onAccessManagerInit(AccessManagerInitEvent event) {
-        AccessManager.registerRule("allowAll", AllowAll.class);
-        AccessManager.registerRule("denyAll", DenyAll.class);
+        AccessManager.registerRule("allowFrom", AllowFrom.class);
+        AccessManager.registerRule("denyFrom", DenyFrom.class);
         AccessManager.registerRule("requireAll", RequireAll.class);
         AccessManager.registerRule("requireOne", RequireOne.class);
         AccessManager.registerRule("requireNone", RequireNone.class);
-        AccessManager.registerRule("requireIp", RequireIp.class);
+        AccessManager.registerRule("ipRange", IpRangeRule.class);
+        AccessManager.registerRule("basicAuth", BasicAuth.class);
     }
 
     @EventHandler

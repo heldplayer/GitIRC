@@ -278,6 +278,7 @@ public final class IRCBotLauncher {
 
         if (BotAPI.serverConnection.isConnected()) {
             BotAPI.serverConnection.disconnect("Rehashing...");
+            BotAPI.serverConnection.processQueue();
         }
 
         BotAPI.eventBus.cleanup();

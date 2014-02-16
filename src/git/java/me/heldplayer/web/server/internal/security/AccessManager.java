@@ -76,6 +76,10 @@ public class AccessManager {
                 }
             }
             else {
+                File dir = new File(WebServerEntryPoint.webDirectory, currentPath);
+                if (!dir.exists()) {
+                    continue;
+                }
                 File file = new File(WebServerEntryPoint.webDirectory, currentPath + "access.cfg");
                 rule = new AccessConfigRule(file, currentPath);
                 this.configRules.put(currentPath, rule);

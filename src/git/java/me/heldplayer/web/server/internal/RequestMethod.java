@@ -1,16 +1,18 @@
+
 package me.heldplayer.web.server.internal;
 
 public enum RequestMethod {
-    NULL(false, "null"),
-    GET(true, "get"),
-    POST(true, "post"),
-    HEAD(false, "head");
+
+    NULL(false, false, "null"),
+    GET(true, false, "get"),
+    POST(true, true, "post"),
+    HEAD(false, false, "head");
 
     public final boolean hasBody;
     private final String name;
 
-    private RequestMethod(boolean hasBody, String name) {
-        this.hasBody = hasBody;
+    private RequestMethod(boolean hasSendBody, boolean hasReceiveBody, String name) {
+        this.hasBody = hasSendBody;
         this.name = name;
     }
 
@@ -22,4 +24,5 @@ public enum RequestMethod {
         }
         return NULL;
     }
+
 }

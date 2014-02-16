@@ -25,7 +25,7 @@ public class FileResponse extends WebResponse {
 
         this.header.writeBytes("HTTP/1.0 200 OK\r\n");
         this.header.writeBytes("Connection: close\r\n");
-        this.header.writeBytes("Server: ModeratorGui\r\n");
+        this.header.writeBytes("Server: HeldBot\r\n");
         this.header.writeBytes("Content-Type: " + extension.type + "\r\n");
 
         FileInputStream input = new FileInputStream(this.file);

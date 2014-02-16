@@ -8,11 +8,15 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.logging.Level;
 
+import me.heldplayer.irc.api.BotAPI;
 import me.heldplayer.web.server.RequestSource;
 import me.heldplayer.web.server.WebServerEntryPoint;
+import me.heldplayer.web.server.event.HttpRequestEvent;
 import me.heldplayer.web.server.internal.ErrorResponse.ErrorType;
 
 public class RunnableHttpResponse implements Runnable {
@@ -38,8 +42,7 @@ public class RunnableHttpResponse implements Runnable {
                 this.out = new DataOutputStream(this.socket.getOutputStream());
                 this.in = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
 
-                TreeMap<Integer, String> input = new TreeMap<Integer, String>();
-                Integer i = 0;
+                ArrayList<String> input = new ArrayList<String>();
 
                 while (!this.in.ready()) {
                     this.timeout++;
@@ -57,7 +60,10 @@ public class RunnableHttpResponse implements Runnable {
 
                 while (this.in.ready()) {
                     String line = this.in.readLine();
-                    input.put(i++, line);
+                    if (line.isEmpty()) {
+                        break;
+                    }
+                    input.add(line);
                 }
 
                 if (input.size() <= 0) {
@@ -66,7 +72,7 @@ public class RunnableHttpResponse implements Runnable {
                     break main;
                 }
 
-                String[] split = input.get(0).split(" ");
+                String[] split = input.remove(0).split(" ");
                 String method = split[0];
 
                 location = split[1];
@@ -102,7 +108,27 @@ public class RunnableHttpResponse implements Runnable {
 
                 String version = split[2];
 
-                source = new RequestSource(this.socket.getInetAddress(), RequestMethod.fromString(method), location);
+                TreeMap<String, String> headers = new TreeMap<String, String>();
+
+                for (String line : input) {
+                    String[] headerSplit = line.split(": ", 2);
+                    if (headerSplit.length < 2) {
+                        headers.put(headerSplit[0], "");
+                    }
+                    else {
+                        headers.put(headerSplit[0], headerSplit[1]);
+                    }
+                }
+
+                source = new RequestSource(this.socket.getInetAddress(), RequestMethod.fromString(method), headers, location);
+
+                if (headers.containsKey("Content-Length")) {
+                    Integer length = Integer.parseInt(headers.get("Content-Length"));
+
+                    char[] data = new char[length];
+                    this.in.read(data);
+                    source.body = new String(data);//URLDecoder.decode(new String(data), "UTF-8");
+                }
 
                 if (source.method == RequestMethod.NULL) {
                     new ErrorResponse(ErrorType.NotImplemented).writeResponse(source).flush(source, this.out);
@@ -122,7 +148,25 @@ public class RunnableHttpResponse implements Runnable {
                 if (!RunnableWebserver.instance.accessManager.canView(splitLocation, source)) {
                     WebServerEntryPoint.log.info(String.format("Denied access to view '%s' from '%s'", source.path, source.address.getHostAddress()));
 
+                    for (Entry<String, String> entry : headers.entrySet()) {
+                        WebServerEntryPoint.log.info(String.format("%s: %s", entry.getKey(), entry.getValue()));
+                    }
+
                     new ErrorResponse(ErrorType.Forbidden).writeResponse(source).flush(source, this.out);
+
+                    break main;
+                }
+
+                HttpRequestEvent event = new HttpRequestEvent(source);
+                BotAPI.eventBus.postEvent(event);
+
+                if (event.response != null) {
+                    event.response.writeResponse(source).flush(source, this.out);
+
+                    break main;
+                }
+                else if (event.error != null) {
+                    new ErrorResponse(event.error).writeResponse(source).flush(source, this.out);
 
                     break main;
                 }
