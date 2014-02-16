@@ -101,7 +101,7 @@ public class WebServerEntryPoint implements IEntryPoint {
             connection.setDoOutput(true);
 
             DataOutputStream out = new DataOutputStream(connection.getOutputStream());
-            out.writeBytes(param);
+            out.writeBytes("url=" + param);
             out.flush();
             out.close();
 
@@ -138,7 +138,7 @@ public class WebServerEntryPoint implements IEntryPoint {
 
                             String url = this.createGitIO(commit.getString("url"));
 
-                            String output = Format.BOLD + "%s" + Format.RESET + "/%s - " + Format.PURPLE + "%s" + Format.RESET + ": %s +" + Format.DARK_GREEN + "%s" + Format.RESET + " ~" + Format.ORANGE + "%s" + Format.RESET + " -" + Format.RED + "%s %s";
+                            String output = Format.BOLD + "%s" + Format.RESET + "/%s - " + Format.PURPLE + "%s" + Format.RESET + ": %s +" + Format.DARK_GREEN + "%s" + Format.RESET + " ~" + Format.ORANGE + "%s" + Format.RESET + " -" + Format.RED + "%s" + Format.RESET + " http://git.io/%s";
                             output = String.format(output, repository, ref, commit.getObject("author").getString("name"), message, commit.getArray("added").size(), commit.getArray("modified").size(), commit.getArray("removed").size(), url);
 
                             BotAPI.serverConnection.addToSendQueue("PRIVMSG " + this.channel + " :" + output);
