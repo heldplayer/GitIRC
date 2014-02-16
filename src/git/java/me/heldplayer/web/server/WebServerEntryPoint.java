@@ -123,7 +123,6 @@ public class WebServerEntryPoint implements IEntryPoint {
             if (query.values.containsKey("payload") && event.source.headers.containsKey("X-GitHub-Event")) {
                 try {
                     String eventType = event.source.headers.get("X-GitHub-Event");
-                    System.out.println("payload=" + query.values.get("payload"));
                     JSONObject obj = new JSONObject(query.values.get("payload"));
 
                     if (eventType.equals("push")) {
@@ -143,6 +142,10 @@ public class WebServerEntryPoint implements IEntryPoint {
 
                             BotAPI.serverConnection.addToSendQueue("PRIVMSG " + this.channel + " :" + output);
                         }
+                    }
+                    else {
+                        System.out.println("event=" + eventType);
+                        System.out.println("payload=" + query.values.get("payload"));
                     }
                 }
                 catch (Throwable e) {

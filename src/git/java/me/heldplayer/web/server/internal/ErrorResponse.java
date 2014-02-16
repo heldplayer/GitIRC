@@ -18,7 +18,7 @@ public class ErrorResponse extends WebResponse {
     public WebResponse writeResponse(RequestSource source) throws IOException {
         this.header.writeBytes("HTTP/1.0 " + this.type.code + " " + this.type.reason + "\r\n");
         this.header.writeBytes("Connection: close\r\n");
-        this.header.writeBytes("Server: ModeratorGui\r\n");
+        this.header.writeBytes("Server: HeldBot\r\n");
         this.header.writeBytes("Content-Type: text/plain\r\n");
 
         if (source == null || source.method.hasBody) {
