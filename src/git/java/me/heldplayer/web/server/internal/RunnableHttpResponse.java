@@ -126,8 +126,19 @@ public class RunnableHttpResponse implements Runnable {
                     Integer length = Integer.parseInt(headers.get("Content-Length"));
 
                     char[] data = new char[length];
-                    this.in.read(data);
-                    source.body = new String(data);//URLDecoder.decode(new String(data), "UTF-8");
+                    int i = 0;
+                    long lastRead = System.currentTimeMillis();
+                    while (i < length) {
+                        if (this.in.ready()) {
+                            data[i] = (char) this.in.read();
+                            i++;
+                            lastRead = System.currentTimeMillis();
+                        }
+                        if (lastRead + 10000L < System.currentTimeMillis()) {
+                            throw new IOException("Connection timed out");
+                        }
+                    }
+                    source.body = new String(data);
                 }
 
                 if (source.method == RequestMethod.NULL) {

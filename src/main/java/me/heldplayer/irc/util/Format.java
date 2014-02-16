@@ -1,22 +1,22 @@
 
 package me.heldplayer.irc.util;
 
-public enum Colors {
+public enum Format {
 
     BOLD("\u0002", false),
     UNDERLINE("\u001f", false),
     REVERSE("\u0016", false),
     RESET("\u000f", false),
-    WHITE("0", true),
-    BLACK("1", true),
-    DARK_BLUE("2", true),
-    DARK_GREEN("3", true),
-    RED("4", true),
-    BROWN("5", true),
-    PURPLE("6", true),
-    ORANGE("7", true),
-    YELLOW("8", true),
-    GREEN("9", true),
+    WHITE("00", true),
+    BLACK("01", true),
+    DARK_BLUE("02", true),
+    DARK_GREEN("03", true),
+    RED("04", true),
+    BROWN("05", true),
+    PURPLE("06", true),
+    ORANGE("07", true),
+    YELLOW("08", true),
+    GREEN("09", true),
     TEAL("10", true),
     CYAN("11", true),
     BLUE("12", true),
@@ -27,12 +27,12 @@ public enum Colors {
     public final String code;
     public final boolean isColor;
 
-    private Colors(String code, boolean isColor) {
+    private Format(String code, boolean isColor) {
         this.code = code;
         this.isColor = isColor;
     }
 
-    public String combine(Colors background) {
+    public String combine(Format background) {
         if (this.isColor && background.isColor) {
             return this.toString() + "," + background.code;
         }

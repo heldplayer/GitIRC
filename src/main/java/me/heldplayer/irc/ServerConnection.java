@@ -97,7 +97,7 @@ class ServerConnection implements IServerConnection {
 
                 Thread commitReader = new Thread(this.commitReader);
                 commitReader.setName("Commit Reader");
-                commitReader.start();
+                //commitReader.start();
             }
             else {
                 BotAPI.console.log(Level.WARNING, "Expected 1 parameter for command /git");
