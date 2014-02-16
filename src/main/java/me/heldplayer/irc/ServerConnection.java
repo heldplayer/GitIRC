@@ -50,8 +50,6 @@ class ServerConnection implements IServerConnection {
     private String localHost;
     private String nickname;
 
-    private RunnableCommitReader commitReader;
-
     public ServerConnection(String host, int port, String localHost) {
         this.sendQueue = Collections.synchronizedList(new LinkedList<String>());
         this.connected = false;
@@ -91,20 +89,7 @@ class ServerConnection implements IServerConnection {
 
     @EventHandler
     public void onCommand(CommandEvent event) {
-        if (event.command.equals("GIT")) {
-            if (event.params.length == 1) {
-                this.commitReader = new RunnableCommitReader(event.params[0]);
-
-                Thread commitReader = new Thread(this.commitReader);
-                commitReader.setName("Commit Reader");
-                //commitReader.start();
-            }
-            else {
-                BotAPI.console.log(Level.WARNING, "Expected 1 parameter for command /git");
-            }
-            event.setHandled();
-        }
-        else if (event.command.equals("REHASH")) {
+        if (event.command.equals("REHASH")) {
             RunnableMainThread.instance.shouldReset = true;
             event.setHandled();
         }
@@ -191,9 +176,6 @@ class ServerConnection implements IServerConnection {
     @EventHandler
     public void onServerDisconnected(ServerDisconnectedEvent event) {
         if (event.connection == this) {
-            if (this.commitReader != null) {
-                this.commitReader.running = false;
-            }
             try {
                 this.in.close();
                 this.out.close();
@@ -203,10 +185,12 @@ class ServerConnection implements IServerConnection {
                 e.printStackTrace();
             }
 
-            Thread reconnectThread = new Thread(new RunnableReconnectTimeout(this));
-            reconnectThread.setName("Reconnect Thread");
-            reconnectThread.setDaemon(true);
-            reconnectThread.start();
+            if (!this.shouldQuit) {
+                Thread reconnectThread = new Thread(new RunnableReconnectTimeout(this));
+                reconnectThread.setName("Reconnect Thread");
+                reconnectThread.setDaemon(true);
+                reconnectThread.start();
+            }
         }
     }
 
