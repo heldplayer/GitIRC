@@ -222,7 +222,7 @@ class ServerConnection implements IServerConnection {
             }
         }
         catch (IOException e) {
-            throw new RuntimeException("Error parsing incoming data", e);
+            //throw new RuntimeException("Error parsing incoming data", e);
         }
 
         if (this.connected || this.isDisconnecting) {

@@ -125,7 +125,10 @@ public class WebServerEntryPoint implements IEntryPoint {
                     String eventType = event.source.headers.get("X-GitHub-Event");
                     JSONObject obj = new JSONObject(query.values.get("payload"));
 
-                    if (eventType.equals("push")) {
+                    if (eventType.equals("ping")) {
+                        BotAPI.serverConnection.addToSendQueue("PRIVMSG " + this.channel + " :Zen: " + obj.getString("zen"));
+                    }
+                    else if (eventType.equals("push")) {
                         JSONArray commits = obj.getArray("commits");
                         String repository = obj.getObject("repository").getString("name");
                         String ref = obj.getString("ref").substring(11);
@@ -143,9 +146,37 @@ public class WebServerEntryPoint implements IEntryPoint {
                             BotAPI.serverConnection.addToSendQueue("PRIVMSG " + this.channel + " :" + output);
                         }
                     }
+                    else if (eventType.equals("issues")) {
+                        String repository = obj.getObject("repository").getString("name");
+
+                        JSONObject issue = obj.getObject("issue");
+
+                        String issuer = issue.getObject("user").getString("login");
+
+                        String action = obj.getString("action");
+                        String actionString = "";
+
+                        if (action.equals("opened")) {
+                            actionString = "openend a new issue";
+                        }
+                        else {
+                            actionString = action + " an issue";
+                        }
+
+                        String url = this.createGitIO(issue.getString("html_url"));
+
+                        String output = Format.BOLD + "%s" + Format.RESET + " - " + Format.PURPLE + "%s" + Format.RESET + " %s - http://git.io/%s";
+                        output = String.format(output, repository, issuer, actionString, url);
+
+                        BotAPI.serverConnection.addToSendQueue("PRIVMSG " + this.channel + " :" + output);
+                    }
                     else {
+                        BotAPI.serverConnection.addToSendQueue("PRIVMSG " + this.channel + " :Received an unknown event from github, please contact heldplayer");
+
                         System.out.println("event=" + eventType);
                         System.out.println("payload=" + query.values.get("payload"));
+
+                        throw new RuntimeException("Unknown event");
                     }
                 }
                 catch (Throwable e) {
