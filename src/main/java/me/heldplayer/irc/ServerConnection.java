@@ -81,7 +81,7 @@ class ServerConnection implements IServerConnection {
         this.connected = true;
         this.lastRead = System.currentTimeMillis();
 
-        BotAPI.eventBus.equals(new ServerConnectedEvent(this));
+        BotAPI.eventBus.postEvent(new ServerConnectedEvent(this));
 
         this.addToSendQueue("NICK " + nickname);
         this.addToSendQueue("USER HeldBot 0 * :" + nickname);
