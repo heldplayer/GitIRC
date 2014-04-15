@@ -41,6 +41,7 @@ public enum Format {
         }
     }
 
+    @Override
     public String toString() {
         return (this.isColor ? "\u0003" : "") + this.code;
     }

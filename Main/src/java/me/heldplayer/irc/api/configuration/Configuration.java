@@ -10,6 +10,7 @@ import java.util.TreeMap;
 public class Configuration {
 
     private File file;
+    private TreeMap<String, String> defaults;
     private TreeMap<String, String> entries;
 
     public Configuration(File file) {
@@ -31,12 +32,24 @@ public class Configuration {
         if (this.entries.containsKey(key)) {
             return this.entries.get(key);
         }
+        if (this.defaults.containsKey(key)) {
+            return this.defaults.get(key);
+        }
         return null;
     }
 
     public int getInt(String key) {
         if (this.entries.containsKey(key)) {
             String entry = this.entries.get(key);
+            try {
+                return Integer.parseInt(entry);
+            }
+            catch (NumberFormatException e) {
+                throw new ConfigurationException(e);
+            }
+        }
+        if (this.defaults.containsKey(key)) {
+            String entry = this.defaults.get(key);
             try {
                 return Integer.parseInt(entry);
             }
