@@ -27,6 +27,7 @@ import java.util.zip.ZipInputStream;
 import me.heldplayer.irc.api.BotAPI;
 import me.heldplayer.irc.api.IEntryPoint;
 import me.heldplayer.irc.api.configuration.Configuration;
+import me.heldplayer.irc.api.configuration.ConfigurationException;
 import me.heldplayer.irc.logging.ConsoleLogFormatter;
 import me.heldplayer.irc.logging.ConsoleLogHandler;
 import me.heldplayer.irc.logging.FileLogFormatter;
@@ -146,6 +147,16 @@ public final class IRCBotLauncher {
         int serverPort = IRCBotLauncher.config.getInt("server-port");
         String bindHost = IRCBotLauncher.config.getString("bind-host");
         String nickname = IRCBotLauncher.config.getString("nickname");
+
+        if (serverIp.isEmpty()) {
+            throw new ConfigurationException("Server IP is missing from the configuration");
+        }
+        if (serverPort <= 0 || serverPort >= 65535) {
+            throw new ConfigurationException("Server port must be between 0 and 65535");
+        }
+        if (nickname.isEmpty()) {
+            throw new ConfigurationException("Nickname must not be empty");
+        }
 
         ServerConnection connection = new ServerConnection(serverIp, serverPort, bindHost);
         BotAPI.serverConnection = connection;
