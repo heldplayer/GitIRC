@@ -243,6 +243,7 @@ class ServerConnection implements IServerConnection {
                 int count = 0;
                 while (iterator.hasNext()) {
                     String command = iterator.next();
+                    iterator.remove();
 
                     this.out.println(command.trim());
 
@@ -252,6 +253,7 @@ class ServerConnection implements IServerConnection {
                     log.log(Level.INFO, "<- " + command);
 
                     if (command.startsWith("QUIT")) {
+                        this.connected = false;
                         BotAPI.eventBus.postEvent(new ServerDisconnectedEvent(this));
                         return;
                     }
