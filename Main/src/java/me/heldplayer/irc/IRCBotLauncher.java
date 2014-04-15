@@ -47,6 +47,11 @@ public final class IRCBotLauncher {
 
     public static void main(String[] args) {
         IRCBotLauncher.config = new Configuration(new File("." + File.separator + "settings.cfg"));
+        IRCBotLauncher.config.setDefault("server-ip", "localhost");
+        IRCBotLauncher.config.setDefault("server-port", "6667");
+        IRCBotLauncher.config.setDefault("nickname", "bot");
+        IRCBotLauncher.config.setDefault("bind-host", "");
+        IRCBotLauncher.config.setDefault("log-file", "./console.log");
         IRCBotLauncher.config.load();
 
         Thread consoleReader = new Thread(new RunnableConsoleReader());

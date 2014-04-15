@@ -2,15 +2,17 @@
 package me.heldplayer.irc.api.configuration;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.TreeMap;
 
 public class Configuration {
 
     private File file;
-    private TreeMap<String, String> defaults;
+    private TreeMap<String, String> defaults = new TreeMap<String, String>();
     private TreeMap<String, String> entries;
 
     public Configuration(File file) {
@@ -26,6 +28,14 @@ public class Configuration {
             }
         }
         this.file = file;
+    }
+
+    public void setDefault(String key, String value) {
+        this.defaults.put(key, value);
+    }
+
+    public void setDefault(String key, int value) {
+        this.defaults.put(key, "" + value);
     }
 
     public String getString(String key) {
@@ -67,21 +77,23 @@ public class Configuration {
 
         try {
             reader = new BufferedReader(new FileReader(this.file));
-            if (reader != null) {
-                String line = "";
 
-                int lineNumber = 0;
-                while ((line = reader.readLine()) != null) {
-                    lineNumber++;
-                    line = line.trim();
-                    if (!line.startsWith("#")) {
-                        String[] split = line.split("=", 2);
-                        if (split.length >= 2) {
-                            this.entries.put(split[0].trim(), split[1].trim());
-                        }
-                        else {
-                            throw new ConfigurationException("Invalid configuration entry at line " + lineNumber);
-                        }
+            String line = "";
+
+            int lineNumber = 0;
+            while ((line = reader.readLine()) != null) {
+                lineNumber++;
+                line = line.trim();
+                if (!line.startsWith("#")) {
+                    if (line.indexOf('#') > 0) {
+                        line = line.substring(0, line.indexOf('#')).trim();
+                    }
+                    String[] split = line.split("=", 2);
+                    if (split.length >= 2) {
+                        this.entries.put(split[0].trim(), split[1].trim());
+                    }
+                    else {
+                        throw new ConfigurationException("Configuration requires 'key=value' on line " + lineNumber);
                     }
                 }
             }
@@ -96,6 +108,47 @@ public class Configuration {
                 }
             }
             catch (IOException e) {}
+        }
+
+        boolean defaultMissing = false;
+
+        for (String key : this.defaults.keySet()) {
+            if (!this.entries.containsKey(key)) {
+                defaultMissing = true;
+            }
+        }
+
+        if (defaultMissing) {
+            TreeMap<String, String> merged = new TreeMap<String, String>();
+
+            for (String key : this.defaults.keySet()) {
+                if (!this.entries.containsKey(key)) {
+                    merged.put(key, this.defaults.get(key) + " #GENERATED DEFAULT");
+                }
+            }
+            merged.putAll(this.entries);
+
+            BufferedWriter writer = null;
+
+            try {
+                writer = new BufferedWriter(new FileWriter(this.file));
+
+                for (String key : merged.keySet()) {
+                    writer.write(key + "=" + merged.get(key));
+                    writer.newLine();
+                }
+            }
+            catch (IOException e) {
+                throw new ConfigurationException("Failed writing configuration", e);
+            }
+            finally {
+                try {
+                    if (writer != null) {
+                        writer.close();
+                    }
+                }
+                catch (IOException e) {}
+            }
         }
     }
 
