@@ -1,5 +1,1 @@
-# Eclipse stuff
-/GitIRC/*
-
-# jars
-*.jar
+/.metadata
