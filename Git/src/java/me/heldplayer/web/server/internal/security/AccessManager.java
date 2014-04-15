@@ -11,7 +11,7 @@ import me.heldplayer.util.json.JSONObject;
 import me.heldplayer.web.server.RequestSource;
 import me.heldplayer.web.server.WebServerEntryPoint;
 import me.heldplayer.web.server.event.AccessManagerInitEvent;
-import me.heldplayer.web.server.internal.security.require.Rule;
+import me.heldplayer.web.server.internal.security.rules.Rule;
 
 public class AccessManager {
 

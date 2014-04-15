@@ -1,5 +1,5 @@
 
-package me.heldplayer.web.server.internal.security.require;
+package me.heldplayer.web.server.internal.security.rules;
 
 import me.heldplayer.web.server.RequestSource;
 

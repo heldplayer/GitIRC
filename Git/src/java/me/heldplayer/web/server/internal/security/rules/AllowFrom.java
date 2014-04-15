@@ -1,18 +1,18 @@
 
-package me.heldplayer.web.server.internal.security.require;
+package me.heldplayer.web.server.internal.security.rules;
 
 import me.heldplayer.util.json.JSONObject;
 import me.heldplayer.web.server.RequestSource;
 
-public class DenyFrom extends IpRangeRule {
+public class AllowFrom extends IpRangeRule {
 
-    public DenyFrom(JSONObject object) {
+    public AllowFrom(JSONObject object) {
         super(object);
     }
 
     @Override
     public boolean checkAccess(RequestSource source) {
-        return !this.matches(source);
+        return this.matches(source);
     }
 
 }

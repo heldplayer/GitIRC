@@ -28,13 +28,13 @@ import me.heldplayer.web.server.internal.ErrorResponse.ErrorType;
 import me.heldplayer.web.server.internal.QueryString;
 import me.heldplayer.web.server.internal.RunnableWebserver;
 import me.heldplayer.web.server.internal.security.AccessManager;
-import me.heldplayer.web.server.internal.security.require.AllowFrom;
-import me.heldplayer.web.server.internal.security.require.BasicAuth;
-import me.heldplayer.web.server.internal.security.require.DenyFrom;
-import me.heldplayer.web.server.internal.security.require.IpRangeRule;
-import me.heldplayer.web.server.internal.security.require.RequireAll;
-import me.heldplayer.web.server.internal.security.require.RequireNone;
-import me.heldplayer.web.server.internal.security.require.RequireOne;
+import me.heldplayer.web.server.internal.security.rules.AllowFrom;
+import me.heldplayer.web.server.internal.security.rules.BasicAuth;
+import me.heldplayer.web.server.internal.security.rules.DenyFrom;
+import me.heldplayer.web.server.internal.security.rules.IpRangeRule;
+import me.heldplayer.web.server.internal.security.rules.RequireAll;
+import me.heldplayer.web.server.internal.security.rules.RequireNone;
+import me.heldplayer.web.server.internal.security.rules.RequireOne;
 
 public class WebServerEntryPoint implements IEntryPoint {
 
