@@ -16,7 +16,7 @@ class JSONParser {
     private long index;
 
     public String createErrorLocation() {
-        return "char " + index + " (row " + row + "; column " + column + ")";
+        return "char " + this.index + " (row " + this.row + "; column " + this.column + ")";
     }
 
     private char previous;
@@ -168,7 +168,7 @@ class JSONParser {
                     result.append('\r');
                 break;
                 case 'u':
-                    result.append((char) Integer.parseInt(readChars(4), 4));
+                    result.append((char) Integer.parseInt(this.readChars(4), 4));
                 break;
                 case '"':
                 case '\'':

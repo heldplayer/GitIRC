@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,8 +29,20 @@ public class JSONObject {
             reader.close();
         }
         catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new JSONException(e);
+        }
+    }
+
+    public JSONObject(InputStream in) {
+        this();
+
+        InputStreamReader reader;
+        this.load(new JSONParser(reader = new InputStreamReader(in)));
+        try {
+            reader.close();
+        }
+        catch (IOException e) {
+            throw new JSONException(e);
         }
     }
 
