@@ -3,29 +3,17 @@ package me.heldplayer.irc;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.net.URL;
-import java.security.CodeSource;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TreeMap;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import me.heldplayer.irc.api.BotAPI;
-import me.heldplayer.irc.api.IEntryPoint;
 import me.heldplayer.irc.api.configuration.Configuration;
 import me.heldplayer.irc.api.configuration.ConfigurationException;
 import me.heldplayer.irc.logging.ConsoleLogFormatter;
@@ -41,7 +29,6 @@ public final class IRCBotLauncher {
 
     private static final Logger log = Logger.getLogger("API");
     private static boolean pluginsLoaded = false;
-    private static ArrayList<IEntryPoint> pluginEntryPoints = new ArrayList<IEntryPoint>();
 
     private static PrintStream stdOut;
     private static PrintStream stdErr;
@@ -61,14 +48,14 @@ public final class IRCBotLauncher {
         consoleReader.start();
 
         new RunnableMainThread();
-        mainThread = new Thread(RunnableMainThread.instance);
-        mainThread.setName("Main Thread");
-        mainThread.start();
+        IRCBotLauncher.mainThread = new Thread(RunnableMainThread.instance);
+        IRCBotLauncher.mainThread.setName("Main Thread");
+        IRCBotLauncher.mainThread.start();
     }
 
     private static void setupLoggers() {
-        stdOut = System.out;
-        stdErr = System.err;
+        IRCBotLauncher.stdOut = System.out;
+        IRCBotLauncher.stdErr = System.err;
 
         Logger stdout = Logger.getLogger("STDOUT");
         Logger stderr = Logger.getLogger("STDERR");
@@ -129,17 +116,17 @@ public final class IRCBotLauncher {
     private static void resetLoggers() {
         BotAPI.console = null;
 
-        System.setOut(stdOut);
-        System.setErr(stdErr);
+        System.setOut(IRCBotLauncher.stdOut);
+        System.setErr(IRCBotLauncher.stdErr);
         LogManager.getLogManager().reset();
     }
 
     public static void loadPlugins() {
-        if (pluginsLoaded) {
+        if (IRCBotLauncher.pluginsLoaded) {
             throw new RuntimeException("Plugins already loaded");
         }
 
-        setupLoggers();
+        IRCBotLauncher.setupLoggers();
 
         BotAPI.eventBus = new EventBus();
 
@@ -170,125 +157,13 @@ public final class IRCBotLauncher {
             BotAPI.console.shutdown();
         }
 
-        log.info("Looking around for internal plugins to load");
+        IRCBotLauncher.log.info("Loaded " + BotAPI.pluginLoader.loadPlugins() + " plugins");
 
-        int count = 0;
-
-        try {
-            final Map<String, InputStream> inputStreams = new TreeMap<String, InputStream>();
-            inputStreams.clear();
-
-            // Loading when inside a jar
-            CodeSource source = IRCBotLauncher.class.getProtectionDomain().getCodeSource();
-            List<String> files = new ArrayList<String>();
-
-            if (source != null) {
-                URL jar = source.getLocation();
-                System.out.println(jar.getFile());
-                ZipInputStream zip = new ZipInputStream(jar.openStream());
-                ZipEntry entry = null;
-
-                while ((entry = zip.getNextEntry()) != null) {
-                    String name = entry.getName();
-                    if (name.startsWith("bot/entries") && name.endsWith(".entry")) {
-                        files.add(name);
-                    }
-                }
-            }
-
-            for (String entry : files) {
-                inputStreams.put(entry, IRCBotLauncher.class.getClassLoader().getResourceAsStream(entry));
-            }
-
-            // Loading when in dev workspace
-            Enumeration<URL> entries = IRCBotLauncher.class.getClassLoader().getResources("bot/entries");
-
-            FileFilter filter = new FileFilter() {
-
-                @Override
-                public boolean accept(File file) {
-                    if (file.isDirectory()) {
-                        file.listFiles(this);
-                    }
-                    try {
-                        inputStreams.put(file.getName(), file.toURI().toURL().openStream());
-                    }
-                    catch (Throwable e) {}
-                    return true;
-                }
-
-            };
-
-            while (entries.hasMoreElements()) {
-                URL entry = entries.nextElement();
-
-                try {
-                    File file = new File(entry.toURI());
-
-                    file.listFiles(filter);
-                }
-                catch (Throwable e) {}
-            }
-
-            for (Entry<String, InputStream> entry : inputStreams.entrySet()) {
-                System.out.println("Reading file " + entry.getKey());
-
-                BufferedReader in = null;
-                InputStream input = entry.getValue();
-                try {
-                    in = new BufferedReader(new InputStreamReader(input));
-
-                    while (in.ready()) {
-                        String line = in.readLine();
-
-                        Class<?> clazz = IRCBotLauncher.class.getClassLoader().loadClass(line);
-
-                        if (IEntryPoint.class.isAssignableFrom(clazz)) {
-                            IEntryPoint entryPoint = (IEntryPoint) clazz.newInstance();
-                            IRCBotLauncher.pluginEntryPoints.add(entryPoint);
-                            count++;
-                        }
-                    }
-                }
-                catch (IOException e) {
-                    throw new RuntimeException("Failed loading entry", e);
-                }
-                finally {
-                    try {
-                        in.close();
-                    }
-                    catch (Throwable e) {}
-                }
-            }
-        }
-        catch (IOException e) {
-            throw new RuntimeException("Failed loading entry", e);
-        }
-        catch (ClassNotFoundException e) {
-            throw new RuntimeException("Failed loading class entry", e);
-        }
-        catch (InstantiationException e) {
-            throw new RuntimeException("Failed loading class entry", e);
-        }
-        catch (IllegalAccessException e) {
-            throw new RuntimeException("Failed loading class entry", e);
-        }
-
-        log.info("Found " + count + " internal plugins");
-
-        for (IEntryPoint entry : pluginEntryPoints) {
-            entry.load();
-        }
-
-        log.info("Loaded " + pluginEntryPoints.size() + " plugins");
-
-        pluginsLoaded = true;
-
-        // TODO: add external plugin loading
+        IRCBotLauncher.pluginsLoaded = true;
     }
 
     public static void unloadPlugins() {
-        if (!pluginsLoaded) {
+        if (!IRCBotLauncher.pluginsLoaded) {
             return;
         }
 
@@ -302,19 +177,13 @@ public final class IRCBotLauncher {
         BotAPI.serverConnection = null;
         BotAPI.eventBus = null;
 
-        for (IEntryPoint entry : pluginEntryPoints) {
-            entry.unload();
-        }
+        IRCBotLauncher.log.info("Unloaded " + BotAPI.pluginLoader.unloadPlugins() + " plugins");
 
-        log.info("Unloaded " + pluginEntryPoints.size() + " plugins");
-
-        resetLoggers();
-
-        pluginEntryPoints.clear();
+        IRCBotLauncher.resetLoggers();
 
         System.gc();
 
-        pluginsLoaded = false;
+        IRCBotLauncher.pluginsLoaded = false;
     }
 
     public static List<String> readPerform() {

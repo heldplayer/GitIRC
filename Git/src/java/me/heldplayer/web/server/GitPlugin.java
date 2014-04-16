@@ -1,24 +1,19 @@
 
 package me.heldplayer.web.server;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import me.heldplayer.irc.api.BotAPI;
-import me.heldplayer.irc.api.IEntryPoint;
 import me.heldplayer.irc.api.configuration.Configuration;
 import me.heldplayer.irc.api.event.EventHandler;
 import me.heldplayer.irc.api.event.user.CommandEvent;
 import me.heldplayer.irc.api.event.user.UserMessageEvent;
+import me.heldplayer.irc.api.plugin.Plugin;
 import me.heldplayer.irc.util.Format;
+import me.heldplayer.irc.util.Util;
 import me.heldplayer.util.json.JSONArray;
 import me.heldplayer.util.json.JSONObject;
 import me.heldplayer.web.server.event.AccessManagerInitEvent;
@@ -36,7 +31,7 @@ import me.heldplayer.web.server.internal.security.rules.RequireAll;
 import me.heldplayer.web.server.internal.security.rules.RequireNone;
 import me.heldplayer.web.server.internal.security.rules.RequireOne;
 
-public class WebServerEntryPoint implements IEntryPoint {
+public class GitPlugin extends Plugin {
 
     public static Configuration config;
 
@@ -50,12 +45,12 @@ public class WebServerEntryPoint implements IEntryPoint {
     public static final Logger log = Logger.getLogger("Web");
 
     @Override
-    public void load() {
-        WebServerEntryPoint.config = new Configuration(new File("." + File.separator + "webserver.cfg"));
-        WebServerEntryPoint.config.load();
+    public void onEnable() {
+        GitPlugin.config = new Configuration(new File("." + File.separator + "webserver.cfg"));
+        GitPlugin.config.load();
 
-        String directory = WebServerEntryPoint.config.getString("web-directory");
-        File file = WebServerEntryPoint.webDirectory = new File(directory);
+        String directory = GitPlugin.config.getString("web-directory");
+        File file = GitPlugin.webDirectory = new File(directory);
         if (!file.exists()) {
             file.mkdirs();
         }
@@ -65,20 +60,20 @@ public class WebServerEntryPoint implements IEntryPoint {
 
         BotAPI.eventBus.registerEventHandler(this);
 
-        String bindhost = WebServerEntryPoint.config.getString("bind-host");
-        int port = WebServerEntryPoint.config.getInt("port");
+        String bindhost = GitPlugin.config.getString("bind-host");
+        int port = GitPlugin.config.getInt("port");
 
         this.webServer = new RunnableWebserver(port, bindhost);
-        webServerThread = new Thread(webServer, "Web Server Host");
-        webServerThread.setDaemon(true);
-        webServerThread.start();
+        this.webServerThread = new Thread(this.webServer, "Web Server Host");
+        this.webServerThread.setDaemon(true);
+        this.webServerThread.start();
     }
 
     @Override
-    public void unload() {
+    public void onDisable() {
         this.webServer.disconnect();
 
-        while (webServerThread.isAlive()) {
+        while (this.webServerThread.isAlive()) {
             try {
                 Thread.sleep(10L);
             }
@@ -89,31 +84,6 @@ public class WebServerEntryPoint implements IEntryPoint {
         }
 
         AccessManager.cleanupRules();
-    }
-
-    public String createGitIO(String address) {
-        try {
-            String param = URLEncoder.encode(address, "UTF-8");
-            URL url = new URL("http://git.io/create");
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("POST");
-
-            connection.setDoOutput(true);
-
-            DataOutputStream out = new DataOutputStream(connection.getOutputStream());
-            out.writeBytes("url=" + param);
-            out.flush();
-            out.close();
-
-            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            String response = in.readLine();
-            in.close();
-
-            return response;
-        }
-        catch (Throwable e) {
-            throw new RuntimeException("Failed creating git.io link", e);
-        }
     }
 
     @EventHandler
@@ -138,7 +108,7 @@ public class WebServerEntryPoint implements IEntryPoint {
                             String message = commit.getString("message").replaceAll("\n", " ");
                             message = message.replaceAll("\r", "");
 
-                            String url = this.createGitIO(commit.getString("url"));
+                            String url = Util.createGitIO(commit.getString("url"));
 
                             String output = Format.BOLD + "%s" + Format.RESET + "/%s - " + Format.PURPLE + "%s" + Format.RESET + ": %s +" + Format.DARK_GREEN + "%s" + Format.RESET + " ~" + Format.ORANGE + "%s" + Format.RESET + " -" + Format.RED + "%s" + Format.RESET + " http://git.io/%s";
                             output = String.format(output, repository, ref, commit.getObject("author").getString("name"), message, commit.getArray("added").size(), commit.getArray("modified").size(), commit.getArray("removed").size(), url);
@@ -163,7 +133,7 @@ public class WebServerEntryPoint implements IEntryPoint {
                             actionString = action + " an issue";
                         }
 
-                        String url = this.createGitIO(issue.getString("html_url"));
+                        String url = Util.createGitIO(issue.getString("html_url"));
 
                         String output = Format.BOLD + "%s" + Format.RESET + " - " + Format.PURPLE + "%s" + Format.RESET + " %s - http://git.io/%s";
                         output = String.format(output, repository, issuer, actionString, url);
@@ -252,4 +222,5 @@ public class WebServerEntryPoint implements IEntryPoint {
             }
         }
     }
+
 }

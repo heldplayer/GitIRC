@@ -18,7 +18,7 @@ public abstract class IpRangeRule implements Rule {
         this.value = object.getString("value");
 
         try {
-            this.address = InetAddress.getByName(value);
+            this.address = InetAddress.getByName(this.value);
             this.bytes = new byte[0];
             this.wildcards = new boolean[0];
         }
@@ -41,7 +41,7 @@ public abstract class IpRangeRule implements Rule {
 
     public boolean matches(RequestSource source) {
         if (this.address != null) {
-            return address.equals(source.address);
+            return this.address.equals(source.address);
         }
 
         byte[] bytes = source.address.getAddress();

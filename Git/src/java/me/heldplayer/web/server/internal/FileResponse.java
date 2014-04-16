@@ -47,10 +47,7 @@ public class FileResponse extends WebResponse {
 
     private static enum Extension {
 
-        TextPlain("text/plain"),
-        TextHtml("text/html", "htm", "html", "xhtm", "xhtml"),
-        TextCss("text/css", "css"),
-        TextJavascript("text/javascript", "js");
+        TextPlain("text/plain"), TextHtml("text/html", "htm", "html", "xhtm", "xhtml"), TextCss("text/css", "css"), TextJavascript("text/javascript", "js");
 
         public final String type;
         public final Set<String> extensions;
@@ -74,7 +71,7 @@ public class FileResponse extends WebResponse {
             }
             String ext = name.substring(name.lastIndexOf(".") + 1);
 
-            for (Extension extension : values()) {
+            for (Extension extension : Extension.values()) {
                 if (extension.extensions.contains(ext)) {
                     return extension;
                 }

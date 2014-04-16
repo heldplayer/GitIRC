@@ -3,10 +3,7 @@ package me.heldplayer.web.server.internal;
 
 public enum RequestMethod {
 
-    NULL(false, false, "null"),
-    GET(true, false, "get"),
-    POST(true, true, "post"),
-    HEAD(false, false, "head");
+    NULL(false, false, "null"), GET(true, false, "get"), POST(true, true, "post"), HEAD(false, false, "head");
 
     public final boolean hasBody;
     private final String name;

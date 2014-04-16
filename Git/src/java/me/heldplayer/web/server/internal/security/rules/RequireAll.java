@@ -23,7 +23,7 @@ public class RequireAll implements Rule {
 
     @Override
     public boolean checkAccess(RequestSource source) {
-        for (Rule rule : rules) {
+        for (Rule rule : this.rules) {
             if (!rule.checkAccess(source)) {
                 return false;
             }

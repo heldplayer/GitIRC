@@ -23,7 +23,7 @@ class RunnableMainThread implements Runnable {
         IRCBotLauncher.loadPlugins();
 
         while (this.running) {
-            if (shouldReset) {
+            if (this.shouldReset) {
                 IRCBotLauncher.unloadPlugins();
                 IRCBotLauncher.loadPlugins();
                 this.shouldReset = false;

@@ -9,7 +9,7 @@ import java.net.SocketException;
 import java.util.logging.Level;
 
 import me.heldplayer.web.server.RequestSource;
-import me.heldplayer.web.server.WebServerEntryPoint;
+import me.heldplayer.web.server.GitPlugin;
 
 public abstract class WebResponse {
 
@@ -50,10 +50,10 @@ public abstract class WebResponse {
             }
         }
         catch (SocketException ex) {
-            WebServerEntryPoint.log.log(Level.WARNING, "Tried displaying page to a client, but the client closed the connection!", ex);
+            GitPlugin.log.log(Level.WARNING, "Tried displaying page to a client, but the client closed the connection!", ex);
         }
         catch (IOException ex) {
-            WebServerEntryPoint.log.log(Level.WARNING, "Tried displaying page to a client, but an error occoured", ex);
+            GitPlugin.log.log(Level.WARNING, "Tried displaying page to a client, but an error occoured", ex);
         }
         finally {
             try {

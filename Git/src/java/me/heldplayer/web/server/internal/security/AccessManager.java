@@ -9,7 +9,7 @@ import java.util.TreeMap;
 import me.heldplayer.irc.api.BotAPI;
 import me.heldplayer.util.json.JSONObject;
 import me.heldplayer.web.server.RequestSource;
-import me.heldplayer.web.server.WebServerEntryPoint;
+import me.heldplayer.web.server.GitPlugin;
 import me.heldplayer.web.server.event.AccessManagerInitEvent;
 import me.heldplayer.web.server.internal.security.rules.Rule;
 
@@ -76,11 +76,11 @@ public class AccessManager {
                 }
             }
             else {
-                File dir = new File(WebServerEntryPoint.webDirectory, currentPath);
+                File dir = new File(GitPlugin.webDirectory, currentPath);
                 if (!dir.exists()) {
                     continue;
                 }
-                File file = new File(WebServerEntryPoint.webDirectory, currentPath + "access.cfg");
+                File file = new File(GitPlugin.webDirectory, currentPath + "access.cfg");
                 rule = new AccessConfigRule(file, currentPath);
                 this.configRules.put(currentPath, rule);
                 if (!rule.canAccess(source)) {

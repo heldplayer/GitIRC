@@ -7,7 +7,7 @@ import java.io.FileNotFoundException;
 import me.heldplayer.util.json.JSONException;
 import me.heldplayer.util.json.JSONObject;
 import me.heldplayer.web.server.RequestSource;
-import me.heldplayer.web.server.WebServerEntryPoint;
+import me.heldplayer.web.server.GitPlugin;
 import me.heldplayer.web.server.internal.security.rules.Rule;
 
 public class AccessConfigRule implements IAccessRule {
@@ -18,7 +18,7 @@ public class AccessConfigRule implements IAccessRule {
     private Rule rootRule;
 
     public AccessConfigRule(File ruleFile, String path) {
-        WebServerEntryPoint.log.info("Created new accessrule for " + path);
+        GitPlugin.log.info("Created new accessrule for " + path);
         this.file = ruleFile;
         this.lastChanged = this.file.lastModified();
 
@@ -54,8 +54,8 @@ public class AccessConfigRule implements IAccessRule {
 
     @Override
     public boolean canAccess(RequestSource source) {
-        if (rootRule != null) {
-            return rootRule.checkAccess(source);
+        if (this.rootRule != null) {
+            return this.rootRule.checkAccess(source);
         }
         return true;
     }

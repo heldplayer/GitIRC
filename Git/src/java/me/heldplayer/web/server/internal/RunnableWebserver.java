@@ -7,7 +7,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 
-import me.heldplayer.web.server.WebServerEntryPoint;
+import me.heldplayer.web.server.GitPlugin;
 import me.heldplayer.web.server.internal.security.AccessManager;
 
 public class RunnableWebserver implements Runnable {
@@ -29,7 +29,7 @@ public class RunnableWebserver implements Runnable {
     public RunnableWebserver(int port, String host) {
         super();
 
-        instance = this;
+        RunnableWebserver.instance = this;
         this.port = port;
         this.host = host;
 
@@ -44,13 +44,13 @@ public class RunnableWebserver implements Runnable {
         this.running = false;
 
         while (true) {
-            for (int i = 0; i < runningRequests.size(); i++) {
-                RunnableHttpResponse response = runningRequests.get(i);
+            for (int i = 0; i < this.runningRequests.size(); i++) {
+                RunnableHttpResponse response = this.runningRequests.get(i);
                 if (response.finished) {
-                    runningRequests.remove(i);
+                    this.runningRequests.remove(i);
                 }
             }
-            if (runningRequests.isEmpty()) {
+            if (this.runningRequests.isEmpty()) {
                 break;
             }
         }
@@ -64,13 +64,13 @@ public class RunnableWebserver implements Runnable {
 
         this.accessManager.cleanup();
 
-        instance = null;
+        RunnableWebserver.instance = null;
     }
 
     @Override
     public void run() {
         try {
-            WebServerEntryPoint.log.info("Starting server on " + (this.host != null && !this.host.isEmpty() ? this.host : "*") + ":" + this.port);
+            GitPlugin.log.info("Starting server on " + (this.host != null && !this.host.isEmpty() ? this.host : "*") + ":" + this.port);
 
             InetAddress adress = null;
 
@@ -81,9 +81,9 @@ public class RunnableWebserver implements Runnable {
             this.serverSocket = new ServerSocket(this.port, 0, adress);
         }
         catch (Exception ex) {
-            WebServerEntryPoint.log.severe("**** FAILED TO BIND TO PORT");
-            WebServerEntryPoint.log.severe("The exception was: " + ex.toString());
-            WebServerEntryPoint.log.severe("Perhaps something is already running on that port?");
+            GitPlugin.log.severe("**** FAILED TO BIND TO PORT");
+            GitPlugin.log.severe("The exception was: " + ex.toString());
+            GitPlugin.log.severe("Perhaps something is already running on that port?");
             return;
         }
 
@@ -97,7 +97,7 @@ public class RunnableWebserver implements Runnable {
                 Thread responseThread = new Thread(this.threads, response);
                 responseThread.setDaemon(true);
                 responseThread.start();
-                runningRequests.add(response);
+                this.runningRequests.add(response);
 
                 Thread.sleep(10L);
             }

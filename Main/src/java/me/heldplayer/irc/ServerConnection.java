@@ -217,7 +217,7 @@ class ServerConnection implements IServerConnection {
                 if (BotAPI.eventBus.postEvent(event)) {
                     BotAPI.console.log(Level.FINER, "-> " + message.toString());
                 }
-                log.log(Level.INFO, "-> " + line);
+                ServerConnection.log.log(Level.INFO, "-> " + line);
                 this.lastRead = System.currentTimeMillis();
             }
         }
@@ -250,7 +250,7 @@ class ServerConnection implements IServerConnection {
                     if (!command.startsWith("PING") && !command.startsWith("PONG")) {
                         BotAPI.console.log(Level.FINER, "<- " + command);
                     }
-                    log.log(Level.INFO, "<- " + command);
+                    ServerConnection.log.log(Level.INFO, "<- " + command);
 
                     if (command.startsWith("QUIT")) {
                         this.connected = false;

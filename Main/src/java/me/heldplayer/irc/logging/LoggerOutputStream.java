@@ -23,7 +23,7 @@ public class LoggerOutputStream extends ByteArrayOutputStream {
             super.flush();
             String line = this.toString();
             if (line != null) {
-                line = line.replaceAll(LINE_SEPARATOR, "");
+                line = line.replaceAll(LoggerOutputStream.LINE_SEPARATOR, "");
                 if (!line.isEmpty()) {
                     this.log.log(this.logLevel, line);
                 }

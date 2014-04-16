@@ -22,7 +22,7 @@ class EventBus implements IEventBus {
     @SuppressWarnings("unchecked")
     @Override
     public void registerEventHandler(Object obj) {
-        synchronized (lock) {
+        synchronized (EventBus.lock) {
             if (!this.eventHandlers.contains(obj)) {
                 this.eventHandlers.add(obj);
 
@@ -52,7 +52,7 @@ class EventBus implements IEventBus {
     @SuppressWarnings("unchecked")
     @Override
     public void unregisterEventHandler(Object obj) {
-        synchronized (lock) {
+        synchronized (EventBus.lock) {
             if (this.eventHandlers.contains(obj)) {
                 this.eventHandlers.remove(obj);
 
@@ -75,7 +75,7 @@ class EventBus implements IEventBus {
 
     @Override
     public boolean postEvent(Event event) {
-        synchronized (lock) {
+        synchronized (EventBus.lock) {
             Set<Entry<Class<? extends Event>, Events>> entries = this.methods.entrySet();
 
             for (Entry<Class<? extends Event>, Events> entry : entries) {
@@ -103,10 +103,10 @@ class EventBus implements IEventBus {
 
     @Override
     public void cleanup() {
-        methods.clear();
-        methods = null;
-        eventHandlers.clear();
-        eventHandlers = null;
+        this.methods.clear();
+        this.methods = null;
+        this.eventHandlers.clear();
+        this.eventHandlers = null;
     }
 
     private static class Events {
