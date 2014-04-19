@@ -18,7 +18,7 @@ public class UserCommandEvent extends CancellableEvent {
         this.channel = channel;
         String[] parts = input.split(" ");
         this.command = parts[0].toUpperCase();
-        this.params = Arrays.copyOfRange(parts, 1, parts.length - 1);
+        this.params = Arrays.copyOfRange(parts, 1, parts.length);
     }
 
     public UserCommandEvent(IRCUser user, String channel, String command, String[] params) {
