@@ -1,7 +1,6 @@
 
 package me.heldplayer.irc.minecraft;
 
-import java.util.Arrays;
 import java.util.logging.Logger;
 
 import me.heldplayer.irc.api.BotAPI;
@@ -32,7 +31,6 @@ public class MinecraftPlugin extends Plugin {
 
     @EventHandler
     public void onUserCommand(UserCommandEvent event) {
-        this.getLogger().info(event.command + " " + Arrays.toString(event.getParams()));
         if (event.command.equals("MINECRAFT")) {
             event.setHandled();
             String[] params = event.getParams();
