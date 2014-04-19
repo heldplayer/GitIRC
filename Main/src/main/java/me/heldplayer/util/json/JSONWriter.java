@@ -80,8 +80,6 @@ public class JSONWriter {
         }
         result.delete(result.length() - 1, result.length());
 
-        result.append("\"");
-
         return result.append("}").toString();
     }
 
