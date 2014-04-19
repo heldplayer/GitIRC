@@ -47,7 +47,10 @@ public class BasePlugin extends Plugin {
             String prefix = BotAPI.configuration.getCommandPrefix();
 
             if (event.message.params[0].startsWith(prefix)) {
-                BotAPI.eventBus.postEvent(new UserCommandEvent(user, event.message.params[0], event.message.trailing.substring(prefix.length())));
+                UserCommandEvent commandEvent = new UserCommandEvent(user, event.message.params[0], event.message.trailing.substring(prefix.length()));
+                if (BotAPI.eventBus.postEvent(commandEvent)) {
+                    BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: Unknown command", event.message.params[0], user.getUsername());
+                }
             }
             else {
                 BotAPI.eventBus.postEvent(new UserMessageEvent(user, event.message.params[0], event.message.trailing));

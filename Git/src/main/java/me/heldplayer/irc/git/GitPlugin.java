@@ -101,7 +101,7 @@ public class GitPlugin extends Plugin {
                     JSONObject obj = new JSONObject(query.values.get("payload"));
 
                     if (eventType.equals("ping")) {
-                        BotAPI.serverConnection.addToSendQueue("PRIVMSG " + this.channel + " :Zen: " + obj.getString("zen"));
+                        BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :Zen: %s", this.channel, obj.getString("zen"));
                     }
                     else if (eventType.equals("push")) {
                         JSONArray commits = obj.getArray("commits");
@@ -118,7 +118,7 @@ public class GitPlugin extends Plugin {
                             String output = Format.BOLD + "%s" + Format.RESET + "/%s - " + Format.PURPLE + "%s" + Format.RESET + ": %s +" + Format.DARK_GREEN + "%s" + Format.RESET + " ~" + Format.ORANGE + "%s" + Format.RESET + " -" + Format.RED + "%s" + Format.RESET + " http://git.io/%s";
                             output = String.format(output, repository, ref, commit.getObject("author").getString("name"), message, commit.getArray("added").size(), commit.getArray("modified").size(), commit.getArray("removed").size(), url);
 
-                            BotAPI.serverConnection.addToSendQueue("PRIVMSG " + this.channel + " :" + output);
+                            BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s", this.channel, output);
                         }
                     }
                     else if (eventType.equals("issues")) {
@@ -143,10 +143,11 @@ public class GitPlugin extends Plugin {
                         String output = Format.BOLD + "%s" + Format.RESET + " - " + Format.PURPLE + "%s" + Format.RESET + " %s - http://git.io/%s";
                         output = String.format(output, repository, issuer, actionString, url);
 
-                        BotAPI.serverConnection.addToSendQueue("PRIVMSG " + this.channel + " :" + output);
+                        BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s", this.channel, output);
                     }
                     else {
-                        BotAPI.serverConnection.addToSendQueue("PRIVMSG " + this.channel + " :Received an unknown event from github, please contact heldplayer");
+                        String output = "Received an unknown event from github, please contact heldplayer";
+                        BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s", this.channel, output);
 
                         System.out.println("event=" + eventType);
                         System.out.println("payload=" + query.values.get("payload"));

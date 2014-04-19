@@ -11,6 +11,14 @@ public interface IServerConnection {
     void addToSendQueue(String command);
 
     /**
+     * Adds a raw IRC message to be sent to the server
+     * 
+     * @param command
+     * @param args
+     */
+    void addToSendQueue(String command, Object... args);
+
+    /**
      * Makes the connection process its queue
      */
     void processQueue();

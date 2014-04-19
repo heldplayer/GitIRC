@@ -81,14 +81,14 @@ class ServerConnection implements IServerConnection {
 
         BotAPI.eventBus.postEvent(new ServerConnectedEvent(this));
 
-        this.addToSendQueue("NICK " + nickname);
-        this.addToSendQueue("USER HeldBot 0 * :" + nickname);
+        this.addToSendQueue("NICK %s", nickname);
+        this.addToSendQueue("USER HeldBot 0 * :%s", nickname);
     }
 
     @EventHandler
     public void onRawMessage(RawMessageEvent event) {
         if (event.message.command.equals("PING")) {
-            BotAPI.serverConnection.addToSendQueue("PONG :" + event.message.trailing);
+            BotAPI.serverConnection.addToSendQueue("PONG :%s", event.message.trailing);
             event.setHandled();
         }
         else if (event.message.command.equals("ERROR")) {
@@ -112,7 +112,7 @@ class ServerConnection implements IServerConnection {
         }
         else if (event.message.command.equals("433")) {
             this.nickname += "_";
-            this.addToSendQueue("NICK " + this.nickname);
+            this.addToSendQueue("NICK %s", this.nickname);
         }
         else if (event.message.command.equals("005")) {
             for (int i = 1; i < event.message.params.length; i++) {
@@ -192,6 +192,22 @@ class ServerConnection implements IServerConnection {
                 command = "QUIT :Errored: " + message.trailing;
             }
             this.sendQueue.add(command);
+        }
+    }
+
+    @Override
+    public void addToSendQueue(String command, Object... args) {
+        synchronized (this.sendQueue) {
+            String result = String.format(command, args);
+            IRCMessage message = new IRCMessage(result);
+            if (message.command.equalsIgnoreCase("QUIT")) {
+                this.shouldQuit = true;
+            }
+            else if (message.command.equalsIgnoreCase("ERROR")) {
+                this.shouldQuit = true;
+                result = "QUIT :Errored: " + message.trailing;
+            }
+            this.sendQueue.add(result);
         }
     }
 
@@ -285,7 +301,7 @@ class ServerConnection implements IServerConnection {
     @Override
     public void setNickname(String nickname) {
         if (this.connected) {
-            this.addToSendQueue("NICK " + nickname);
+            this.addToSendQueue("NICK %s", nickname);
         }
         else {
             this.nickname = nickname;
