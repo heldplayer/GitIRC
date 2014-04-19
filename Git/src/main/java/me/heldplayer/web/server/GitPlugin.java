@@ -10,7 +10,6 @@ import me.heldplayer.irc.api.BotAPI;
 import me.heldplayer.irc.api.configuration.Configuration;
 import me.heldplayer.irc.api.event.EventHandler;
 import me.heldplayer.irc.api.event.user.CommandEvent;
-import me.heldplayer.irc.api.event.user.UserMessageEvent;
 import me.heldplayer.irc.api.plugin.Plugin;
 import me.heldplayer.irc.util.Format;
 import me.heldplayer.irc.util.Util;
@@ -195,37 +194,6 @@ public class GitPlugin extends Plugin {
                 BotAPI.console.log(Level.WARNING, "Expected 1 parameter for command /git");
             }
             event.setHandled();
-        }
-    }
-
-    @EventHandler
-    public void commandEvent(UserMessageEvent event) {
-        if (event.message.startsWith("&")) {
-            String command = null;
-            if (event.message.indexOf(" ") >= 0) {
-                command = event.message.substring(1, event.message.indexOf(" "));
-            }
-            else {
-                command = event.message.substring(1);
-            }
-
-            if (command.equalsIgnoreCase("json")) {
-                if (event.message.indexOf(" ") < 0) {
-                    BotAPI.serverConnection.addToSendQueue("PRIVMSG " + event.channel + " :" + event.user.getUsername() + ": Requires a parameter");
-                    return;
-                }
-                try {
-                    new JSONObject(event.message.substring(event.message.indexOf(" ") + 1));
-                    BotAPI.serverConnection.addToSendQueue("PRIVMSG " + event.channel + " :" + event.user.getUsername() + ": Parsing succeeded!");
-                }
-                catch (Throwable e) {
-                    BotAPI.serverConnection.addToSendQueue("PRIVMSG " + event.channel + " :" + event.user.getUsername() + ": Error parsing JSON: " + e.getClass().getSimpleName() + ": " + e.getMessage());
-                    e.printStackTrace();
-                }
-            }
-            else {
-                BotAPI.serverConnection.addToSendQueue("PRIVMSG " + event.channel + " :" + event.user.getUsername() + ": Unknown command");
-            }
         }
     }
 
