@@ -116,6 +116,8 @@ public final class IRCBotLauncher {
             throw new RuntimeException("Plugins already loaded");
         }
 
+        BotAPI.configuration = new BotConfiguration();
+
         IRCBotLauncher.setupLoggers();
 
         BotAPI.eventBus = new EventBus();
@@ -170,6 +172,8 @@ public final class IRCBotLauncher {
         IRCBotLauncher.log.info("Unloaded " + BotAPI.pluginLoader.unloadPlugins() + " plugins");
 
         IRCBotLauncher.resetLoggers();
+
+        BotAPI.configuration = null;
 
         System.gc();
 
