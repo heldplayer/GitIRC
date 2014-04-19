@@ -1,11 +1,11 @@
 
-package me.heldplayer.web.server;
+package me.heldplayer.irc.git;
 
 import java.net.InetAddress;
 import java.util.Collections;
 import java.util.Map;
 
-import me.heldplayer.web.server.internal.RequestMethod;
+import me.heldplayer.irc.git.internal.RequestMethod;
 
 public class RequestSource {
 

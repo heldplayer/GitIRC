@@ -1,14 +1,14 @@
 
-package me.heldplayer.web.server.internal.security;
+package me.heldplayer.irc.git.internal.security;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 
+import me.heldplayer.irc.git.GitPlugin;
+import me.heldplayer.irc.git.RequestSource;
+import me.heldplayer.irc.git.internal.security.rules.Rule;
 import me.heldplayer.util.json.JSONException;
 import me.heldplayer.util.json.JSONObject;
-import me.heldplayer.web.server.RequestSource;
-import me.heldplayer.web.server.GitPlugin;
-import me.heldplayer.web.server.internal.security.rules.Rule;
 
 public class AccessConfigRule implements IAccessRule {
 

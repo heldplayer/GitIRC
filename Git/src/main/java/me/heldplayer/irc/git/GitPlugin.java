@@ -1,5 +1,5 @@
 
-package me.heldplayer.web.server;
+package me.heldplayer.irc.git;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,24 +11,24 @@ import me.heldplayer.irc.api.configuration.Configuration;
 import me.heldplayer.irc.api.event.EventHandler;
 import me.heldplayer.irc.api.event.user.CommandEvent;
 import me.heldplayer.irc.api.plugin.Plugin;
+import me.heldplayer.irc.git.event.AccessManagerInitEvent;
+import me.heldplayer.irc.git.event.HttpRequestEvent;
+import me.heldplayer.irc.git.internal.EmptyResponse;
+import me.heldplayer.irc.git.internal.QueryString;
+import me.heldplayer.irc.git.internal.RunnableWebserver;
+import me.heldplayer.irc.git.internal.ErrorResponse.ErrorType;
+import me.heldplayer.irc.git.internal.security.AccessManager;
+import me.heldplayer.irc.git.internal.security.rules.AllowFrom;
+import me.heldplayer.irc.git.internal.security.rules.BasicAuth;
+import me.heldplayer.irc.git.internal.security.rules.DenyFrom;
+import me.heldplayer.irc.git.internal.security.rules.IpRangeRule;
+import me.heldplayer.irc.git.internal.security.rules.RequireAll;
+import me.heldplayer.irc.git.internal.security.rules.RequireNone;
+import me.heldplayer.irc.git.internal.security.rules.RequireOne;
 import me.heldplayer.irc.util.Format;
 import me.heldplayer.irc.util.Util;
 import me.heldplayer.util.json.JSONArray;
 import me.heldplayer.util.json.JSONObject;
-import me.heldplayer.web.server.event.AccessManagerInitEvent;
-import me.heldplayer.web.server.event.HttpRequestEvent;
-import me.heldplayer.web.server.internal.EmptyResponse;
-import me.heldplayer.web.server.internal.ErrorResponse.ErrorType;
-import me.heldplayer.web.server.internal.QueryString;
-import me.heldplayer.web.server.internal.RunnableWebserver;
-import me.heldplayer.web.server.internal.security.AccessManager;
-import me.heldplayer.web.server.internal.security.rules.AllowFrom;
-import me.heldplayer.web.server.internal.security.rules.BasicAuth;
-import me.heldplayer.web.server.internal.security.rules.DenyFrom;
-import me.heldplayer.web.server.internal.security.rules.IpRangeRule;
-import me.heldplayer.web.server.internal.security.rules.RequireAll;
-import me.heldplayer.web.server.internal.security.rules.RequireNone;
-import me.heldplayer.web.server.internal.security.rules.RequireOne;
 
 public class GitPlugin extends Plugin {
 

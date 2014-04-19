@@ -1,5 +1,5 @@
 
-package me.heldplayer.web.server.internal;
+package me.heldplayer.irc.git.internal;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -8,7 +8,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import me.heldplayer.web.server.RequestSource;
+import me.heldplayer.irc.git.RequestSource;
 
 public class FileResponse extends WebResponse {
 

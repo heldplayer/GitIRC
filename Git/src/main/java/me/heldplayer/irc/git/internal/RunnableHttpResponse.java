@@ -1,5 +1,5 @@
 
-package me.heldplayer.web.server.internal;
+package me.heldplayer.irc.git.internal;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -14,10 +14,10 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 
 import me.heldplayer.irc.api.BotAPI;
-import me.heldplayer.web.server.RequestSource;
-import me.heldplayer.web.server.GitPlugin;
-import me.heldplayer.web.server.event.HttpRequestEvent;
-import me.heldplayer.web.server.internal.ErrorResponse.ErrorType;
+import me.heldplayer.irc.git.GitPlugin;
+import me.heldplayer.irc.git.RequestSource;
+import me.heldplayer.irc.git.event.HttpRequestEvent;
+import me.heldplayer.irc.git.internal.ErrorResponse.ErrorType;
 
 public class RunnableHttpResponse implements Runnable {
 

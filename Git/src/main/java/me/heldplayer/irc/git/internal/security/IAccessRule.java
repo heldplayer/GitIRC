@@ -1,7 +1,7 @@
 
-package me.heldplayer.web.server.internal.security;
+package me.heldplayer.irc.git.internal.security;
 
-import me.heldplayer.web.server.RequestSource;
+import me.heldplayer.irc.git.RequestSource;
 
 public interface IAccessRule {
 

@@ -1,10 +1,10 @@
 
-package me.heldplayer.web.server.event;
+package me.heldplayer.irc.git.event;
 
 import me.heldplayer.irc.api.event.Event;
-import me.heldplayer.web.server.RequestSource;
-import me.heldplayer.web.server.internal.ErrorResponse.ErrorType;
-import me.heldplayer.web.server.internal.WebResponse;
+import me.heldplayer.irc.git.RequestSource;
+import me.heldplayer.irc.git.internal.WebResponse;
+import me.heldplayer.irc.git.internal.ErrorResponse.ErrorType;
 
 public class HttpRequestEvent extends Event {
 

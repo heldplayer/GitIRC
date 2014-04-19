@@ -1,5 +1,5 @@
 
-package me.heldplayer.web.server.internal;
+package me.heldplayer.irc.git.internal;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -8,8 +8,8 @@ import java.io.IOException;
 import java.net.SocketException;
 import java.util.logging.Level;
 
-import me.heldplayer.web.server.RequestSource;
-import me.heldplayer.web.server.GitPlugin;
+import me.heldplayer.irc.git.GitPlugin;
+import me.heldplayer.irc.git.RequestSource;
 
 public abstract class WebResponse {
 

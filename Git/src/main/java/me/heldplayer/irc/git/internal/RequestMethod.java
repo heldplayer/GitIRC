@@ -1,5 +1,5 @@
 
-package me.heldplayer.web.server.internal;
+package me.heldplayer.irc.git.internal;
 
 public enum RequestMethod {
 

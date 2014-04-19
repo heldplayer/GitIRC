@@ -1,5 +1,5 @@
 
-package me.heldplayer.web.server.internal.security;
+package me.heldplayer.irc.git.internal.security;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
@@ -7,11 +7,11 @@ import java.util.HashSet;
 import java.util.TreeMap;
 
 import me.heldplayer.irc.api.BotAPI;
+import me.heldplayer.irc.git.GitPlugin;
+import me.heldplayer.irc.git.RequestSource;
+import me.heldplayer.irc.git.event.AccessManagerInitEvent;
+import me.heldplayer.irc.git.internal.security.rules.Rule;
 import me.heldplayer.util.json.JSONObject;
-import me.heldplayer.web.server.RequestSource;
-import me.heldplayer.web.server.GitPlugin;
-import me.heldplayer.web.server.event.AccessManagerInitEvent;
-import me.heldplayer.web.server.internal.security.rules.Rule;
 
 public class AccessManager {
 

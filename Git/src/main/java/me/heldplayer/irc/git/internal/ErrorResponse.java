@@ -1,9 +1,9 @@
 
-package me.heldplayer.web.server.internal;
+package me.heldplayer.irc.git.internal;
 
 import java.io.IOException;
 
-import me.heldplayer.web.server.RequestSource;
+import me.heldplayer.irc.git.RequestSource;
 
 public class ErrorResponse extends WebResponse {
 

@@ -1,11 +1,11 @@
 
-package me.heldplayer.web.server.internal.security.rules;
+package me.heldplayer.irc.git.internal.security.rules;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import me.heldplayer.irc.git.RequestSource;
 import me.heldplayer.util.json.JSONObject;
-import me.heldplayer.web.server.RequestSource;
 
 public abstract class IpRangeRule implements Rule {
 

@@ -1,12 +1,12 @@
 
-package me.heldplayer.web.server.internal.security.rules;
+package me.heldplayer.irc.git.internal.security.rules;
 
 import java.util.ArrayList;
 
+import me.heldplayer.irc.git.RequestSource;
+import me.heldplayer.irc.git.internal.security.AccessManager;
 import me.heldplayer.util.json.JSONArray;
 import me.heldplayer.util.json.JSONObject;
-import me.heldplayer.web.server.RequestSource;
-import me.heldplayer.web.server.internal.security.AccessManager;
 
 public class RequireAll implements Rule {
 

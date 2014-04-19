@@ -1,5 +1,5 @@
 
-package me.heldplayer.web.server.internal;
+package me.heldplayer.irc.git.internal;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -7,8 +7,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 
-import me.heldplayer.web.server.GitPlugin;
-import me.heldplayer.web.server.internal.security.AccessManager;
+import me.heldplayer.irc.git.GitPlugin;
+import me.heldplayer.irc.git.internal.security.AccessManager;
 
 public class RunnableWebserver implements Runnable {
 
