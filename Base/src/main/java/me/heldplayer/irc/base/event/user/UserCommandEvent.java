@@ -1,5 +1,5 @@
 
-package me.heldplayer.irc.api.event.user;
+package me.heldplayer.irc.base.event.user;
 
 import java.util.Arrays;
 

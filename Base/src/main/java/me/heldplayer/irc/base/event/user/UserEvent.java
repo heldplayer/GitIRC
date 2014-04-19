@@ -1,5 +1,5 @@
 
-package me.heldplayer.irc.api.event.user;
+package me.heldplayer.irc.base.event.user;
 
 import me.heldplayer.irc.api.IRCUser;
 import me.heldplayer.irc.api.event.Event;
