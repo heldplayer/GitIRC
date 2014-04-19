@@ -36,8 +36,8 @@ public class BasePlugin extends Plugin {
             event.setHandled();
             String[] sender = event.message.prefix.split("!");
             IRCUser user = event.network.getUser(sender[0]);
-            BotAPI.console.sendMessageToConsole("%s is now known as %s", user.getUsername(), event.message.params[0]);
-            user.setUsername(event.message.params[0]);
+            BotAPI.console.sendMessageToConsole("%s is now known as %s", user.getUsername(), event.message.trailing);
+            user.setUsername(event.message.trailing);
             BotAPI.eventBus.postEvent(new UserNicknameChangedEvent(user, sender[0]));
         }
         else if (event.message.command.equals("PRIVMSG")) {
