@@ -1,6 +1,8 @@
 
 package me.heldplayer.irc.api.event.user;
 
+import java.util.Arrays;
+
 import me.heldplayer.irc.api.event.CancellableEvent;
 
 public class CommandEvent extends CancellableEvent {
@@ -14,8 +16,7 @@ public class CommandEvent extends CancellableEvent {
             parts[0] = parts[0].substring(1);
         }
         this.command = parts[0].toUpperCase();
-        this.params = new String[parts.length - 1];
-        System.arraycopy(parts, 1, this.params, 0, this.params.length);
+        this.params = Arrays.copyOfRange(parts, 1, parts.length - 1);
     }
 
     public CommandEvent(String command, String[] params) {

@@ -27,6 +27,11 @@ class Console implements IConsole {
     }
 
     @Override
+    public void sendMessageToConsole(String message, Object... args) {
+        System.out.println(String.format(message, args));
+    }
+
+    @Override
     public void handleConsoleInput(String input) {
         if (BotAPI.eventBus.postEvent(new CommandEvent(input))) {
             BotAPI.serverConnection.addToSendQueue(input);

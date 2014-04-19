@@ -17,6 +17,7 @@ import java.util.logging.Logger;
 
 import me.heldplayer.irc.api.BotAPI;
 import me.heldplayer.irc.api.IRCMessage;
+import me.heldplayer.irc.api.IRCUser;
 import me.heldplayer.irc.api.IServerConnection;
 import me.heldplayer.irc.api.Network;
 import me.heldplayer.irc.api.event.EventHandler;
@@ -25,8 +26,9 @@ import me.heldplayer.irc.api.event.connection.ServerDisconnectedEvent;
 import me.heldplayer.irc.api.event.connection.ServerLoggedInEvent;
 import me.heldplayer.irc.api.event.user.CommandEvent;
 import me.heldplayer.irc.api.event.user.RawMessageEvent;
-import me.heldplayer.irc.api.event.user.SelfNicknameChangedEvent;
+import me.heldplayer.irc.api.event.user.UserCommandEvent;
 import me.heldplayer.irc.api.event.user.UserMessageEvent;
+import me.heldplayer.irc.api.event.user.UserNicknameChangedEvent;
 
 class ServerConnection implements IServerConnection {
 
@@ -167,14 +169,28 @@ class ServerConnection implements IServerConnection {
             }
         }
         else if (event.message.command.equals("NICK")) {
-            BotAPI.eventBus.postEvent(new SelfNicknameChangedEvent(event.message.trailing, this.nickname));
+            event.setHandled();
+            String[] sender = event.message.prefix.split("!");
+            IRCUser user = this.network.getUser(sender[0]);
+            BotAPI.console.sendMessageToConsole("%s is now known as %s", user.getUsername(), event.message.params[0]);
+            user.setUsername(event.message.params[0]);
+            BotAPI.eventBus.postEvent(new UserNicknameChangedEvent(user, sender[0]));
             this.nickname = event.message.trailing;
         }
         else if (event.message.command.equals("PRIVMSG")) {
             event.setHandled();
             String[] sender = event.message.prefix.split("!");
-            BotAPI.console.sendMessageToConsole("[" + event.message.params[0] + "] <" + sender[0] + "> " + event.message.trailing);
-            BotAPI.eventBus.postEvent(new UserMessageEvent(this.network.getUser(sender[0]), event.message.params[0], event.message.trailing));
+            IRCUser user = this.network.getUser(sender[0]);
+            BotAPI.console.sendMessageToConsole("[%s] <%s> %s", event.message.params[0], user.getUsername(), event.message.trailing);
+
+            String prefix = BotAPI.configuration.getCommandPrefix();
+
+            if (event.message.params[0].startsWith(prefix)) {
+                BotAPI.eventBus.postEvent(new UserCommandEvent(user, event.message.params[0], event.message.trailing.substring(prefix.length())));
+            }
+            else {
+                BotAPI.eventBus.postEvent(new UserMessageEvent(user, event.message.params[0], event.message.trailing));
+            }
         }
     }
 

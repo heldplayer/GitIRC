@@ -12,6 +12,8 @@ public final class BotAPI {
 
     public static IEventBus eventBus;
 
+    public static IConfiguration configuration;
+
     public final static PluginLoader pluginLoader = new PluginLoader();
 
 }

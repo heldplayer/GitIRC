@@ -14,7 +14,6 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import me.heldplayer.irc.api.BotAPI;
-import me.heldplayer.irc.api.configuration.Configuration;
 import me.heldplayer.irc.api.configuration.ConfigurationException;
 import me.heldplayer.irc.logging.ConsoleLogFormatter;
 import me.heldplayer.irc.logging.ConsoleLogHandler;
@@ -25,7 +24,6 @@ import me.heldplayer.irc.logging.LoggerOutputStream;
 public final class IRCBotLauncher {
 
     static Thread mainThread;
-    protected static Configuration config;
 
     private static final Logger log = Logger.getLogger("API");
     private static boolean pluginsLoaded = false;
@@ -34,14 +32,6 @@ public final class IRCBotLauncher {
     private static PrintStream stdErr;
 
     public static void main(String[] args) {
-        IRCBotLauncher.config = new Configuration(new File("." + File.separator + "settings.cfg"));
-        IRCBotLauncher.config.setDefault("server-ip", "localhost");
-        IRCBotLauncher.config.setDefault("server-port", "6667");
-        IRCBotLauncher.config.setDefault("nickname", "bot");
-        IRCBotLauncher.config.setDefault("bind-host", "");
-        IRCBotLauncher.config.setDefault("log-file", "./console.log");
-        IRCBotLauncher.config.load();
-
         Thread consoleReader = new Thread(new RunnableConsoleReader());
         consoleReader.setName("Console reader Thread");
         consoleReader.setDaemon(true);
@@ -96,7 +86,7 @@ public final class IRCBotLauncher {
             fileHandler.setLevel(Level.ALL);
             rawIRC.addHandler(fileHandler);
 
-            fileHandler = new FileLogHandler(IRCBotLauncher.config.getString("log-file"), true);
+            fileHandler = new FileLogHandler(BotAPI.configuration.getLogFile(), true);
             fileHandler.setFormatter(new FileLogFormatter());
             fileHandler.setLevel(Level.ALL);
             stdout.addHandler(fileHandler);
@@ -130,10 +120,10 @@ public final class IRCBotLauncher {
 
         BotAPI.eventBus = new EventBus();
 
-        String serverIp = IRCBotLauncher.config.getString("server-ip");
-        int serverPort = IRCBotLauncher.config.getInt("server-port");
-        String bindHost = IRCBotLauncher.config.getString("bind-host");
-        String nickname = IRCBotLauncher.config.getString("nickname");
+        String serverIp = BotAPI.configuration.getServerIp();
+        int serverPort = BotAPI.configuration.getServerPort();
+        String bindHost = BotAPI.configuration.getBindHost();
+        String nickname = BotAPI.configuration.getNickname();
 
         if (serverIp.isEmpty()) {
             throw new ConfigurationException("Server IP is missing from the configuration");

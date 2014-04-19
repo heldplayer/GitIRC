@@ -7,6 +7,8 @@ public interface IConsole {
 
     void sendMessageToConsole(String message);
 
+    void sendMessageToConsole(String message, Object... args);
+
     void handleConsoleInput(String input);
 
     void shutdown();
