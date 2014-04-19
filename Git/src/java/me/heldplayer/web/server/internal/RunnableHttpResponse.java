@@ -157,10 +157,10 @@ public class RunnableHttpResponse implements Runnable {
                 File file = new File(root, location).getAbsoluteFile();
 
                 if (!RunnableWebserver.instance.accessManager.canView(splitLocation, source)) {
-                    GitPlugin.log.info(String.format("Denied access to view '%s' from '%s'", source.path, source.address.getHostAddress()));
+                    GitPlugin.getLog().info(String.format("Denied access to view '%s' from '%s'", source.path, source.address.getHostAddress()));
 
                     for (Entry<String, String> entry : headers.entrySet()) {
-                        GitPlugin.log.info(String.format("%s: %s", entry.getKey(), entry.getValue()));
+                        GitPlugin.getLog().info(String.format("%s: %s", entry.getKey(), entry.getValue()));
                     }
 
                     new ErrorResponse(ErrorType.Forbidden).writeResponse(source).flush(source, this.out);
@@ -203,8 +203,8 @@ public class RunnableHttpResponse implements Runnable {
             }
             catch (RuntimeException ex) {
                 if (!ex.getMessage().equalsIgnoreCase("break")) {
-                    GitPlugin.log.log(Level.SEVERE, "Exception while responding to web client", ex);
-                    GitPlugin.log.log(Level.SEVERE, "Request: " + location);
+                    GitPlugin.getLog().log(Level.SEVERE, "Exception while responding to web client", ex);
+                    GitPlugin.getLog().log(Level.SEVERE, "Request: " + location);
                 }
 
                 try {

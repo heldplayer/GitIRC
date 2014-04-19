@@ -50,10 +50,10 @@ public abstract class WebResponse {
             }
         }
         catch (SocketException ex) {
-            GitPlugin.log.log(Level.WARNING, "Tried displaying page to a client, but the client closed the connection!", ex);
+            GitPlugin.getLog().log(Level.WARNING, "Tried displaying page to a client, but the client closed the connection!", ex);
         }
         catch (IOException ex) {
-            GitPlugin.log.log(Level.WARNING, "Tried displaying page to a client, but an error occoured", ex);
+            GitPlugin.getLog().log(Level.WARNING, "Tried displaying page to a client, but an error occoured", ex);
         }
         finally {
             try {

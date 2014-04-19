@@ -42,10 +42,16 @@ public class GitPlugin extends Plugin {
 
     private String channel;
 
-    public static final Logger log = Logger.getLogger("Web");
+    private static GitPlugin instance;
+
+    public static Logger getLog() {
+        return instance.getLogger();
+    }
 
     @Override
     public void onEnable() {
+        instance = this;
+
         GitPlugin.config = new Configuration(new File("." + File.separator + "webserver.cfg"));
         GitPlugin.config.load();
 

@@ -70,7 +70,7 @@ public class RunnableWebserver implements Runnable {
     @Override
     public void run() {
         try {
-            GitPlugin.log.info("Starting server on " + (this.host != null && !this.host.isEmpty() ? this.host : "*") + ":" + this.port);
+            GitPlugin.getLog().info("Starting server on " + (this.host != null && !this.host.isEmpty() ? this.host : "*") + ":" + this.port);
 
             InetAddress adress = null;
 
@@ -81,9 +81,9 @@ public class RunnableWebserver implements Runnable {
             this.serverSocket = new ServerSocket(this.port, 0, adress);
         }
         catch (Exception ex) {
-            GitPlugin.log.severe("**** FAILED TO BIND TO PORT");
-            GitPlugin.log.severe("The exception was: " + ex.toString());
-            GitPlugin.log.severe("Perhaps something is already running on that port?");
+            GitPlugin.getLog().severe("**** FAILED TO BIND TO PORT");
+            GitPlugin.getLog().severe("The exception was: " + ex.toString());
+            GitPlugin.getLog().severe("Perhaps something is already running on that port?");
             return;
         }
 

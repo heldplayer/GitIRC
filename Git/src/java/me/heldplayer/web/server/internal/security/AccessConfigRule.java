@@ -18,7 +18,7 @@ public class AccessConfigRule implements IAccessRule {
     private Rule rootRule;
 
     public AccessConfigRule(File ruleFile, String path) {
-        GitPlugin.log.info("Created new accessrule for " + path);
+        GitPlugin.getLog().info("Created new accessrule for " + path);
         this.file = ruleFile;
         this.lastChanged = this.file.lastModified();
 
