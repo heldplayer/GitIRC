@@ -23,6 +23,8 @@ public class BasePlugin extends Plugin {
     @Override
     public void onEnable() {
         instance = this;
+
+        BotAPI.eventBus.registerEventHandler(this);
     }
 
     @Override
