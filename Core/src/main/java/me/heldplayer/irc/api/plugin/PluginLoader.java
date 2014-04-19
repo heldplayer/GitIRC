@@ -143,7 +143,7 @@ public class PluginLoader {
             JarEntry info = jar.getJarEntry("plugin.cfg");
 
             if (info == null) {
-                throw null;
+                return null;
             }
 
             JSONObject object = new JSONObject(jar.getInputStream(info));
