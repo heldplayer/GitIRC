@@ -8,7 +8,6 @@ import me.heldplayer.util.json.JSONWriter;
 public class JSONTest {
 
     public static void main(String[] args) {
-
         try {
             String input = "{true:false,\"null\":null,\"some\\\\ stuff\":[true, true, \"false\", 'true', 'null',{true:false,null:null}]}";
             System.out.println(input);
