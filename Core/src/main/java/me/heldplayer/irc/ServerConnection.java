@@ -230,7 +230,7 @@ class ServerConnection implements IServerConnection {
         }
 
         if (this.connected || this.isDisconnecting) {
-            if (System.currentTimeMillis() - this.lastRead > 300000L) {
+            if (!this.isDisconnecting && System.currentTimeMillis() - this.lastRead > 300000L) {
                 this.disconnect("Connection timed out");
                 BotAPI.eventBus.postEvent(new ServerDisconnectedEvent(this));
 

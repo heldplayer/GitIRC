@@ -22,9 +22,11 @@ public class PluginLoader {
     static final Logger log = Logger.getLogger("API");
 
     private HashMap<String, Class<?>> classes = new HashMap<String, Class<?>>();
-    private HashMap<String, PluginClassLoader> loaders = new HashMap<String, PluginClassLoader>();
 
+    private HashMap<String, PluginClassLoader> pluginLoaders = new HashMap<String, PluginClassLoader>();
     private HashSet<Plugin> plugins = new HashSet<Plugin>();
+
+    private HashSet<LibraryClassLoader> libraryLoaders = new HashSet<LibraryClassLoader>();
 
     public Set<Plugin> getAllPlugins() {
         return Collections.unmodifiableSet(plugins);
@@ -74,11 +76,41 @@ public class PluginLoader {
                 throw new PluginException(String.format("Failed loading plugin in '%s'", (Object) null), e);
             }
 
-            loaders.put(info.name, loader);
+            pluginLoaders.put(info.name, loader);
         }
-        
+
         for (Plugin plugin : this.plugins) {
             this.enablePlugin(plugin);
+        }
+
+        return count;
+    }
+
+    public int loadLibraries() {
+        int count = 0;
+        File libraries = new File("./libraries");
+
+        if (libraries.exists() && libraries.isDirectory()) {
+            File[] files = libraries.listFiles(new FileFilter() {
+
+                @Override
+                public boolean accept(File file) {
+                    return file.isFile();
+                }
+
+            });
+
+            for (int i = 0; i < files.length; i++) {
+                File file = files[i];
+
+                try {
+                    loadLibrary(file);
+                    count++;
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         return count;
@@ -92,10 +124,16 @@ public class PluginLoader {
         }
 
         this.plugins.clear();
-        this.classes.clear();
-        this.loaders.clear();
+        this.pluginLoaders.clear();
 
         return plugins.size();
+    }
+
+    public int unloadLibraries() {
+        int size = this.libraryLoaders.size();
+        this.libraryLoaders.clear();
+
+        return size;
     }
 
     Class<?> findClass(String name) {
@@ -105,8 +143,8 @@ public class PluginLoader {
             return result;
         }
         else {
-            for (String current : loaders.keySet()) {
-                PluginClassLoader loader = loaders.get(current);
+            for (String current : pluginLoaders.keySet()) {
+                PluginClassLoader loader = pluginLoaders.get(current);
                 try {
                     result = loader.findClass(name, false);
                 }
@@ -129,6 +167,10 @@ public class PluginLoader {
 
     void removeClass(String name) {
         classes.remove(name);
+    }
+
+    public int getLoadedClassesCount() {
+        return this.classes.size();
     }
 
     public PluginInfo getPluginInfo(File file) {
@@ -182,7 +224,7 @@ public class PluginLoader {
             throw new PluginException(String.format("Failed loading plugin in '%s'", file), e);
         }
 
-        loaders.put(info.name, loader);
+        pluginLoaders.put(info.name, loader);
 
         return loader.plugin;
     }
@@ -195,8 +237,8 @@ public class PluginLoader {
         if (!plugin.isEnabled()) {
             plugin.logger.info(String.format("Enabling plugin %s", plugin.getInfo().name));
 
-            if (!loaders.containsKey(plugin.getInfo().name)) {
-                loaders.put(plugin.getInfo().name, plugin.loader);
+            if (!pluginLoaders.containsKey(plugin.getInfo().name)) {
+                pluginLoaders.put(plugin.getInfo().name, plugin.loader);
             }
 
             try {
@@ -225,7 +267,7 @@ public class PluginLoader {
                 plugin.logger.log(Level.SEVERE, String.format("Error while disabling plugin %s", plugin.getInfo().name), e);
             }
 
-            loaders.remove(plugin.getInfo().name);
+            pluginLoaders.remove(plugin.getInfo().name);
 
             Set<String> classes = plugin.loader.getClasses();
 
@@ -235,6 +277,22 @@ public class PluginLoader {
 
             plugin.logger.info(String.format("Disabled plugin %s", plugin.getInfo().name));
         }
+    }
+
+    public void loadLibrary(File file) {
+        if (file == null || !file.exists() || !file.isFile()) {
+            throw new IllegalArgumentException("file");
+        }
+
+        LibraryClassLoader loader = null;
+        try {
+            loader = new LibraryClassLoader(this, file, this.getClass().getClassLoader());
+        }
+        catch (Throwable e) {
+            throw new PluginException(String.format("Failed loading plugin in '%s'", file), e);
+        }
+
+        libraryLoaders.add(loader);
     }
 
 }

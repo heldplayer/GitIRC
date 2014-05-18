@@ -44,6 +44,9 @@ public final class IRCBotLauncher {
     }
 
     private static void setupLoggers() {
+        if (BotAPI.console != null) {
+            resetLoggers();
+        }
         IRCBotLauncher.stdOut = System.out;
         IRCBotLauncher.stdErr = System.err;
 
@@ -120,6 +123,8 @@ public final class IRCBotLauncher {
 
         IRCBotLauncher.setupLoggers();
 
+        IRCBotLauncher.log.info("Loaded " + BotAPI.pluginLoader.loadLibraries() + " libraries");
+
         BotAPI.eventBus = new EventBus();
 
         String serverIp = BotAPI.configuration.getServerIp();
@@ -164,12 +169,15 @@ public final class IRCBotLauncher {
             BotAPI.serverConnection.processQueue();
         }
 
+        IRCBotLauncher.log.info("Unloaded " + BotAPI.pluginLoader.unloadPlugins() + " plugins");
+
         BotAPI.eventBus.cleanup();
 
         BotAPI.serverConnection = null;
         BotAPI.eventBus = null;
 
-        IRCBotLauncher.log.info("Unloaded " + BotAPI.pluginLoader.unloadPlugins() + " plugins");
+        IRCBotLauncher.log.info("Unloaded " + BotAPI.pluginLoader.unloadLibraries() + " libraries");
+        IRCBotLauncher.log.info("There are " + BotAPI.pluginLoader.getLoadedClassesCount() + " loaded classes remaining");
 
         IRCBotLauncher.resetLoggers();
 
