@@ -1,6 +1,8 @@
 
 package me.heldplayer.irc.base;
 
+import java.net.URL;
+import java.util.Arrays;
 import java.util.logging.Logger;
 
 import me.heldplayer.irc.api.BotAPI;
@@ -11,6 +13,7 @@ import me.heldplayer.irc.api.plugin.Plugin;
 import me.heldplayer.irc.base.event.user.UserCommandEvent;
 import me.heldplayer.irc.base.event.user.UserMessageEvent;
 import me.heldplayer.irc.base.event.user.UserNicknameChangedEvent;
+import me.heldplayer.util.json.JSONObject;
 
 public class BasePlugin extends Plugin {
 
@@ -50,12 +53,83 @@ public class BasePlugin extends Plugin {
 
             if (event.message.trailing.startsWith(prefix)) {
                 UserCommandEvent commandEvent = new UserCommandEvent(user, event.message.params[0], event.message.trailing.substring(prefix.length()));
-                if (BotAPI.eventBus.postEvent(commandEvent)) {
-                    //BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: Unknown command", event.message.params[0], user.getUsername());
+
+                try {
+                    BotAPI.eventBus.postEvent(commandEvent);
+                }
+                catch (Throwable e) {
+                    e.printStackTrace();
+                    BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: %s", commandEvent.channel, commandEvent.user.getUsername(), e.getClass().getSimpleName(), e.getMessage());
                 }
             }
             else {
                 BotAPI.eventBus.postEvent(new UserMessageEvent(user, event.message.params[0], event.message.trailing));
+            }
+        }
+    }
+
+    @EventHandler
+    public void onUserCommand(UserCommandEvent event) {
+        if (event.command.equals("JSON")) {
+            event.setHandled();
+            String[] params = event.getParams();
+
+            if (params.length == 0) {
+                BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: %s", event.channel, event.user.getUsername(), "Usage: json parse/url");
+            }
+            else if (params.length == 1) {
+                if (params[0].equalsIgnoreCase("parse")) {
+                    BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: %s", event.channel, event.user.getUsername(), "Usage: minecraft parse [JSON]");
+                }
+                else if (params[0].equalsIgnoreCase("url")) {
+                    BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: %s", event.channel, event.user.getUsername(), "Usage: minecraft url [URL]");
+                }
+                else {
+                    BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: %s", event.channel, event.user.getUsername(), "Usage: json parse/url");
+                }
+            }
+            else {
+                if (params[0].equalsIgnoreCase("parse")) {
+                    String[] temp = Arrays.copyOfRange(params, 1, params.length);
+                    String json = temp[0];
+                    for (int i = 1; i < temp.length; i++) {
+                        if (temp[i] != null) {
+                            json = " " + temp[i];
+                        }
+                    }
+                    try {
+                        new JSONObject(json);
+
+                        BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: %s", event.channel, event.user.getUsername(), "Parsing succeeded");
+                    }
+                    catch (Throwable e) {
+                        e.printStackTrace();
+                        BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: %s", event.channel, event.user.getUsername(), "Parsing failed");
+                        BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: %s", event.channel, event.user.getUsername(), e.getClass().getSimpleName(), e.getMessage());
+                    }
+                }
+                else if (params[0].equalsIgnoreCase("url")) {
+                    String[] temp = Arrays.copyOfRange(params, 1, params.length);
+                    String url = temp[0];
+                    for (int i = 1; i < temp.length; i++) {
+                        if (temp[i] != null) {
+                            url = " " + temp[i];
+                        }
+                    }
+                    try {
+                        new JSONObject(new URL(url).openStream());
+
+                        BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: %s", event.channel, event.user.getUsername(), "Parsing succeeded");
+                    }
+                    catch (Throwable e) {
+                        e.printStackTrace();
+                        BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: %s", event.channel, event.user.getUsername(), "Parsing failed");
+                        BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: %s", event.channel, event.user.getUsername(), e.getClass().getSimpleName(), e.getMessage());
+                    }
+                }
+                else {
+                    BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: %s", event.channel, event.user.getUsername(), "Usage: minecraft uuid/name");
+                }
             }
         }
     }
