@@ -6,6 +6,8 @@ import me.heldplayer.irc.api.plugin.PluginLoader;
 
 public final class BotAPI {
 
+    public static long startTime;
+
     public static IServerConnection serverConnection;
 
     public static IConsole console;

@@ -132,6 +132,47 @@ public class BasePlugin extends Plugin {
                 }
             }
         }
+        else if (event.command.equals("UPTIME")) {
+            long totalTime = System.currentTimeMillis() - BotAPI.startTime;
+            long miniseconds = totalTime % 1000;
+            long time = totalTime / 1000L;
+            long seconds = time % 60;
+            long minutes = ((time - seconds) / 60L) % 60;
+            long hours = ((time - seconds - minutes * 60L) / 3600L) % 24;
+            long days = ((time - seconds - minutes * 60L - hours * 1440L) / 86400L) % 7;
+            long weeks = ((time - seconds - minutes * 60L - hours * 1440L - days * 10080L) / 604800L);
+
+            StringBuilder result = new StringBuilder();
+            boolean flag = false;
+            if (weeks > 0) {
+                flag = true;
+                result.append(weeks).append(" weeks, ");
+            }
+            if (flag) {
+                result.append(days).append(" days, ");
+            }
+            else if (days > 0) {
+                flag = true;
+                result.append(days).append(" days, ");
+            }
+            if (flag) {
+                result.append(hours).append(" hours, ");
+            }
+            else if (hours > 0) {
+                flag = true;
+                result.append(hours).append(" hours, ");
+            }
+            if (flag) {
+                result.append(minutes).append(" minutes, ");
+            }
+            else if (days > 0) {
+                flag = true;
+                result.append(minutes).append(" minutes, ");
+            }
+            result.append(seconds).append(" seconds, ");
+            result.append(miniseconds).append(" minis");
+            BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :Uptime: %s", event.channel, event.user.getUsername(), result.toString());
+        }
     }
 
 }

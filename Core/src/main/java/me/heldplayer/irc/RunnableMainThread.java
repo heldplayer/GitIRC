@@ -19,6 +19,7 @@ class RunnableMainThread implements Runnable {
     public void run() {
         this.hasStopped = false;
         this.running = true;
+        BotAPI.startTime = System.currentTimeMillis();
 
         IRCBotLauncher.loadPlugins();
 
