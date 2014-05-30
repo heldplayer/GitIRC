@@ -134,7 +134,6 @@ public class BasePlugin extends Plugin {
         }
         else if (event.command.equals("UPTIME")) {
             long totalTime = System.currentTimeMillis() - BotAPI.startTime;
-            long miniseconds = totalTime % 1000;
             long time = totalTime / 1000L;
             long seconds = time % 60;
             long minutes = ((time - seconds) / 60L) % 60;
@@ -165,13 +164,12 @@ public class BasePlugin extends Plugin {
             if (flag) {
                 result.append(minutes).append(" minutes, ");
             }
-            else if (days > 0) {
+            else if (minutes > 0) {
                 flag = true;
                 result.append(minutes).append(" minutes, ");
             }
-            result.append(seconds).append(" seconds, ");
-            result.append(miniseconds).append(" minis");
-            BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :Uptime: %s", event.channel, event.user.getUsername(), result.toString());
+            result.append(seconds).append(" seconds");
+            BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: Uptime: %s", event.channel, event.user.getUsername(), result.toString());
         }
     }
 
