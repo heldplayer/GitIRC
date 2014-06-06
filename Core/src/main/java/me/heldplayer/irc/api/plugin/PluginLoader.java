@@ -9,15 +9,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import me.heldplayer.irc.api.IClassLoader;
 import me.heldplayer.util.json.JSONObject;
 
-public class PluginLoader {
+public class PluginLoader implements IClassLoader {
 
     static final Logger log = Logger.getLogger("API");
 
@@ -27,6 +29,8 @@ public class PluginLoader {
     private HashSet<Plugin> plugins = new HashSet<Plugin>();
 
     private HashSet<LibraryClassLoader> libraryLoaders = new HashSet<LibraryClassLoader>();
+
+    private ArrayList<String> unloadedClasses = new ArrayList<String>();
 
     public Set<Plugin> getAllPlugins() {
         return Collections.unmodifiableSet(plugins);
@@ -131,12 +135,21 @@ public class PluginLoader {
 
     public int unloadLibraries() {
         int size = this.libraryLoaders.size();
+
+        for (LibraryClassLoader loader : libraryLoaders) {
+            Set<String> classes = loader.getClasses();
+
+            for (String clazz : classes) {
+                this.removeClass(clazz);
+            }
+        }
+
         this.libraryLoaders.clear();
 
         return size;
     }
 
-    Class<?> findClass(String name) {
+    public Class<?> findClass(String name) {
         Class<?> result = classes.get(name);
 
         if (result != null) {
@@ -145,6 +158,17 @@ public class PluginLoader {
         else {
             for (String current : pluginLoaders.keySet()) {
                 PluginClassLoader loader = pluginLoaders.get(current);
+                try {
+                    result = loader.findClass(name, false);
+                }
+                catch (ClassNotFoundException e) {}
+
+                if (result != null) {
+                    return result;
+                }
+            }
+
+            for (LibraryClassLoader loader : libraryLoaders) {
                 try {
                     result = loader.findClass(name, false);
                 }
@@ -166,11 +190,33 @@ public class PluginLoader {
     }
 
     void removeClass(String name) {
+        if (classes.containsKey(name)) {
+            unloadedClasses.add(name);
+        }
         classes.remove(name);
     }
 
     public int getLoadedClassesCount() {
         return this.classes.size();
+    }
+
+    public int getUnloadingClassesCount() {
+        int count = 0;
+        Iterator<String> i = unloadedClasses.iterator();
+        while (i.hasNext()) {
+            String name = i.next();
+            try {
+                Class<?> clazz = Class.forName(name, false, null);
+                if (clazz != null) {
+                    count++;
+                    continue;
+                }
+            }
+            catch (Throwable e) {
+                i.remove();
+            }
+        }
+        return count;
     }
 
     public PluginInfo getPluginInfo(File file) {
@@ -293,6 +339,31 @@ public class PluginLoader {
         }
 
         libraryLoaders.add(loader);
+    }
+
+    @Override
+    public byte[] findBytes(String name) {
+        byte[] result = null;
+
+        for (String current : pluginLoaders.keySet()) {
+            PluginClassLoader loader = pluginLoaders.get(current);
+
+            result = loader.findBytes(name);
+
+            if (result != null) {
+                return result;
+            }
+        }
+
+        for (LibraryClassLoader loader : libraryLoaders) {
+
+            result = loader.findBytes(name);
+
+            if (result != null) {
+                return result;
+            }
+        }
+        return null;
     }
 
 }

@@ -26,6 +26,13 @@ class RunnableMainThread implements Runnable {
         while (this.running) {
             if (this.shouldReset) {
                 IRCBotLauncher.unloadPlugins();
+                try {
+                    Thread.sleep(1000L);
+                }
+                catch (InterruptedException e) {
+                    e.printStackTrace();
+                    this.running = false;
+                }
                 IRCBotLauncher.loadPlugins();
                 this.shouldReset = false;
                 continue;

@@ -2,13 +2,17 @@
 package me.heldplayer.irc.api.plugin;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashMap;
 import java.util.Set;
 
-public class LibraryClassLoader extends URLClassLoader {
+import me.heldplayer.irc.api.IClassLoader;
+import sun.misc.IOUtils;
+
+public class LibraryClassLoader extends URLClassLoader implements IClassLoader {
 
     private PluginLoader loader;
     private String filename;
@@ -53,6 +57,19 @@ public class LibraryClassLoader extends URLClassLoader {
 
     Set<String> getClasses() {
         return this.classes.keySet();
+    }
+
+    @Override
+    public byte[] findBytes(final String name) {
+        String str = name.replace('.', '/').concat(".class");
+        ClassLoader loader = this.getClass().getClassLoader();
+        try {
+            return IOUtils.readFully(loader.getResourceAsStream(str), -1, true);
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
 }

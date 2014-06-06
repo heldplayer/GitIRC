@@ -31,4 +31,10 @@ public class Network {
         this.users.remove(name);
     }
 
+    public void setUsername(IRCUser user, String name) {
+        this.users.remove(user.getUsername());
+        user.setUsername(name);
+        this.users.put(name, user);
+    }
+
 }

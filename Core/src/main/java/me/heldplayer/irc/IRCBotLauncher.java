@@ -178,6 +178,8 @@ public final class IRCBotLauncher {
 
         IRCBotLauncher.log.info("Unloaded " + BotAPI.pluginLoader.unloadLibraries() + " libraries");
         IRCBotLauncher.log.info("There are " + BotAPI.pluginLoader.getLoadedClassesCount() + " loaded classes remaining");
+        System.gc();
+        IRCBotLauncher.log.info("There are " + BotAPI.pluginLoader.getUnloadingClassesCount() + " classes pending for unload");
 
         IRCBotLauncher.resetLoggers();
 
