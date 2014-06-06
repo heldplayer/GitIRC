@@ -2,7 +2,6 @@
 package me.heldplayer.irc.api.plugin;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -11,6 +10,8 @@ import java.util.Set;
 
 import me.heldplayer.irc.api.IClassLoader;
 import sun.misc.IOUtils;
+import sun.misc.Resource;
+import sun.misc.URLClassPath;
 
 public abstract class CustomClassLoader extends URLClassLoader implements IClassLoader {
 
@@ -24,6 +25,8 @@ public abstract class CustomClassLoader extends URLClassLoader implements IClass
 
         this.loader = loader;
         this.name = name;
+
+        this.ucp = ReflectionHelper.getClassPath(this);
     }
 
     @Override
@@ -59,8 +62,11 @@ public abstract class CustomClassLoader extends URLClassLoader implements IClass
         return this.classes.keySet();
     }
 
+    private URLClassPath ucp;
+
     @Override
     public byte[] findBytes(final String name) {
+        PluginLoader.log.info(String.format("[%s] Looking for class bytes for '%s'", this.name, name));
         String str = name.replace('.', '/').concat(".class");
         ClassLoader loader = this.getClass().getClassLoader();
         try {
@@ -68,9 +74,20 @@ public abstract class CustomClassLoader extends URLClassLoader implements IClass
             PluginLoader.log.info(String.format("[%s] Found class bytes for '%s'", this.name, name));
             return data;
         }
-        catch (IOException e) {
-            return null;
+        catch (Throwable e) {}
+
+        // Fallback
+        PluginLoader.log.info(String.format("[%s] Looking for class bytes for '%s' in URLClassPath", this.name, name));
+        Resource localResource = this.ucp.getResource(str, false);
+        if (localResource != null) {
+            try {
+                byte[] data = localResource.getBytes();
+                PluginLoader.log.info(String.format("[%s] Found class bytes for '%s'", this.name, name));
+                return data;
+            }
+            catch (Throwable e) {}
         }
+        return null;
     }
 
 }
