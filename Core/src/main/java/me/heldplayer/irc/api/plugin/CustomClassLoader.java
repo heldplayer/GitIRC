@@ -48,9 +48,9 @@ public abstract class CustomClassLoader extends URLClassLoader implements IClass
                 if (result != null) {
                     loader.setClass(name, result);
                 }
-            }
 
-            PluginLoader.log.info(String.format("[%s] Loaded class '%s'", this.name, name));
+                PluginLoader.log.info(String.format("[%s] Loaded class '%s'", this.name, name));
+            }
 
             classes.put(name, result);
         }
