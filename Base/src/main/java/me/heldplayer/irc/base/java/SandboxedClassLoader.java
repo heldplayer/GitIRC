@@ -56,6 +56,8 @@ public class SandboxedClassLoader extends SecureClassLoader {
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
         if (loaderExceptions.contains(name)) {
+            SandboxedClassLoader.log.info(String.format("[%s] Loading class '%s' through main PluginLoader", this.user.getUsername(), name));
+
             return BotAPI.pluginLoader.findClass(name);
         }
 
@@ -65,11 +67,10 @@ public class SandboxedClassLoader extends SecureClassLoader {
             byte[] bytes = BotAPI.pluginLoader.findBytes(name);
 
             try {
-                result = super.defineClass(name, bytes, 0, bytes.length);
+                result = this.defineClass(name, bytes, 0, bytes.length);
             }
             catch (Throwable e) {
-                e.printStackTrace();
-                return null;
+                throw new ClassNotFoundException(name, e);
             }
 
             SandboxedClassLoader.log.info(String.format("[%s] Loaded class '%s'", this.user.getUsername(), name));

@@ -211,6 +211,7 @@ public class BasePlugin extends Plugin {
                             BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: Created new sandbox", event.channel, event.user.getUsername());
                         }
                         catch (Throwable e) {
+                            e.printStackTrace();
                             BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: Failed creating sandbox: %s: %s", event.channel, event.user.getUsername(), e.getClass().getSimpleName(), e.getMessage());
                         }
                     }
