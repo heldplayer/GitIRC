@@ -45,12 +45,12 @@ public class HttpProfileRepository implements ProfileRepository {
             int start = 0;
             int i = 0;
             do {
-                int end = PROFILES_PER_REQUEST * (i + 1);
+                int end = HttpProfileRepository.PROFILES_PER_REQUEST * (i + 1);
                 if (end > namesCount) {
                     end = namesCount;
                 }
                 String[] namesBatch = Arrays.copyOfRange(names, start, end);
-                HttpBody body = getHttpBody(namesBatch);
+                HttpBody body = HttpProfileRepository.getHttpBody(namesBatch);
                 Profile[] result = this.post(this.getProfilesUrl(), body, headers);
                 profiles.addAll(Arrays.asList(result));
 

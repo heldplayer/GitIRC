@@ -45,7 +45,7 @@ public final class IRCBotLauncher {
 
     private static void setupLoggers() {
         if (BotAPI.console != null) {
-            resetLoggers();
+            IRCBotLauncher.resetLoggers();
         }
         IRCBotLauncher.stdOut = System.out;
         IRCBotLauncher.stdErr = System.err;

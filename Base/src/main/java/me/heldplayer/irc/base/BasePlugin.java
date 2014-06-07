@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import me.heldplayer.irc.api.BotAPI;
+import me.heldplayer.irc.api.IRCChannel;
 import me.heldplayer.irc.api.IRCUser;
 import me.heldplayer.irc.api.event.EventHandler;
 import me.heldplayer.irc.api.event.user.RawMessageEvent;
@@ -15,7 +16,6 @@ import me.heldplayer.irc.base.event.user.UserCommandEvent;
 import me.heldplayer.irc.base.event.user.UserMessageEvent;
 import me.heldplayer.irc.base.event.user.UserNicknameChangedEvent;
 import me.heldplayer.irc.base.java.ISandboxDelegate;
-import me.heldplayer.irc.base.java.JavaReader;
 import me.heldplayer.irc.base.java.SandboxManager;
 import me.heldplayer.util.json.JSONObject;
 
@@ -24,12 +24,12 @@ public class BasePlugin extends Plugin {
     private static BasePlugin instance;
 
     public static Logger getLog() {
-        return instance.getLogger();
+        return BasePlugin.instance.getLogger();
     }
 
     @Override
     public void onEnable() {
-        instance = this;
+        BasePlugin.instance = this;
 
         BotAPI.eventBus.registerEventHandler(this);
     }
@@ -71,6 +71,85 @@ public class BasePlugin extends Plugin {
             else {
                 BotAPI.eventBus.postEvent(new UserMessageEvent(user, event.message.params[0], event.message.trailing));
             }
+        }
+        else if (event.message.command.equals("JOIN")) { // Channel Join
+            event.setHandled();
+            String[] sender = event.message.prefix.split("!");
+            IRCUser user = event.network.getUser(sender[0]);
+            IRCChannel channel = event.network.getChannel(event.message.params[0]);
+            channel.addUser(user);
+            if (user.getUsername().equalsIgnoreCase(BotAPI.serverConnection.getNickname())) {
+                BotAPI.console.sendMessageToConsole("Joined channel %s", channel.getName());
+            }
+            else {
+                BotAPI.console.sendMessageToConsole("%s joined %s", user.getUsername(), channel.getName());
+            }
+        }
+        else if (event.message.command.equals("PART")) { // Channel Leave
+            event.setHandled();
+            String[] sender = event.message.prefix.split("!");
+            IRCUser user = event.network.getUser(sender[0]);
+            IRCChannel channel = event.network.getChannel(event.message.params[0]);
+            String reason = event.message.trailing;
+            channel.removeUser(user);
+            if (user.getUsername().equalsIgnoreCase(BotAPI.serverConnection.getNickname())) {
+                if (reason != null) {
+                    BotAPI.console.sendMessageToConsole("Parted channel %s (%s)", channel.getName(), reason);
+                }
+                else {
+                    BotAPI.console.sendMessageToConsole("Parted channel %s", channel.getName());
+                }
+            }
+            else {
+                if (reason != null) {
+                    BotAPI.console.sendMessageToConsole("%s parted %s (%s)", user.getUsername(), channel.getName(), reason);
+                }
+                else {
+                    BotAPI.console.sendMessageToConsole("%s parted %s", user.getUsername(), channel.getName());
+                }
+            }
+        }
+        else if (event.message.command.equals("KICK")) { // Channel Kick
+            event.setHandled();
+            String[] sender = event.message.prefix.split("!");
+            IRCUser user = event.network.getUser(sender[0]);
+            IRCChannel channel = event.network.getChannel(event.message.params[0]);
+            String reason = event.message.trailing;
+            channel.removeUser(user);
+            if (user.getUsername().equalsIgnoreCase(BotAPI.serverConnection.getNickname())) {
+                if (reason != null) {
+                    BotAPI.console.sendMessageToConsole("Kicked from channel %s (%s)", channel.getName(), reason);
+                }
+                else {
+                    BotAPI.console.sendMessageToConsole("Kicked from channel %s", channel.getName());
+                }
+            }
+            else {
+                if (reason != null) {
+                    BotAPI.console.sendMessageToConsole("%s was kicked from %s (%s)", user.getUsername(), channel.getName(), reason);
+                }
+                else {
+                    BotAPI.console.sendMessageToConsole("%s was kicked from %s", user.getUsername(), channel.getName());
+                }
+            }
+        }
+        else if (event.message.command.equals("QUIT")) { // User Quit
+            event.setHandled();
+            String[] sender = event.message.prefix.split("!");
+            IRCUser user = event.network.getUser(sender[0]);
+            String reason = event.message.trailing;
+            event.network.removeUser(user);
+
+            if (reason != null) {
+                BotAPI.console.sendMessageToConsole("%s Quit (%s)", user.getUsername(), reason);
+            }
+            else {
+                BotAPI.console.sendMessageToConsole("%s Quit", user.getUsername());
+            }
+        }
+        else if (event.message.command.equals("353")) { // Channel Users
+            //this.nickname += "_";
+            //this.addToSendQueue("NICK %s", this.nickname);
         }
     }
 
@@ -184,7 +263,7 @@ public class BasePlugin extends Plugin {
                 String[] params = event.getParams();
 
                 if (params.length == 0) {
-                    BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: %s", event.channel, event.user.getUsername(), "Usage: sandbox list/create/eval <expression>");
+                    BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: %s", event.channel, event.user.getUsername(), "Usage: sandbox list/create/remove/eval <expression>");
                 }
                 else if (params.length == 1) {
                     if (params[0].equalsIgnoreCase("list")) {
@@ -215,6 +294,14 @@ public class BasePlugin extends Plugin {
                             BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: Failed creating sandbox: %s: %s", event.channel, event.user.getUsername(), e.getClass().getSimpleName(), e.getMessage());
                         }
                     }
+                    else if (params[0].equalsIgnoreCase("remove")) {
+                        if (SandboxManager.removeSandbox(event.user)) {
+                            BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: Removed sandbox", event.channel, event.user.getUsername());
+                        }
+                        else {
+                            BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: Sandbox did not exist", event.channel, event.user.getUsername());
+                        }
+                    }
                 }
                 else {
                     if (params[0].equalsIgnoreCase("eval")) {
@@ -225,18 +312,18 @@ public class BasePlugin extends Plugin {
                                 message += " " + temp[i];
                             }
                         }
-                        System.out.println(message);
                         ISandboxDelegate sandbox = SandboxManager.getSandbox(event.user);
                         if (sandbox == null) {
                             BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: You have no running sandbox", event.channel, event.user.getUsername());
                         }
                         else {
-                            sandbox.addCommand(new JavaReader(message).readNumber().toString());
+                            sandbox.addCommand(message);
                         }
                     }
                 }
             }
             catch (Throwable e) {
+                e.printStackTrace();
                 BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: Error: %s: %s", event.channel, event.user.getUsername(), e.getClass().getSimpleName(), e.getMessage());
             }
         }

@@ -16,12 +16,12 @@ public class MinecraftPlugin extends Plugin {
     private static MinecraftPlugin instance;
 
     public static Logger getLog() {
-        return instance.getLogger();
+        return MinecraftPlugin.instance.getLogger();
     }
 
     @Override
     public void onEnable() {
-        instance = this;
+        MinecraftPlugin.instance = this;
 
         BotAPI.eventBus.registerEventHandler(this);
     }

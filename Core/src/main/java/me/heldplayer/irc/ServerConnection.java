@@ -87,11 +87,11 @@ class ServerConnection implements IServerConnection {
 
     @EventHandler
     public void onRawMessage(RawMessageEvent event) {
-        if (event.message.command.equals("PING")) {
+        if (event.message.command.equals("PING")) { // PING
             BotAPI.serverConnection.addToSendQueue("PONG :%s", event.message.trailing);
             event.setHandled();
         }
-        else if (event.message.command.equals("ERROR")) {
+        else if (event.message.command.equals("ERROR")) { // Server disconnected
             this.connected = this.initialized = false;
             BotAPI.eventBus.postEvent(new ServerDisconnectedEvent(this));
 
@@ -100,7 +100,7 @@ class ServerConnection implements IServerConnection {
             reconnectThread.setDaemon(true);
             reconnectThread.start();
         }
-        else if (event.message.command.equals("001")) {
+        else if (event.message.command.equals("001")) { // Welcome
             this.initialized = true;
 
             List<String> perform = IRCBotLauncher.readPerform();
@@ -110,11 +110,11 @@ class ServerConnection implements IServerConnection {
 
             BotAPI.eventBus.postEvent(new ServerLoggedInEvent(this));
         }
-        else if (event.message.command.equals("433")) {
+        else if (event.message.command.equals("433")) { // Nickname taken
             this.nickname += "_";
             this.addToSendQueue("NICK %s", this.nickname);
         }
-        else if (event.message.command.equals("005")) {
+        else if (event.message.command.equals("005")) { // Modes
             for (int i = 1; i < event.message.params.length; i++) {
                 String param = event.message.params[i];
                 String[] parts = param.split("=", 2);

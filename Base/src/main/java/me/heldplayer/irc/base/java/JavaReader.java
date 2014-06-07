@@ -33,22 +33,42 @@ public final class JavaReader {
         this.usePrevious = false;
     }
 
-    public JavaPart readIdentifierPart(JavaPart parent) {
+    public JavaPart readPart(JavaPart parent) {
         StringBuffer result = new StringBuffer();
         char first = this.readChar();
 
         while (first == ' ' || first == 0) {
+            if (first == 0) {
+                return null;
+            }
             first = this.readChar();
         }
+
         this.goBack();
+
+        if (parent == null && "0123456789.".indexOf(first) >= 0) {
+            return new NumberPart(parent, this.readNumber());
+        }
+        if (parent != null) {
+            if (first == '(') {
+
+            }
+            if (first == '[' && parent instanceof FieldArrayPart) {
+                this.readChar();
+                // Read Integer only
+                FieldArrayPart array = (FieldArrayPart) parent;
+                Number number = this.readNumber();
+                if (!(number instanceof Integer)) {
+                    throw new JavaException("Array index must be an integer");
+                }
+                array.index = number.intValue();
+            }
+        }
 
         boolean firstChar = true;
         while (true) {
             char c = this.readChar();
 
-            if (!(Character.isLetter(c) || Character.isDigit(c) || c == '$' || c == '_' || c == '.' || c == 0)) {
-                throw new JavaException("Invalid identifier character: '" + c + "'");
-            }
             if (c == 0) {
                 break;
             }
@@ -56,8 +76,8 @@ public final class JavaReader {
                 if (Character.isDigit(c)) {
                     throw new JavaException("Identifier cannot start with a number: " + c);
                 }
-                else if (c == '.') {
-                    throw new JavaException("Identifier mustn't start with .");
+                else if (".()[]{}".indexOf(c) >= 0) {
+                    throw new JavaException("Identifier mustn't start with " + c);
                 }
                 firstChar = false;
             }
@@ -73,11 +93,33 @@ public final class JavaReader {
                 this.goBack();
                 return new FieldArrayPart(parent, result.toString());
             }
+            if (c == ' ') {
+                this.goBack();
+                if (parent == null) {
+                    return new TextPart(parent, result.toString());
+                }
+
+                return new FieldPart(parent, result.toString());
+            }
+
+            if (!(Character.isLetter(c) || Character.isDigit(c) || c == '$' || c == '_' || c == '.' || c == 0)) {
+                throw new JavaException("Invalid identifier character: '" + c + "'");
+            }
 
             result.append(c);
         }
 
-        return new FieldPart(parent, result.toString());
+        String resultString = result.toString();
+
+        if (resultString == null || resultString.isEmpty()) {
+            return null;
+        }
+
+        if (parent == null) {
+            return new TextPart(parent, resultString);
+        }
+
+        return new FieldPart(parent, resultString);
     }
 
     public String readChars(int count) {
@@ -120,8 +162,10 @@ public final class JavaReader {
         char c = this.readChar();
         char prev = 0;
 
+        final String characters = "=!*+-/|&<>%^;:[](){}";
+
         while (c != 0 && c != ' ') {
-            if (" =!*+-/|&<>%^;:".indexOf(c) >= 0) {
+            if (characters.indexOf(c) >= 0) {
                 break;
             }
             if (terminated) {
@@ -131,7 +175,7 @@ public final class JavaReader {
                 if (firstChar && c == '0') {
                     char next = this.readChar();
                     boolean goBack = true;
-                    if (next == 0 || " =!*+-/|&<>%^;:".indexOf(next) >= 0) {
+                    if (next == 0 || characters.indexOf(next) >= 0) {
                         result.append(c);
                         terminated = true;
                         goBack = false;
@@ -153,9 +197,7 @@ public final class JavaReader {
                         goBack = false;
                     }
                     if (next == '.') {
-                        hasPoint = true;
                         result.append(c);
-                        goBack = false;
                     }
                     if (Character.isDigit(next) || (!hasPoint && hex && "ABCDEFabcdef".indexOf(next) >= 0)) {
                         hex = true;

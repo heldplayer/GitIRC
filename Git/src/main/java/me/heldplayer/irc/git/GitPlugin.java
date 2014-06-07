@@ -14,9 +14,9 @@ import me.heldplayer.irc.api.plugin.Plugin;
 import me.heldplayer.irc.git.event.AccessManagerInitEvent;
 import me.heldplayer.irc.git.event.HttpRequestEvent;
 import me.heldplayer.irc.git.internal.EmptyResponse;
+import me.heldplayer.irc.git.internal.ErrorResponse.ErrorType;
 import me.heldplayer.irc.git.internal.QueryString;
 import me.heldplayer.irc.git.internal.RunnableWebserver;
-import me.heldplayer.irc.git.internal.ErrorResponse.ErrorType;
 import me.heldplayer.irc.git.internal.security.AccessManager;
 import me.heldplayer.irc.git.internal.security.rules.AllowFrom;
 import me.heldplayer.irc.git.internal.security.rules.BasicAuth;
@@ -44,12 +44,12 @@ public class GitPlugin extends Plugin {
     private static GitPlugin instance;
 
     public static Logger getLog() {
-        return instance.getLogger();
+        return GitPlugin.instance.getLogger();
     }
 
     @Override
     public void onEnable() {
-        instance = this;
+        GitPlugin.instance = this;
 
         GitPlugin.config = new Configuration(new File("." + File.separator + "webserver.cfg"));
         GitPlugin.config.load();

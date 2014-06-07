@@ -33,7 +33,7 @@ public class PluginLoader implements IClassLoader {
     private ArrayList<String> unloadedClasses = new ArrayList<String>();
 
     public Set<Plugin> getAllPlugins() {
-        return Collections.unmodifiableSet(plugins);
+        return Collections.unmodifiableSet(this.plugins);
     }
 
     public int loadPlugins() {
@@ -54,7 +54,7 @@ public class PluginLoader implements IClassLoader {
                 File file = files[i];
 
                 try {
-                    loadPlugin(file);
+                    this.loadPlugin(file);
                     count++;
                 }
                 catch (Exception e) {
@@ -80,7 +80,7 @@ public class PluginLoader implements IClassLoader {
                 throw new PluginException(String.format("Failed loading plugin in '%s'", (Object) null), e);
             }
 
-            pluginLoaders.put(info.name, loader);
+            this.pluginLoaders.put(info.name, loader);
         }
 
         for (Plugin plugin : this.plugins) {
@@ -108,7 +108,7 @@ public class PluginLoader implements IClassLoader {
                 File file = files[i];
 
                 try {
-                    loadLibrary(file);
+                    this.loadLibrary(file);
                     count++;
                 }
                 catch (Exception e) {
@@ -136,7 +136,7 @@ public class PluginLoader implements IClassLoader {
     public int unloadLibraries() {
         int size = this.libraryLoaders.size();
 
-        for (LibraryClassLoader loader : libraryLoaders) {
+        for (LibraryClassLoader loader : this.libraryLoaders) {
             Set<String> classes = loader.getClasses();
 
             for (String clazz : classes) {
@@ -150,14 +150,14 @@ public class PluginLoader implements IClassLoader {
     }
 
     public Class<?> findClass(String name) {
-        Class<?> result = classes.get(name);
+        Class<?> result = this.classes.get(name);
 
         if (result != null) {
             return result;
         }
         else {
-            for (String current : pluginLoaders.keySet()) {
-                PluginClassLoader loader = pluginLoaders.get(current);
+            for (String current : this.pluginLoaders.keySet()) {
+                PluginClassLoader loader = this.pluginLoaders.get(current);
                 try {
                     result = loader.findClass(name, false);
                 }
@@ -168,7 +168,7 @@ public class PluginLoader implements IClassLoader {
                 }
             }
 
-            for (LibraryClassLoader loader : libraryLoaders) {
+            for (LibraryClassLoader loader : this.libraryLoaders) {
                 try {
                     result = loader.findClass(name, false);
                 }
@@ -180,20 +180,28 @@ public class PluginLoader implements IClassLoader {
             }
         }
 
-        return null;
+        // Ok, you're desperate
+        try {
+            result = this.getClass().getClassLoader().loadClass(name);
+        }
+        catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        return result;
     }
 
     void setClass(String name, Class<?> clazz) {
-        if (!classes.containsKey(name)) {
-            classes.put(name, clazz);
+        if (!this.classes.containsKey(name)) {
+            this.classes.put(name, clazz);
         }
     }
 
     void removeClass(String name) {
-        if (classes.containsKey(name)) {
-            unloadedClasses.add(name);
+        if (this.classes.containsKey(name)) {
+            this.unloadedClasses.add(name);
         }
-        classes.remove(name);
+        this.classes.remove(name);
     }
 
     public int getLoadedClassesCount() {
@@ -202,7 +210,7 @@ public class PluginLoader implements IClassLoader {
 
     public int getUnloadingClassesCount() {
         int count = 0;
-        Iterator<String> i = unloadedClasses.iterator();
+        Iterator<String> i = this.unloadedClasses.iterator();
         while (i.hasNext()) {
             String name = i.next();
             try {
@@ -270,7 +278,7 @@ public class PluginLoader implements IClassLoader {
             throw new PluginException(String.format("Failed loading plugin in '%s'", file), e);
         }
 
-        pluginLoaders.put(info.name, loader);
+        this.pluginLoaders.put(info.name, loader);
 
         return loader.plugin;
     }
@@ -283,8 +291,8 @@ public class PluginLoader implements IClassLoader {
         if (!plugin.isEnabled()) {
             plugin.logger.info(String.format("Enabling plugin %s", plugin.getInfo().name));
 
-            if (!pluginLoaders.containsKey(plugin.getInfo().name)) {
-                pluginLoaders.put(plugin.getInfo().name, plugin.loader);
+            if (!this.pluginLoaders.containsKey(plugin.getInfo().name)) {
+                this.pluginLoaders.put(plugin.getInfo().name, plugin.loader);
             }
 
             try {
@@ -313,7 +321,7 @@ public class PluginLoader implements IClassLoader {
                 plugin.logger.log(Level.SEVERE, String.format("Error while disabling plugin %s", plugin.getInfo().name), e);
             }
 
-            pluginLoaders.remove(plugin.getInfo().name);
+            this.pluginLoaders.remove(plugin.getInfo().name);
 
             Set<String> classes = plugin.loader.getClasses();
 
@@ -338,15 +346,15 @@ public class PluginLoader implements IClassLoader {
             throw new PluginException(String.format("Failed loading plugin in '%s'", file), e);
         }
 
-        libraryLoaders.add(loader);
+        this.libraryLoaders.add(loader);
     }
 
     @Override
     public byte[] findBytes(String name) {
         byte[] result = null;
 
-        for (String current : pluginLoaders.keySet()) {
-            PluginClassLoader loader = pluginLoaders.get(current);
+        for (String current : this.pluginLoaders.keySet()) {
+            PluginClassLoader loader = this.pluginLoaders.get(current);
 
             result = loader.findBytes(name);
 
@@ -355,7 +363,7 @@ public class PluginLoader implements IClassLoader {
             }
         }
 
-        for (LibraryClassLoader loader : libraryLoaders) {
+        for (LibraryClassLoader loader : this.libraryLoaders) {
 
             result = loader.findBytes(name);
 

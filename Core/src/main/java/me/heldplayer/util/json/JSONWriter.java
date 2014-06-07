@@ -7,7 +7,7 @@ public class JSONWriter {
         StringBuilder result = new StringBuilder();
 
         if (obj instanceof String) {
-            result.append(write((String) obj));
+            result.append(JSONWriter.write((String) obj));
         }
         else if (obj instanceof Boolean) {
             result.append(((Boolean) obj).toString());
@@ -16,10 +16,10 @@ public class JSONWriter {
             result.append("null");
         }
         else if (obj instanceof JSONObject) {
-            result.append(write((JSONObject) obj));
+            result.append(JSONWriter.write((JSONObject) obj));
         }
         else if (obj instanceof JSONArray) {
-            result.append(write((JSONArray) obj));
+            result.append(JSONWriter.write((JSONArray) obj));
         }
         else if (obj instanceof Double) {
             result.append(((Double) obj).doubleValue());
@@ -76,7 +76,7 @@ public class JSONWriter {
         for (String key : object.values.keySet()) {
             Object value = object.values.get(key);
 
-            result.append(write(key)).append(':').append(write(value)).append(',');
+            result.append(JSONWriter.write(key)).append(':').append(JSONWriter.write(value)).append(',');
         }
         result.delete(result.length() - 1, result.length());
 
@@ -87,7 +87,7 @@ public class JSONWriter {
         StringBuilder result = new StringBuilder("[");
 
         for (Object value : array.values) {
-            result.append(write(value)).append(',');
+            result.append(JSONWriter.write(value)).append(',');
         }
         result.delete(result.length() - 1, result.length());
 

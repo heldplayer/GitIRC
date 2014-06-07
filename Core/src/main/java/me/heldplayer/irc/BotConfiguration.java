@@ -35,32 +35,32 @@ class BotConfiguration implements IConfiguration {
 
     @Override
     public String getServerIp() {
-        return serverIp;
+        return this.serverIp;
     }
 
     @Override
     public int getServerPort() {
-        return serverPort;
+        return this.serverPort;
     }
 
     @Override
     public String getNickname() {
-        return nickname;
+        return this.nickname;
     }
 
     @Override
     public String getBindHost() {
-        return bindHost;
+        return this.bindHost;
     }
 
     @Override
     public String getLogFile() {
-        return logFile;
+        return this.logFile;
     }
 
     @Override
     public String getCommandPrefix() {
-        return commandPrefix;
+        return this.commandPrefix;
     }
 
 }

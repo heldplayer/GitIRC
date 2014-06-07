@@ -35,24 +35,24 @@ public abstract class CustomClassLoader extends URLClassLoader implements IClass
     }
 
     protected Class<?> findClass(String name, boolean checkGlobal) throws ClassNotFoundException {
-        Class<?> result = classes.get(name);
+        Class<?> result = this.classes.get(name);
 
         if (result == null) {
             if (checkGlobal) {
-                result = loader.findClass(name);
+                result = this.loader.findClass(name);
             }
 
             if (result == null) {
                 result = super.findClass(name);
 
                 if (result != null) {
-                    loader.setClass(name, result);
+                    this.loader.setClass(name, result);
                 }
 
                 PluginLoader.log.info(String.format("[%s] Loaded class '%s'", this.name, name));
             }
 
-            classes.put(name, result);
+            this.classes.put(name, result);
         }
 
         return result;

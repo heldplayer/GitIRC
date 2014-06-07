@@ -15,8 +15,8 @@ public final class ReflectionHelper {
     static {
         Class<URLClassLoader> classURLClassLoader = URLClassLoader.class;
         try {
-            ucpField = classURLClassLoader.getDeclaredField("ucp");
-            ucpField.setAccessible(true);
+            ReflectionHelper.ucpField = classURLClassLoader.getDeclaredField("ucp");
+            ReflectionHelper.ucpField.setAccessible(true);
         }
         catch (Throwable e) {
             e.printStackTrace();
@@ -25,7 +25,7 @@ public final class ReflectionHelper {
 
     public static URLClassPath getClassPath(URLClassLoader loader) {
         try {
-            return (URLClassPath) ucpField.get(loader);
+            return (URLClassPath) ReflectionHelper.ucpField.get(loader);
         }
         catch (Throwable e) {
             e.printStackTrace();

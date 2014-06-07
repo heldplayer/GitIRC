@@ -3,8 +3,8 @@ package me.heldplayer.irc.git.event;
 
 import me.heldplayer.irc.api.event.Event;
 import me.heldplayer.irc.git.RequestSource;
-import me.heldplayer.irc.git.internal.WebResponse;
 import me.heldplayer.irc.git.internal.ErrorResponse.ErrorType;
+import me.heldplayer.irc.git.internal.WebResponse;
 
 public class HttpRequestEvent extends Event {
 

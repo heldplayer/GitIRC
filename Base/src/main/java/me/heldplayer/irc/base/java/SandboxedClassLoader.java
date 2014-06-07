@@ -19,9 +19,10 @@ public class SandboxedClassLoader extends SecureClassLoader {
 
     private IRCUser user;
     protected ISandboxDelegate delegate;
+    protected boolean running = true;
 
     public SandboxedClassLoader(IRCUser user) {
-        super(SandboxedClassLoader.class.getClassLoader());
+        super(null);
         this.user = user;
         try {
             Class<?> delegateClass = this.findClass(SandboxDelegate.class.getCanonicalName());
@@ -48,20 +49,20 @@ public class SandboxedClassLoader extends SecureClassLoader {
 
     private static Set<String> loaderExceptions = new HashSet<String>();
     static {
-        loaderExceptions.add(ISandboxDelegate.class.getCanonicalName());
-        loaderExceptions.add(IExpressionEvaluator.class.getCanonicalName());
-        loaderExceptions.add(IRCUser.class.getCanonicalName());
+        SandboxedClassLoader.loaderExceptions.add(ISandboxDelegate.class.getCanonicalName());
+        SandboxedClassLoader.loaderExceptions.add(IExpressionEvaluator.class.getCanonicalName());
+        SandboxedClassLoader.loaderExceptions.add(IRCUser.class.getCanonicalName());
     }
 
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
-        if (loaderExceptions.contains(name)) {
+        if (SandboxedClassLoader.loaderExceptions.contains(name)) {
             SandboxedClassLoader.log.info(String.format("[%s] Loading class '%s' through main PluginLoader", this.user.getUsername(), name));
 
             return BotAPI.pluginLoader.findClass(name);
         }
 
-        Class<?> result = classes.get(name);
+        Class<?> result = this.classes.get(name);
 
         if (result == null) {
             byte[] bytes = BotAPI.pluginLoader.findBytes(name);
@@ -75,7 +76,7 @@ public class SandboxedClassLoader extends SecureClassLoader {
 
             SandboxedClassLoader.log.info(String.format("[%s] Loaded class '%s'", this.user.getUsername(), name));
 
-            classes.put(name, result);
+            this.classes.put(name, result);
         }
 
         return result;

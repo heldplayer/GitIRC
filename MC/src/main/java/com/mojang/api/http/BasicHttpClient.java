@@ -20,10 +20,10 @@ public class BasicHttpClient implements HttpClient {
     private BasicHttpClient() {}
 
     public static BasicHttpClient getInstance() {
-        if (instance == null) {
-            instance = new BasicHttpClient();
+        if (BasicHttpClient.instance == null) {
+            BasicHttpClient.instance = new BasicHttpClient();
         }
-        return instance;
+        return BasicHttpClient.instance;
     }
 
     @Override

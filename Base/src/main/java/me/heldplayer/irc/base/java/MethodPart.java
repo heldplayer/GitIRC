@@ -1,3 +1,4 @@
+
 package me.heldplayer.irc.base.java;
 
 public class MethodPart extends NamedPart {

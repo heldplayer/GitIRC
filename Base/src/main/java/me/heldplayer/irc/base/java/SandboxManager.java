@@ -10,12 +10,19 @@ public final class SandboxManager {
     public static HashMap<IRCUser, SandboxedClassLoader> sandboxes = new HashMap<IRCUser, SandboxedClassLoader>();
 
     public static ISandboxDelegate getSandbox(IRCUser user) {
-        SandboxedClassLoader loader = sandboxes.get(user);
+        SandboxedClassLoader loader = SandboxManager.sandboxes.get(user);
         return loader == null ? null : loader.delegate;
     }
 
+    public static boolean removeSandbox(IRCUser user) {
+        SandboxedClassLoader loader = SandboxManager.sandboxes.remove(user);
+        loader.running = false;
+        System.gc();
+        return loader == null ? false : true;
+    }
+
     public static ISandboxDelegate createSandbox(IRCUser user) {
-        if (sandboxes.containsKey(user)) {
+        if (SandboxManager.sandboxes.containsKey(user)) {
             throw new JavaException("Sandbox already exists for " + user.getUsername());
         }
 
@@ -26,8 +33,14 @@ public final class SandboxManager {
             @Override
             public void run() {
                 try {
-                    while (true) {
-                        sandbox.delegate.run();
+                    while (sandbox.running) {
+                        try {
+                            sandbox.delegate.run();
+                        }
+                        catch (Throwable e) {
+                            e.printStackTrace();
+                        }
+
                         Thread.sleep(500L);
                     }
                 }
@@ -41,12 +54,17 @@ public final class SandboxManager {
         executor.setDaemon(true);
         executor.start();
 
-        sandboxes.put(user, sandbox);
+        SandboxManager.sandboxes.put(user, sandbox);
         return sandbox.delegate;
     }
 
     public static void resetAll() {
-        sandboxes.clear();
+        for (SandboxedClassLoader loader : SandboxManager.sandboxes.values()) {
+            loader.running = false;
+        }
+        SandboxManager.sandboxes.clear();
+
+        System.gc();
     }
 
 }
