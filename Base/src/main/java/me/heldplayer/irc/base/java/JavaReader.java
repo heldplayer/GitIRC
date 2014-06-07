@@ -62,6 +62,12 @@ public final class JavaReader {
                     throw new JavaException("Array index must be an integer");
                 }
                 array.index = number.intValue();
+
+                char next = this.readChar();
+                if (next != ']') {
+                    throw new JavaException("Expected ']' but got '" + next + "'");
+                }
+                return parent;
             }
         }
 
@@ -166,6 +172,7 @@ public final class JavaReader {
 
         while (c != 0 && c != ' ') {
             if (characters.indexOf(c) >= 0) {
+                this.goBack();
                 break;
             }
             if (terminated) {

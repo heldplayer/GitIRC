@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import me.heldplayer.irc.api.BotAPI;
+import me.heldplayer.irc.api.IRCChannel;
 import me.heldplayer.irc.api.IRCUser;
 
 public class SandboxedClassLoader extends SecureClassLoader {
@@ -21,7 +22,7 @@ public class SandboxedClassLoader extends SecureClassLoader {
     protected ISandboxDelegate delegate;
     protected boolean running = true;
 
-    public SandboxedClassLoader(IRCUser user) {
+    public SandboxedClassLoader(IRCUser user, IRCChannel channel) {
         super(null);
         this.user = user;
         try {
@@ -35,9 +36,9 @@ public class SandboxedClassLoader extends SecureClassLoader {
             if (evaluatorClass == null) {
                 throw new JavaException("ClassLoader isn't working!");
             }
-            Constructor<?> evaluatorConstructor = evaluatorClass.getDeclaredConstructor(IRCUser.class);
+            Constructor<?> evaluatorConstructor = evaluatorClass.getDeclaredConstructor(IMessageTarget.class);
             evaluatorConstructor.setAccessible(true);
-            this.delegate = (ISandboxDelegate) delegateConstructor.newInstance(evaluatorConstructor.newInstance(user));
+            this.delegate = (ISandboxDelegate) delegateConstructor.newInstance(evaluatorConstructor.newInstance(new SimpleMessageTarget(user, channel)));
         }
         catch (JavaException e) {
             throw e;
@@ -51,7 +52,7 @@ public class SandboxedClassLoader extends SecureClassLoader {
     static {
         SandboxedClassLoader.loaderExceptions.add(ISandboxDelegate.class.getCanonicalName());
         SandboxedClassLoader.loaderExceptions.add(IExpressionEvaluator.class.getCanonicalName());
-        SandboxedClassLoader.loaderExceptions.add(IRCUser.class.getCanonicalName());
+        SandboxedClassLoader.loaderExceptions.add(IMessageTarget.class.getCanonicalName());
     }
 
     @Override

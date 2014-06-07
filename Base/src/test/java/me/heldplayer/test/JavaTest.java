@@ -2,6 +2,7 @@
 package me.heldplayer.test;
 
 import me.heldplayer.irc.api.BotAPI;
+import me.heldplayer.irc.api.IRCChannel;
 import me.heldplayer.irc.api.IRCUser;
 import me.heldplayer.irc.api.event.Event;
 import me.heldplayer.irc.api.event.IEventBus;
@@ -101,7 +102,8 @@ public class JavaTest {
         JavaTest.prepareBotAPI();
 
         IRCUser user = new IRCUser("heldplayer");
-        ISandboxDelegate sandbox = SandboxManager.createSandbox(user);
+        IRCChannel channel = new IRCChannel("#test");
+        ISandboxDelegate sandbox = SandboxManager.createSandbox(user, channel);
         sandbox.addCommand("test");
 
         String input = "    this.is$valid";

@@ -53,8 +53,4 @@ public class JavaExpression {
         evaluator.printString(this.value.toString() + " " + this.value.getClass());
     }
 
-    static {
-        System.out.println("Loaded JavaExpression class");
-    }
-
 }

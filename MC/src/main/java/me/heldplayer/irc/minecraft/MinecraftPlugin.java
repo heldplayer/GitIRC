@@ -36,17 +36,17 @@ public class MinecraftPlugin extends Plugin {
             String[] params = event.getParams();
 
             if (params.length == 0) {
-                BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: %s", event.channel, event.user.getUsername(), "Usage: minecraft uuid/name");
+                BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: %s", event.channel.getName(), event.user.getUsername(), "Usage: minecraft uuid/name");
             }
             else if (params.length == 1) {
                 if (params[0].equalsIgnoreCase("uuid")) {
-                    BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: %s", event.channel, event.user.getUsername(), "Usage: minecraft uuid [name]");
+                    BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: %s", event.channel.getName(), event.user.getUsername(), "Usage: minecraft uuid [name]");
                 }
                 else if (params[0].equalsIgnoreCase("name")) {
-                    BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: %s", event.channel, event.user.getUsername(), "Usage: minecraft name [UUID]");
+                    BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: %s", event.channel.getName(), event.user.getUsername(), "Usage: minecraft name [UUID]");
                 }
                 else {
-                    BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: %s", event.channel, event.user.getUsername(), "Usage: minecraft uuid/name");
+                    BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: %s", event.channel.getName(), event.user.getUsername(), "Usage: minecraft uuid/name");
                 }
             }
             else {
@@ -57,11 +57,11 @@ public class MinecraftPlugin extends Plugin {
                         String name = params[i];
                         Profile[] profiles = repository.findProfilesByNames(name);
                         if (profiles.length == 0) {
-                            BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: Did not find a profile for '%s'", event.channel, event.user.getUsername(), name);
+                            BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: Did not find a profile for '%s'", event.channel.getName(), event.user.getUsername(), name);
                         }
                         else {
                             for (Profile profile : profiles) {
-                                BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: '%s' = '%s'", event.channel, event.user.getUsername(), profile.getName(), profile.getId());
+                                BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: '%s' = '%s'", event.channel.getName(), event.user.getUsername(), profile.getName(), profile.getId());
                             }
                         }
                     }
@@ -73,15 +73,15 @@ public class MinecraftPlugin extends Plugin {
                         String string = params[i];
                         Profile profile = repository.findProfileByUUID(string.replaceAll("-", ""));
                         if (profile == null) {
-                            BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: Did not find a profile for '%s'", event.channel, event.user.getUsername(), string);
+                            BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: Did not find a profile for '%s'", event.channel.getName(), event.user.getUsername(), string);
                         }
                         else {
-                            BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: '%s' = '%s'", event.channel, event.user.getUsername(), profile.getId(), profile.getName());
+                            BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: '%s' = '%s'", event.channel.getName(), event.user.getUsername(), profile.getId(), profile.getName());
                         }
                     }
                 }
                 else {
-                    BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: %s", event.channel, event.user.getUsername(), "Usage: minecraft uuid/name");
+                    BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: %s", event.channel.getName(), event.user.getUsername(), "Usage: minecraft uuid/name");
                 }
             }
         }

@@ -3,6 +3,7 @@ package me.heldplayer.irc.base.java;
 
 import java.util.HashMap;
 
+import me.heldplayer.irc.api.IRCChannel;
 import me.heldplayer.irc.api.IRCUser;
 
 public final class SandboxManager {
@@ -21,12 +22,12 @@ public final class SandboxManager {
         return loader == null ? false : true;
     }
 
-    public static ISandboxDelegate createSandbox(IRCUser user) {
+    public static ISandboxDelegate createSandbox(IRCUser user, IRCChannel channel) {
         if (SandboxManager.sandboxes.containsKey(user)) {
             throw new JavaException("Sandbox already exists for " + user.getUsername());
         }
 
-        final SandboxedClassLoader sandbox = new SandboxedClassLoader(user);
+        final SandboxedClassLoader sandbox = new SandboxedClassLoader(user, channel);
 
         Thread executor = sandbox.delegate.setEvaluatorThread(new Thread(new Runnable() {
 
