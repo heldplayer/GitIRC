@@ -17,8 +17,11 @@ public class NamedPart extends JavaPart {
 
     @Override
     public String toString() {
-        if (this.parent != null) {
+        if (this.parent != null && this.name != null && !this.name.isEmpty()) {
             return this.parent.toString() + "." + this.name;
+        }
+        if (this.parent != null) {
+            return this.parent.toString();
         }
         return this.name;
     }

@@ -13,12 +13,20 @@ public class JavaException extends RuntimeException {
         super(message);
     }
 
+    public JavaException(String message, Object... args) {
+        super(String.format(message, args));
+    }
+
     public JavaException(Throwable cause) {
         super(cause);
     }
 
-    public JavaException(String message, Throwable cause) {
+    public JavaException(Throwable cause, String message) {
         super(message, cause);
+    }
+
+    public JavaException(Throwable cause, String message, Object... args) {
+        super(String.format(message, args), cause);
     }
 
 }

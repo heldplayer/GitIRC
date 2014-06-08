@@ -29,28 +29,7 @@ public class JavaExpression {
     }
 
     void load(JavaReader parser) {
-        this.value = parser.readPart(null);
-
-        JavaPart next = parser.readPart(this.value);
-
-        if (this.value instanceof NumberPart) {
-            if (next != null) {
-                throw new JavaException("Got '" + next.getClass().getSimpleName() + "' but expected nothing");
-            }
-        }
-
-        while (next != null) {
-            if (next instanceof FieldPart) {
-                this.value = next;
-                break;
-            }
-            this.value = next;
-            next = parser.readPart(this.value);
-        }
-    }
-
-    public void execute(IExpressionEvaluator evaluator) {
-        evaluator.printString(this.value.toString() + " " + this.value.getClass());
+        this.value = parser.readExpression();
     }
 
 }

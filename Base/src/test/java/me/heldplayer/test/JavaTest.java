@@ -116,10 +116,10 @@ public class JavaTest {
         try {
             Number number = new JavaReader(input).readNumber();
             if (!number.equals(value)) {
-                throw new JavaException("Expected " + value + " but got " + number);
+                throw new JavaException("Expected %s but got %s", value, number);
             }
             if (number.getClass() != expected) {
-                throw new JavaException("Expected " + expected.getSimpleName() + " but got " + number.getClass().getSimpleName());
+                throw new JavaException("Expected %s but got %s", expected.getSimpleName(), number.getClass().getSimpleName());
             }
             System.out.println(input + " = (" + number.getClass().getSimpleName() + ") " + number);
             return true;

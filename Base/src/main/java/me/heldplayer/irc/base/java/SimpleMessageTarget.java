@@ -20,4 +20,9 @@ public class SimpleMessageTarget implements IMessageTarget {
         BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s: %s", channel.getName(), this.user.getUsername(), message);
     }
 
+    @Override
+    public void sendMessage(String message, Object... params) {
+        this.sendMessage(String.format(message, params));
+    }
+
 }

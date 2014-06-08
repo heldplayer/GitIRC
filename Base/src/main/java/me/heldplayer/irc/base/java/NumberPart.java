@@ -5,11 +5,6 @@ public class NumberPart extends JavaPart {
 
     public Number value;
 
-    public NumberPart(JavaPart parent, Number value) {
-        super(parent);
-        this.value = value;
-    }
-
     public NumberPart(Number value) {
         super();
         this.value = value;
@@ -17,10 +12,17 @@ public class NumberPart extends JavaPart {
 
     @Override
     public String toString() {
-        if (this.parent != null) {
-            return this.parent.toString() + "." + this.value;
+        String suffix = "";
+        if (value instanceof Long) {
+            suffix = "L";
         }
-        return this.value.toString();
+        if (value instanceof Float) {
+            suffix = "F";
+        }
+        if (value instanceof Double) {
+            suffix = "D";
+        }
+        return this.value.toString() + suffix;
     }
 
 }

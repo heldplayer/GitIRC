@@ -33,6 +33,50 @@ public final class JavaReader {
         this.usePrevious = false;
     }
 
+    public JavaPart readExpression() {
+        char firstChar = this.readChar();
+
+        while (firstChar == ' ' || firstChar == 0) {
+            if (firstChar == 0) {
+                return null;
+            }
+            firstChar = this.readChar();
+        }
+
+        this.goBack();
+
+        JavaPart root = this.readPart(null);
+        JavaPart first = root;
+        JavaPart next = null;
+
+        if (root instanceof TextPart) {
+            char nextChar = this.readChar();
+            this.goBack();
+            if (nextChar == ' ') {
+                root = new StatementPart(((TextPart) root).name);
+                first = null;
+            }
+        }
+
+        while (true) {
+            next = this.readPart(first);
+            if (next == null) {
+                break;
+            }
+            first = next;
+            if (next instanceof FieldPart) {
+                break;
+            }
+        }
+
+        if (first != root && root instanceof StatementPart) {
+            root.child = first;
+            return root;
+        }
+
+        return first;
+    }
+
     public JavaPart readPart(JavaPart parent) {
         StringBuffer result = new StringBuffer();
         char first = this.readChar();
@@ -47,16 +91,39 @@ public final class JavaReader {
         this.goBack();
 
         if (parent == null && "0123456789.".indexOf(first) >= 0) {
-            return new NumberPart(parent, this.readNumber());
+            return new NumberPart(this.readNumber());
         }
         if (parent != null) {
-            if (first == '(') {
+            if (first == ')' && parent instanceof MethodPart) {
+                return null;
+            }
+            if (first == '(' && parent instanceof MethodPart) {
+                MethodPart method = (MethodPart) parent;
+                this.readChar();
 
+                while (true) {
+                    char next = this.readChar();
+                    if (next == ',') {
+                        continue;
+                    }
+                    if (next == ')') {
+                        method.filled = true;
+                        return parent;
+                    }
+                    if (next == 0) {
+                        throw new JavaException("Expected ',' or ')'");
+                    }
+                    this.goBack();
+
+                    JavaPart part = this.readExpression();
+                    method.params.add(part);
+                }
             }
             if (first == '[' && parent instanceof FieldArrayPart) {
                 this.readChar();
-                // Read Integer only
                 FieldArrayPart array = (FieldArrayPart) parent;
+
+                // Read Integer only
                 Number number = this.readNumber();
                 if (!(number instanceof Integer)) {
                     throw new JavaException("Array index must be an integer");
@@ -65,9 +132,65 @@ public final class JavaReader {
 
                 char next = this.readChar();
                 if (next != ']') {
-                    throw new JavaException("Expected ']' but got '" + next + "'");
+                    throw new JavaException("Expected ']' but got '%s'", next);
                 }
                 return parent;
+            }
+            if (first == '[' && parent instanceof MethodPart) {
+                this.readChar();
+                FieldArrayPart array = new FieldArrayPart(parent, "");
+
+                // Read Integer only
+                Number number = this.readNumber();
+                if (!(number instanceof Integer)) {
+                    throw new JavaException("Array index must be an integer");
+                }
+                array.index = number.intValue();
+
+                char next = this.readChar();
+                if (next != ']') {
+                    throw new JavaException("Expected ']' but got '%s'", next);
+                }
+                return parent;
+            }
+
+            if (parent instanceof NumberPart) {
+                return null;
+            }
+        }
+        else {
+            if (first == '"') {
+                char c = this.readChar();
+                boolean escaped = false;
+                while (c != 0) {
+                    c = this.readChar();
+
+                    if (c == '\'') {
+                        escaped = true;
+                        continue;
+                    }
+
+                    if (escaped) {
+                        escaped = false;
+                        if (c == '"') {
+                            result.append('"');
+                            continue;
+                        }
+                        if (c == '"') {
+                            result.append('"');
+                            continue;
+                        }
+                    }
+                    else {
+                        if (c == '"') {
+                            return new StringPart(result.toString());
+                        }
+                    }
+
+                    result.append(c);
+                }
+
+                throw new JavaException("Expected '\"'");
             }
         }
 
@@ -80,10 +203,10 @@ public final class JavaReader {
             }
             if (firstChar) {
                 if (Character.isDigit(c)) {
-                    throw new JavaException("Identifier cannot start with a number: " + c);
+                    throw new JavaException("Identifier cannot start with a number: %s", c);
                 }
-                else if (".()[]{}".indexOf(c) >= 0) {
-                    throw new JavaException("Identifier mustn't start with " + c);
+                else if (".()[]{};".indexOf(c) >= 0) {
+                    throw new JavaException("Identifier mustn't start with %s", c);
                 }
                 firstChar = false;
             }
@@ -107,9 +230,24 @@ public final class JavaReader {
 
                 return new FieldPart(parent, result.toString());
             }
+            if (")]},;".indexOf(c) >= 0) {
+                this.goBack();
+
+                String resultString = result.toString();
+
+                if (resultString == null || resultString.isEmpty()) {
+                    return null;
+                }
+
+                if (parent == null) {
+                    return new TextPart(parent, resultString);
+                }
+
+                return new FieldPart(parent, resultString);
+            }
 
             if (!(Character.isLetter(c) || Character.isDigit(c) || c == '$' || c == '_' || c == '.' || c == 0)) {
-                throw new JavaException("Invalid identifier character: '" + c + "'");
+                throw new JavaException("Invalid identifier character: '%s'", c);
             }
 
             result.append(c);
@@ -168,7 +306,7 @@ public final class JavaReader {
         char c = this.readChar();
         char prev = 0;
 
-        final String characters = "=!*+-/|&<>%^;:[](){}";
+        final String characters = "=!*+-/|&<>%^;:[](){},";
 
         while (c != 0 && c != ' ') {
             if (characters.indexOf(c) >= 0) {
@@ -176,7 +314,7 @@ public final class JavaReader {
                 break;
             }
             if (terminated) {
-                throw new JavaException("Number should be terminated but got '" + c + "'");
+                throw new JavaException("Number should be terminated but got '%s'", c);
             }
             if (Character.isDigit(c) || (!hasPoint && hex && "ABCDEFabcdef".indexOf(c) >= 0)) {
                 if (firstChar && c == '0') {
@@ -250,7 +388,7 @@ public final class JavaReader {
             }
             else if (c == '.') {
                 if (hasPoint) {
-                    throw new JavaException("Invalid number character: '" + c + "'");
+                    throw new JavaException("Invalid number character: '%s'", c);
                 }
                 hasPoint = true;
                 hex = false;
@@ -287,7 +425,7 @@ public final class JavaReader {
                     firstChar = false;
                 }
                 else {
-                    throw new JavaException("Invalid number character: '" + c + "'");
+                    throw new JavaException("Invalid number character: '%s'", c);
                 }
             }
 

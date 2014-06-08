@@ -24,7 +24,7 @@ public final class SandboxManager {
 
     public static ISandboxDelegate createSandbox(IRCUser user, IRCChannel channel) {
         if (SandboxManager.sandboxes.containsKey(user)) {
-            throw new JavaException("Sandbox already exists for " + user.getUsername());
+            throw new JavaException("Sandbox already exists for %s", user.getUsername());
         }
 
         final SandboxedClassLoader sandbox = new SandboxedClassLoader(user, channel);
@@ -42,7 +42,7 @@ public final class SandboxManager {
                             e.printStackTrace();
                         }
 
-                        Thread.sleep(500L);
+                        Thread.sleep(50L);
                     }
                 }
                 catch (InterruptedException e) {

@@ -7,4 +7,6 @@ public interface IExpressionEvaluator {
 
     void printString(String message);
 
+    void printString(String message, Object... params);
+
 }
