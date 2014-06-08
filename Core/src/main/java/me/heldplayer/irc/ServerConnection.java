@@ -30,6 +30,9 @@ class ServerConnection implements IServerConnection {
 
     private static final Logger log = Logger.getLogger("RawIRC");
 
+    private static final Logger ircIn = Logger.getLogger("IRC-In");
+    private static final Logger ircOut = Logger.getLogger("IRC-Out");
+
     private List<String> sendQueue;
     private boolean connected;
     private boolean initialized;
@@ -219,7 +222,7 @@ class ServerConnection implements IServerConnection {
                 IRCMessage message = new IRCMessage(line);
                 RawMessageEvent event = new RawMessageEvent(this.network, message);
                 if (BotAPI.eventBus.postEvent(event)) {
-                    BotAPI.console.log(Level.FINER, "-> " + message.toString());
+                    ServerConnection.ircIn.log(Level.FINER, message.toString());
                 }
                 ServerConnection.log.log(Level.INFO, "-> " + line);
                 this.lastRead = System.currentTimeMillis();
@@ -252,7 +255,7 @@ class ServerConnection implements IServerConnection {
                     this.out.println(command.trim());
 
                     if (!command.startsWith("PING") && !command.startsWith("PONG")) {
-                        BotAPI.console.log(Level.FINER, "<- " + command);
+                        ServerConnection.ircOut.log(Level.FINER, command);
                     }
                     ServerConnection.log.log(Level.INFO, "<- " + command);
 

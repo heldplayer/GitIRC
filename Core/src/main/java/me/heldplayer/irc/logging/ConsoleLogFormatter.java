@@ -6,7 +6,6 @@ import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Formatter;
-import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 public class ConsoleLogFormatter extends Formatter {
@@ -23,7 +22,7 @@ public class ConsoleLogFormatter extends Formatter {
         StringBuilder builder = new StringBuilder();
 
         builder.append("[").append(this.dateFormat.format(new Date(record.getMillis()))).append("] ");
-        builder.append(ensureEqualLength(record.getLoggerName(), 8));
+        builder.append(ensureEqualLength(record.getLoggerName(), 8)).append(" ");
         builder.append('[').append(ensureEqualLength(record.getLevel().getName(), 7)).append("] ");
         //builder.append("[").append(record.getLoggerName()).append("] ");
         if (record.getParameters() != null) {
@@ -49,10 +48,15 @@ public class ConsoleLogFormatter extends Formatter {
         while (result.length() < length) {
             result.append(' ');
         }
+        boolean trimmed = false;
         while (result.length() > length) {
             result.deleteCharAt(result.length() - 1);
+            trimmed = true;
+        }
+        if (trimmed) {
+            result.deleteCharAt(result.length() - 1);
+            result.append(".");
         }
         return result.toString();
     }
-
 }
