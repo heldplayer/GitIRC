@@ -1,5 +1,5 @@
 
-package me.heldplayer.irc.base.java;
+package me.heldplayer.irc.base.java.parts;
 
 public abstract class JavaPart {
 
@@ -19,5 +19,12 @@ public abstract class JavaPart {
 
     @Override
     public abstract String toString();
+
+    public JavaPart getRoot() {
+        if (this.child != null) {
+            return this.child.getRoot();
+        }
+        return this;
+    }
 
 }

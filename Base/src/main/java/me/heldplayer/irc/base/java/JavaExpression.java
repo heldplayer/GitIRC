@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import me.heldplayer.irc.base.java.parts.JavaPart;
+
 public class JavaExpression {
 
     public JavaPart value;

@@ -3,6 +3,10 @@ package me.heldplayer.irc.base.java;
 
 import java.util.TreeMap;
 
+import me.heldplayer.irc.base.java.parts.JavaPart;
+import me.heldplayer.irc.base.java.parts.StatementPart;
+import me.heldplayer.irc.base.java.parts.StringPart;
+
 public class JavaExpressionEvaluator implements IExpressionEvaluator {
 
     private IMessageTarget target;
@@ -74,6 +78,9 @@ public class JavaExpressionEvaluator implements IExpressionEvaluator {
                 }
             }
         }
+        else if (part instanceof StringPart) {
+            this.printString("%s", part.toString());
+        }
         else {
             this.printString("%s: %s", part.toString(), part.getClass());
         }
@@ -90,7 +97,7 @@ public class JavaExpressionEvaluator implements IExpressionEvaluator {
         if (part.parent != null) {
             Stack<Class<?>> otherClass = this.findClass(part.parent, classOnly);
             if (clazz != null) {
-                if (otherClass != null && classOnly && part.child != null) {
+                if (classOnly && part.child != null) {
                     throw new JavaException("Found class but not all parts were consumed");
                 }
                 else if (otherClass != null) {

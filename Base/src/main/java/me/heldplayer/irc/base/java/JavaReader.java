@@ -6,6 +6,16 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 
+import me.heldplayer.irc.base.java.parts.FieldArrayPart;
+import me.heldplayer.irc.base.java.parts.FieldPart;
+import me.heldplayer.irc.base.java.parts.JavaPart;
+import me.heldplayer.irc.base.java.parts.MethodPart;
+import me.heldplayer.irc.base.java.parts.NamedPart;
+import me.heldplayer.irc.base.java.parts.NumberPart;
+import me.heldplayer.irc.base.java.parts.StatementPart;
+import me.heldplayer.irc.base.java.parts.StringPart;
+import me.heldplayer.irc.base.java.parts.TextPart;
+
 public final class JavaReader {
 
     private Reader reader;
@@ -165,7 +175,7 @@ public final class JavaReader {
                 while (c != 0) {
                     c = this.readChar();
 
-                    if (c == '\'') {
+                    if (c == '\\') {
                         escaped = true;
                         continue;
                     }
@@ -205,7 +215,14 @@ public final class JavaReader {
                 if (Character.isDigit(c)) {
                     throw new JavaException("Identifier cannot start with a number: %s", c);
                 }
-                else if (".()[]{};".indexOf(c) >= 0) {
+                else if (c == '.') {
+                    if (parent == null) {
+                        throw new JavaException("Identifier mustn't start with %s", c);
+                    } else {
+                        continue;
+                    }
+                }
+                else if ("()[]{};".indexOf(c) >= 0) {
                     throw new JavaException("Identifier mustn't start with %s", c);
                 }
                 firstChar = false;

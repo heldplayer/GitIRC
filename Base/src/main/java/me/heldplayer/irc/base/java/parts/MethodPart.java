@@ -1,5 +1,5 @@
 
-package me.heldplayer.irc.base.java;
+package me.heldplayer.irc.base.java.parts;
 
 import java.util.ArrayList;
 
