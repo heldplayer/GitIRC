@@ -38,6 +38,10 @@ public class Configuration {
         this.defaults.put(key, "" + value);
     }
 
+    public void setDefault(String key, boolean value) {
+        this.defaults.put(key, "" + value);
+    }
+
     public String getString(String key) {
         if (this.entries.containsKey(key)) {
             return this.entries.get(key);
@@ -68,6 +72,18 @@ public class Configuration {
             }
         }
         return 0;
+    }
+
+    public boolean getBoolean(String key) {
+        if (this.entries.containsKey(key)) {
+            String entry = this.entries.get(key);
+            return Boolean.parseBoolean(entry);
+        }
+        if (this.defaults.containsKey(key)) {
+            String entry = this.defaults.get(key);
+            return Boolean.parseBoolean(entry);
+        }
+        return false;
     }
 
     public void load() {

@@ -14,6 +14,7 @@ class BotConfiguration implements IConfiguration {
     private String bindHost;
     private String logFile;
     private String commandPrefix;
+    private boolean classLoadingVerbose;
 
     public BotConfiguration() {
         Configuration config = new Configuration(new File("." + File.separator + "settings.cfg"));
@@ -23,6 +24,7 @@ class BotConfiguration implements IConfiguration {
         config.setDefault("bind-host", "");
         config.setDefault("log-file", "./console.log");
         config.setDefault("command-prefix", "!");
+        config.setDefault("class-loading-verbose", false);
         config.load();
 
         this.serverIp = config.getString("server-ip");
@@ -31,6 +33,7 @@ class BotConfiguration implements IConfiguration {
         this.bindHost = config.getString("bind-host");
         this.logFile = config.getString("log-file");
         this.commandPrefix = config.getString("command-prefix");
+        this.classLoadingVerbose = config.getBoolean("class-loading-verbose");
     }
 
     @Override
@@ -61,6 +64,11 @@ class BotConfiguration implements IConfiguration {
     @Override
     public String getCommandPrefix() {
         return this.commandPrefix;
+    }
+
+    @Override
+    public boolean getClassLoadingVerbose() {
+        return this.classLoadingVerbose;
     }
 
 }

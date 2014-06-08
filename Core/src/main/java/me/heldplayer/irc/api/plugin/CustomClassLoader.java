@@ -8,6 +8,7 @@ import java.net.URLClassLoader;
 import java.util.HashMap;
 import java.util.Set;
 
+import me.heldplayer.irc.api.BotAPI;
 import me.heldplayer.irc.api.IClassLoader;
 import sun.misc.IOUtils;
 import sun.misc.Resource;
@@ -49,7 +50,9 @@ public abstract class CustomClassLoader extends URLClassLoader implements IClass
                     this.loader.setClass(name, result);
                 }
 
-                PluginLoader.log.info(String.format("[%s] Loaded class '%s'", this.name, name));
+                if (BotAPI.configuration.getClassLoadingVerbose()) {
+                    PluginLoader.log.info(String.format("[%s] Loaded class '%s'", this.name, name));
+                }
             }
 
             this.classes.put(name, result);
@@ -66,23 +69,31 @@ public abstract class CustomClassLoader extends URLClassLoader implements IClass
 
     @Override
     public byte[] findBytes(final String name) {
-        PluginLoader.log.info(String.format("[%s] Looking for class bytes for '%s'", this.name, name));
+        if (BotAPI.configuration.getClassLoadingVerbose()) {
+            PluginLoader.log.info(String.format("[%s] Looking for class bytes for '%s'", this.name, name));
+        }
         String str = name.replace('.', '/').concat(".class");
         ClassLoader loader = this.getClass().getClassLoader();
         try {
             byte[] data = IOUtils.readFully(loader.getResourceAsStream(str), -1, true);
-            PluginLoader.log.info(String.format("[%s] Found class bytes for '%s'", this.name, name));
+            if (BotAPI.configuration.getClassLoadingVerbose()) {
+                PluginLoader.log.info(String.format("[%s] Found class bytes for '%s'", this.name, name));
+            }
             return data;
         }
         catch (Throwable e) {}
 
         // Fallback
-        PluginLoader.log.info(String.format("[%s] Looking for class bytes for '%s' in URLClassPath", this.name, name));
+        if (BotAPI.configuration.getClassLoadingVerbose()) {
+            PluginLoader.log.info(String.format("[%s] Looking for class bytes for '%s' in URLClassPath", this.name, name));
+        }
         Resource localResource = this.ucp.getResource(str, false);
         if (localResource != null) {
             try {
                 byte[] data = localResource.getBytes();
-                PluginLoader.log.info(String.format("[%s] Found class bytes for '%s'", this.name, name));
+                if (BotAPI.configuration.getClassLoadingVerbose()) {
+                    PluginLoader.log.info(String.format("[%s] Found class bytes for '%s'", this.name, name));
+                }
                 return data;
             }
             catch (Throwable e) {}

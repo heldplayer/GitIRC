@@ -64,7 +64,7 @@ public final class IRCBotLauncher {
         httpURLConnection.setLevel(Level.OFF);
 
         ConsoleLogHandler stdoutHandler = new ConsoleLogHandler(System.out);
-        ConsoleLogHandler stderrHandler = new ConsoleLogHandler(System.err);
+        ConsoleLogHandler stderrHandler = new ConsoleLogHandler(System.out);
         ConsoleLogFormatter formatter = new ConsoleLogFormatter();
         stdoutHandler.setFormatter(formatter);
         stdoutHandler.setLevel(Level.INFO);

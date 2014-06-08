@@ -15,4 +15,6 @@ public interface IConfiguration {
 
     String getCommandPrefix();
 
+    boolean getClassLoadingVerbose();
+
 }
