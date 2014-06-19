@@ -113,9 +113,15 @@ public class GitPlugin extends Plugin {
                             String message = commit.getString("message").replaceAll("\n", " ");
                             message = message.replaceAll("\r", "");
 
-                            String url = Util.createGitIO(commit.getString("url"));
+                            String url = commit.getString("url");
+                            try {
+                                url = "http://git.io/" + Util.createGitIO(url);
+                            }
+                            catch (Throwable e) {
+                                e.printStackTrace();
+                            }
 
-                            String output = Format.BOLD + "%s" + Format.RESET + "/%s - " + Format.PURPLE + "%s" + Format.RESET + ": %s +" + Format.DARK_GREEN + "%s" + Format.RESET + " ~" + Format.ORANGE + "%s" + Format.RESET + " -" + Format.RED + "%s" + Format.RESET + " http://git.io/%s";
+                            String output = Format.BOLD + "%s" + Format.RESET + "/%s - " + Format.PURPLE + "%s" + Format.RESET + ": %s +" + Format.DARK_GREEN + "%s" + Format.RESET + " ~" + Format.ORANGE + "%s" + Format.RESET + " -" + Format.RED + "%s" + Format.RESET + " %s";
                             output = String.format(output, repository, ref, commit.getObject("author").getString("name"), message, commit.getArray("added").size(), commit.getArray("modified").size(), commit.getArray("removed").size(), url);
 
                             BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s", this.channel, output);
