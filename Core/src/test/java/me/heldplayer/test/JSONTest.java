@@ -11,10 +11,12 @@ public class JSONTest {
         try {
             String input = "{true:false,\"null\":null,\"some\\\\ stuff\":[true, true, \"false\", 'true', 'null',{true:false,null:null}]}";
             System.out.println(input);
+            System.out.println();
             JSONObject object = new JSONObject(input);
 
             String resultString = JSONWriter.write(object);
             System.out.println(resultString);
+            System.out.println();
             JSONObject newObject = new JSONObject(input);
 
             String newResultString = JSONWriter.write(newObject);
