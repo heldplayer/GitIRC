@@ -10,14 +10,16 @@ import me.heldplayer.irc.api.sandbox.SandboxBlacklist;
 @SandboxBlacklist
 public class PluginClassLoader extends CustomClassLoader {
 
-    private PluginInfo info;
+    PluginInfo info;
     Plugin plugin;
 
     public PluginClassLoader(PluginLoader loader, File file, PluginInfo info, ClassLoader parent) throws MalformedURLException {
         super(loader, file, parent, info.name);
 
         this.info = info;
+    }
 
+    void initializePlugin() {
         try {
             Class<?> clazz;
             try {
