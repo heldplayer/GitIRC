@@ -232,7 +232,7 @@ public class GitPlugin extends Plugin {
             throw new PluginException("'git" + File.separator + "reports' is not a directory file");
         }
 
-        File report = new File(reportsDir, "report-" + dateFormat.format(new Date(System.currentTimeMillis())));
+        File report = new File(reportsDir, "report-" + dateFormat.format(new Date(System.currentTimeMillis())) + ".txt");
 
         if (!report.exists()) {
             report.createNewFile();
