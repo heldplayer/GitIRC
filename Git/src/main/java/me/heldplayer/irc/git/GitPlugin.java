@@ -1,8 +1,12 @@
 
 package me.heldplayer.irc.git;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -11,6 +15,7 @@ import me.heldplayer.irc.api.configuration.Configuration;
 import me.heldplayer.irc.api.event.EventHandler;
 import me.heldplayer.irc.api.event.user.CommandEvent;
 import me.heldplayer.irc.api.plugin.Plugin;
+import me.heldplayer.irc.api.plugin.PluginException;
 import me.heldplayer.irc.git.event.AccessManagerInitEvent;
 import me.heldplayer.irc.git.event.HttpRequestEvent;
 import me.heldplayer.irc.git.internal.EmptyResponse;
@@ -29,6 +34,7 @@ import me.heldplayer.irc.util.Format;
 import me.heldplayer.irc.util.Util;
 import me.heldplayer.util.json.JSONArray;
 import me.heldplayer.util.json.JSONObject;
+import me.heldplayer.util.json.JSONWriter;
 
 public class GitPlugin extends Plugin {
 
@@ -99,6 +105,17 @@ public class GitPlugin extends Plugin {
                 try {
                     String eventType = event.source.headers.get("X-GitHub-Event");
                     JSONObject obj = new JSONObject(query.values.get("payload"));
+
+                    try {
+                        JSONObject temp = new JSONObject();
+                        temp.values.put("event", eventType);
+                        temp.values.put("payload", obj);
+
+                        saveReport(JSONWriter.write(temp));
+                    }
+                    catch (Throwable e) {
+                        getLog().log(Level.WARNING, "Failed saving github report", e);
+                    }
 
                     if (eventType.equals("ping")) {
                         BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :Zen: %s", this.channel, obj.getString("zen"));
@@ -202,6 +219,30 @@ public class GitPlugin extends Plugin {
             }
             event.setHandled();
         }
+    }
+
+    private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss");
+
+    private static void saveReport(String content) throws IOException {
+        File reportsDir = new File("git" + File.separator + "reports");
+        if (!reportsDir.exists()) {
+            reportsDir.mkdirs();
+        }
+        if (!reportsDir.isDirectory()) {
+            throw new PluginException("'git" + File.separator + "reports' is not a directory file");
+        }
+
+        File report = new File(reportsDir, "report-" + dateFormat.format(new Date(System.currentTimeMillis())));
+
+        if (!report.exists()) {
+            report.createNewFile();
+        }
+
+        BufferedWriter writer = new BufferedWriter(new FileWriter(report));
+
+        writer.append(content);
+
+        writer.close();
     }
 
 }
