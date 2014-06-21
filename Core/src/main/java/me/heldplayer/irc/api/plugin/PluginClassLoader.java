@@ -5,6 +5,9 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.util.logging.Logger;
 
+import me.heldplayer.irc.api.sandbox.SandboxBlacklist;
+
+@SandboxBlacklist
 public class PluginClassLoader extends CustomClassLoader {
 
     private PluginInfo info;

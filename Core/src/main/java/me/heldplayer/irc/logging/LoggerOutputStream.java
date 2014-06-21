@@ -6,6 +6,9 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import me.heldplayer.irc.api.sandbox.SandboxBlacklist;
+
+@SandboxBlacklist
 public class LoggerOutputStream extends ByteArrayOutputStream {
 
     private Logger log;

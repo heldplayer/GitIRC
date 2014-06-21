@@ -15,12 +15,14 @@ import java.util.logging.Logger;
 
 import me.heldplayer.irc.api.BotAPI;
 import me.heldplayer.irc.api.configuration.ConfigurationException;
+import me.heldplayer.irc.api.sandbox.SandboxBlacklist;
 import me.heldplayer.irc.logging.ConsoleLogFormatter;
 import me.heldplayer.irc.logging.ConsoleLogHandler;
 import me.heldplayer.irc.logging.FileLogFormatter;
 import me.heldplayer.irc.logging.FileLogHandler;
 import me.heldplayer.irc.logging.LoggerOutputStream;
 
+@SandboxBlacklist
 public final class IRCBotLauncher {
 
     static Thread mainThread;

@@ -8,6 +8,9 @@ import java.util.Date;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
+import me.heldplayer.irc.api.sandbox.SandboxBlacklist;
+
+@SandboxBlacklist
 public class ConsoleLogFormatter extends Formatter {
 
     private SimpleDateFormat dateFormat;

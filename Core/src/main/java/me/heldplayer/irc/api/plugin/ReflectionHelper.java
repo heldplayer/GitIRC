@@ -4,8 +4,10 @@ package me.heldplayer.irc.api.plugin;
 import java.lang.reflect.Field;
 import java.net.URLClassLoader;
 
+import me.heldplayer.irc.api.sandbox.SandboxBlacklist;
 import sun.misc.URLClassPath;
 
+@SandboxBlacklist
 public final class ReflectionHelper {
 
     private ReflectionHelper() {}

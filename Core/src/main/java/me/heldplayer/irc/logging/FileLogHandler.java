@@ -8,6 +8,9 @@ import java.io.PrintStream;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 
+import me.heldplayer.irc.api.sandbox.SandboxBlacklist;
+
+@SandboxBlacklist
 public class FileLogHandler extends Handler {
 
     private PrintStream out;

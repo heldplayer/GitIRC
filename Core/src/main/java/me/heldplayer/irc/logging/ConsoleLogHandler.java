@@ -5,6 +5,9 @@ import java.io.PrintStream;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.LogRecord;
 
+import me.heldplayer.irc.api.sandbox.SandboxBlacklist;
+
+@SandboxBlacklist
 public class ConsoleLogHandler extends ConsoleHandler {
 
     private PrintStream stream;

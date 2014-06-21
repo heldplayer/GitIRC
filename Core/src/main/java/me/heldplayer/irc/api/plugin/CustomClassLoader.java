@@ -10,10 +10,12 @@ import java.util.Set;
 
 import me.heldplayer.irc.api.BotAPI;
 import me.heldplayer.irc.api.IClassLoader;
+import me.heldplayer.irc.api.sandbox.SandboxBlacklist;
 import sun.misc.IOUtils;
 import sun.misc.Resource;
 import sun.misc.URLClassPath;
 
+@SandboxBlacklist
 public abstract class CustomClassLoader extends URLClassLoader implements IClassLoader {
 
     private PluginLoader loader;
