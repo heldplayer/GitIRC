@@ -1,7 +1,7 @@
 
 package me.heldplayer.irc.base.java.parts;
 
-public class NamedPart extends JavaPart {
+public abstract class NamedPart extends JavaPart {
 
     public String name;
 

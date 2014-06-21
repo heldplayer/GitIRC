@@ -10,8 +10,8 @@ import me.heldplayer.irc.base.java.parts.FieldArrayPart;
 import me.heldplayer.irc.base.java.parts.FieldPart;
 import me.heldplayer.irc.base.java.parts.JavaPart;
 import me.heldplayer.irc.base.java.parts.MethodPart;
-import me.heldplayer.irc.base.java.parts.NamedPart;
 import me.heldplayer.irc.base.java.parts.NumberPart;
+import me.heldplayer.irc.base.java.parts.PartialAccessPart;
 import me.heldplayer.irc.base.java.parts.StatementPart;
 import me.heldplayer.irc.base.java.parts.StringPart;
 import me.heldplayer.irc.base.java.parts.TextPart;
@@ -59,23 +59,29 @@ public final class JavaReader {
         JavaPart first = root;
         JavaPart next = null;
 
-        if (root instanceof TextPart) {
-            char nextChar = this.readChar();
-            this.goBack();
-            if (nextChar == ' ') {
+        if (root instanceof StatementPart) {
+            first = null;
+        }
+        else if (root instanceof TextPart) {
+            if (firstChar == ' ') {
                 root = new StatementPart(((TextPart) root).name);
                 first = null;
             }
         }
 
-        while (true) {
-            next = this.readPart(first);
-            if (next == null) {
-                break;
-            }
-            first = next;
-            if (next instanceof FieldPart) {
-                break;
+        firstChar = this.readChar();
+        this.goBack();
+
+        if (")}]".indexOf(firstChar) < 0) {
+            while (true) {
+                next = this.readPart(first);
+                if (next == null) {
+                    break;
+                }
+                first = next;
+                if (next instanceof FieldPart) {
+                    break;
+                }
             }
         }
 
@@ -218,7 +224,8 @@ public final class JavaReader {
                 else if (c == '.') {
                     if (parent == null) {
                         throw new JavaException("Identifier mustn't start with %s", c);
-                    } else {
+                    }
+                    else {
                         continue;
                     }
                 }
@@ -229,7 +236,7 @@ public final class JavaReader {
             }
 
             if (c == '.') {
-                return new NamedPart(parent, result.toString());
+                return new PartialAccessPart(parent, result.toString());
             }
             if (c == '(') {
                 this.goBack();
@@ -242,7 +249,7 @@ public final class JavaReader {
             if (c == ' ') {
                 this.goBack();
                 if (parent == null) {
-                    return new TextPart(parent, result.toString());
+                    return new StatementPart(result.toString());
                 }
 
                 return new FieldPart(parent, result.toString());

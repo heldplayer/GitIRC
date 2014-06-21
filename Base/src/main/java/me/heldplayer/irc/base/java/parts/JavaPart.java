@@ -21,8 +21,8 @@ public abstract class JavaPart {
     public abstract String toString();
 
     public JavaPart getRoot() {
-        if (this.child != null) {
-            return this.child.getRoot();
+        if (this.parent != null) {
+            return this.parent.getRoot();
         }
         return this;
     }

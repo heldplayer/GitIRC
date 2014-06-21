@@ -8,15 +8,15 @@ import me.heldplayer.irc.api.IRCUser;
 
 public final class SandboxManager {
 
-    public static HashMap<IRCUser, SandboxedClassLoader> sandboxes = new HashMap<IRCUser, SandboxedClassLoader>();
+    public static HashMap<IRCUser, SandboxedClassLoaderImpl> sandboxes = new HashMap<IRCUser, SandboxedClassLoaderImpl>();
 
     public static ISandboxDelegate getSandbox(IRCUser user) {
-        SandboxedClassLoader loader = SandboxManager.sandboxes.get(user);
+        SandboxedClassLoaderImpl loader = SandboxManager.sandboxes.get(user);
         return loader == null ? null : loader.delegate;
     }
 
     public static boolean removeSandbox(IRCUser user) {
-        SandboxedClassLoader loader = SandboxManager.sandboxes.remove(user);
+        SandboxedClassLoaderImpl loader = SandboxManager.sandboxes.remove(user);
         loader.running = false;
         System.gc();
         return loader == null ? false : true;
@@ -27,7 +27,7 @@ public final class SandboxManager {
             throw new JavaException("Sandbox already exists for %s", user.getUsername());
         }
 
-        final SandboxedClassLoader sandbox = new SandboxedClassLoader(user, channel);
+        final SandboxedClassLoaderImpl sandbox = new SandboxedClassLoaderImpl(user, channel);
 
         Thread executor = sandbox.delegate.setEvaluatorThread(new Thread(new Runnable() {
 
@@ -60,7 +60,7 @@ public final class SandboxManager {
     }
 
     public static void resetAll() {
-        for (SandboxedClassLoader loader : SandboxManager.sandboxes.values()) {
+        for (SandboxedClassLoaderImpl loader : SandboxManager.sandboxes.values()) {
             loader.running = false;
         }
         SandboxManager.sandboxes.clear();

@@ -1,9 +1,17 @@
 
 package me.heldplayer.irc.base.java;
 
+import java.lang.reflect.Array;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.TreeMap;
 
+import me.heldplayer.irc.base.java.parts.FieldArrayPart;
+import me.heldplayer.irc.base.java.parts.FieldPart;
 import me.heldplayer.irc.base.java.parts.JavaPart;
+import me.heldplayer.irc.base.java.parts.MethodPart;
+import me.heldplayer.irc.base.java.parts.NamedPart;
+import me.heldplayer.irc.base.java.parts.PartialAccessPart;
 import me.heldplayer.irc.base.java.parts.StatementPart;
 import me.heldplayer.irc.base.java.parts.StringPart;
 
@@ -37,10 +45,11 @@ public class JavaExpressionEvaluator implements IExpressionEvaluator {
         this.target.sendMessage(message, params);
     }
 
-    private void evaluate(JavaPart part) {
+    private Object evaluate(JavaPart part) {
         if (part instanceof StatementPart) {
             if (part.child == null) {
                 this.printString("Statement is missing expression");
+                return null;
             }
             else {
                 StatementPart statement = (StatementPart) part;
@@ -50,7 +59,7 @@ public class JavaExpressionEvaluator implements IExpressionEvaluator {
                         Class<?> clazz = classes.get(name);
                         this.importClass(clazz);
                         this.printString("Class '%s' imported as '%s'", name, clazz.getSimpleName());
-                        return;
+                        return clazz;
                     }
                     Stack<Class<?>> stack = this.findClass(statement.child, true);
                     if (stack == null) {
@@ -61,6 +70,7 @@ public class JavaExpressionEvaluator implements IExpressionEvaluator {
                         this.importClass(stack.value);
                         this.printString("Class '%s' imported as '%s'", name, stack.value.getSimpleName());
                     }
+                    return stack.value;
                 }
                 else if (statement.name.equals("unimport")) {
                     String name = statement.child.toString();
@@ -72,6 +82,7 @@ public class JavaExpressionEvaluator implements IExpressionEvaluator {
                     else {
                         throw new JavaException("A class with name '%s' hasn't been imported yet", name);
                     }
+                    return null;
                 }
                 else {
                     throw new JavaException("Unknown statement");
@@ -80,9 +91,130 @@ public class JavaExpressionEvaluator implements IExpressionEvaluator {
         }
         else if (part instanceof StringPart) {
             this.printString("%s", part.toString());
+            return ((StringPart) part).value;
+        }
+        else if (part instanceof NamedPart) {
+            JavaPart currentPart = part.getRoot();
+            Object obj = null;
+            search:
+            {
+                if (currentPart instanceof NamedPart) {
+                    String name = currentPart.toString();
+                    if (this.variables.containsKey(name)) {
+                        obj = this.variables.get(name);
+                        break search;
+                    }
+
+                    if (this.importedClasses.containsKey(name)) {
+                        obj = this.importedClasses.get(name);
+                        break search;
+                    }
+                }
+                if (currentPart instanceof StringPart) {
+                    obj = ((StringPart) currentPart).value;
+                    break search;
+                }
+
+                Stack<Class<?>> stack = this.findClass(part, false);
+                if (stack != null) { // This is referencing a class
+                    obj = stack.value;
+                    currentPart = stack.part;
+                    break search;
+                }
+
+                throw new JavaException("Unknown variable or Class '%s'", part.toString());
+            }
+
+            try {
+                while (currentPart.child != null) {
+                    JavaPart child = currentPart.child;
+                    if (child instanceof FieldArrayPart) {
+                        Field field;
+                        if (obj instanceof Class) {
+                            field = this.getField(((Class<?>) obj).getName(), ((FieldArrayPart) child).name);
+                        }
+                        else {
+                            field = this.getField(obj.getClass().getName(), ((FieldArrayPart) child).name);
+                        }
+                        if (field == null) {
+                            throw new JavaException("Unknown field '%s'", ((FieldPart) child).name);
+                        }
+                        Object array;
+                        if (obj instanceof Class) {
+                            array = field.get(null);
+                        }
+                        else {
+                            array = field.get(obj);
+                        }
+                        obj = Array.get(array, ((FieldArrayPart) child).index);
+                        currentPart = currentPart.child;
+                        continue;
+                    }
+                    else if (child instanceof FieldPart || child instanceof PartialAccessPart) {
+                        Field field;
+                        if (obj instanceof Class) {
+                            field = this.getField(((Class<?>) obj).getName(), ((NamedPart) child).name);
+                        }
+                        else {
+                            field = this.getField(obj.getClass().getName(), ((NamedPart) child).name);
+                        }
+                        if (field == null) {
+                            throw new JavaException("Unknown field '%s'", ((NamedPart) child).name);
+                        }
+                        if (obj instanceof Class) {
+                            obj = field.get(null);
+                        }
+                        else {
+                            obj = field.get(obj);
+                        }
+                        currentPart = currentPart.child;
+                        continue;
+                    }
+                    else if (child instanceof MethodPart) {
+                        MethodPart methodPart = (MethodPart) child;
+                        Class<?>[] paramTypes = new Class<?>[methodPart.params.size()];
+                        Object[] params = new Object[methodPart.params.size()];
+                        for (int i = 0; i < paramTypes.length; i++) {
+                            JavaPart paramPart = methodPart.params.get(i);
+                            Object param = this.evaluate(paramPart);
+
+                            params[i] = param;
+                            paramTypes[i] = param.getClass();
+                        }
+                        Method method;
+                        if (obj instanceof Class) {
+                            method = this.getMethod(((Class<?>) obj).getName(), ((NamedPart) child).name, paramTypes);
+                        }
+                        else {
+                            method = this.getMethod(obj.getClass().getName(), ((NamedPart) child).name, paramTypes);
+                        }
+                        if (method == null) {
+                            throw new JavaException("Unknown method '%s'", ((NamedPart) child).name);
+                        }
+                        if (obj instanceof Class) {
+                            obj = method.invoke(null, (Object[]) params);
+                        }
+                        else {
+                            obj = method.invoke(obj, (Object[]) params);
+                        }
+                        currentPart = currentPart.child;
+                        continue;
+                    }
+
+                    break;
+                }
+            }
+            catch (Throwable e) {
+                throw new JavaException(e);
+            }
+
+            this.printString("%s: %s", currentPart, currentPart.getClass());
+            this.printString("%s: %s", obj, obj == null ? null : obj.getClass());
+            return obj;
         }
         else {
             this.printString("%s: %s", part.toString(), part.getClass());
+            return null;
         }
     }
 
@@ -131,6 +263,96 @@ public class JavaExpressionEvaluator implements IExpressionEvaluator {
         }
     }
 
+    private Class<?> getClass(String className) {
+        if (className == null) {
+            return null;
+        }
+        if (this.classes.containsKey(className)) {
+            return this.classes.get(className);
+        }
+        try {
+            Class<?> clazz = this.getClass().getClassLoader().loadClass(className);
+            this.classes.put(className, clazz);
+            return clazz;
+        }
+        catch (ClassNotFoundException e) {}
+        return null;
+    }
+
+    private Method getMethod(String className, String methodName, Class<?>... params) {
+        if (className == null || methodName == null) {
+            return null;
+        }
+        if (this.methods.containsKey(className)) {
+            TreeMap<String, Method> methods = this.methods.get(className);
+            Method method = methods.get(methodName);
+            if (method == null) {
+                Class<?> clazz = this.getClass(className);
+                if (clazz != null) {
+                    try {
+                        method = clazz.getDeclaredMethod(methodName, params);
+                        methods.put(methodName, method);
+                        method.setAccessible(true);
+                    }
+                    catch (Throwable e) {}
+                }
+            }
+            return method;
+        }
+        else {
+            Class<?> clazz = this.getClass(className);
+            if (clazz != null) {
+                TreeMap<String, Method> methods = new TreeMap<String, Method>();
+                this.methods.put(className, methods);
+                try {
+                    Method method = clazz.getDeclaredMethod(methodName, params);
+                    methods.put(methodName, method);
+                    method.setAccessible(true);
+                    return method;
+                }
+                catch (Throwable e) {}
+            }
+        }
+        return null;
+    }
+
+    private Field getField(String className, String fieldName) {
+        if (className == null || fieldName == null) {
+            return null;
+        }
+        if (this.fields.containsKey(className)) {
+            TreeMap<String, Field> fields = this.fields.get(className);
+            Field field = fields.get(fieldName);
+            if (field == null) {
+                Class<?> clazz = this.getClass(className);
+                if (clazz != null) {
+                    try {
+                        field = clazz.getDeclaredField(fieldName);
+                        fields.put(fieldName, field);
+                        field.setAccessible(true);
+                    }
+                    catch (Throwable e) {}
+                }
+            }
+            return field;
+        }
+        else {
+            Class<?> clazz = this.getClass(className);
+            if (clazz != null) {
+                TreeMap<String, Field> fields = new TreeMap<String, Field>();
+                this.fields.put(className, fields);
+                try {
+                    Field field = clazz.getDeclaredField(fieldName);
+                    fields.put(fieldName, field);
+                    field.setAccessible(true);
+                    return field;
+                }
+                catch (Throwable e) {}
+            }
+        }
+        return null;
+    }
+
     // package.name.ClassName -> Return virtualized Class<?> clazz
     // clazz.class -> return actual Class<?> object
     // clazz.field -> return static field Object obj
@@ -155,8 +377,8 @@ public class JavaExpressionEvaluator implements IExpressionEvaluator {
 
     protected final TreeMap<String, Class<?>> classes = new TreeMap<String, Class<?>>();
     protected final TreeMap<String, Class<?>> importedClasses = new TreeMap<String, Class<?>>();
-    protected final TreeMap<String, Class<?>> methods = new TreeMap<String, Class<?>>();
-    protected final TreeMap<String, Class<?>> fields = new TreeMap<String, Class<?>>();
+    protected final TreeMap<String, TreeMap<String, Method>> methods = new TreeMap<String, TreeMap<String, Method>>();
+    protected final TreeMap<String, TreeMap<String, Field>> fields = new TreeMap<String, TreeMap<String, Field>>();
 
     protected final TreeMap<String, Object> variables = new TreeMap<String, Object>();
 
