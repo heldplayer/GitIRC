@@ -173,7 +173,7 @@ public class GitPlugin extends Plugin {
                         BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s", this.channel, output);
 
                         System.out.println("event=" + eventType);
-                        System.out.println("payload=" + query.values.get("payload"));
+                        System.out.println("File saved as report-" + dateFormat.format(new Date(System.currentTimeMillis())) + ".txt");
 
                         throw new RuntimeException("Unknown event");
                     }
