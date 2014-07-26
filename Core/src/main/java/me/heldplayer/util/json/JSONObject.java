@@ -1,12 +1,6 @@
-
 package me.heldplayer.util.json;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,39 +14,8 @@ public class JSONObject {
         this.load(new JSONParser(input));
     }
 
-    public JSONObject(File file) throws FileNotFoundException {
-        this();
-
-        FileReader reader;
-        this.load(new JSONParser(reader = new FileReader(file)));
-        try {
-            reader.close();
-        }
-        catch (IOException e) {
-            throw new JSONException(e);
-        }
-    }
-
-    public JSONObject(InputStream in) {
-        this();
-
-        InputStreamReader reader;
-        this.load(new JSONParser(reader = new InputStreamReader(in)));
-        try {
-            reader.close();
-        }
-        catch (IOException e) {
-            throw new JSONException(e);
-        }
-    }
-
     public JSONObject() {
         this.values = new HashMap<String, Object>();
-    }
-
-    JSONObject(JSONParser parser) {
-        this();
-        this.load(parser);
     }
 
     void load(JSONParser parser) {
@@ -65,20 +28,19 @@ public class JSONObject {
         while (true) {
             c = parser.readNormalChar();
             switch (c) {
-            case 0:
-                throw new JSONException("Expected '}' but got EOF at " + parser.createErrorLocation());
-            case '}':
-                return;
-            default:
-                parser.goBack();
+                case 0:
+                    throw new JSONException("Expected '}' but got EOF at " + parser.createErrorLocation());
+                case '}':
+                    return;
+                default:
+                    parser.goBack();
             }
 
             Object val = parser.readValue();
             String key = null;
             if (val != null) {
                 key = val.toString();
-            }
-            else {
+            } else {
                 key = "null";
             }
 
@@ -94,23 +56,48 @@ public class JSONObject {
 
             c = parser.readNormalChar();
             switch (c) {
-            case ';':
-            case ',':
-                if (parser.readChar() == '}') {
+                case ';':
+                case ',':
+                    if (parser.readChar() == '}') {
+                        return;
+                    }
+                    parser.goBack();
+                    break;
+                case '}':
                     return;
-                }
-                parser.goBack();
-            break;
-            case '}':
-                return;
-            default:
-                throw new JSONException("Expected ',', ';' or '}' but got '" + c + "' at " + parser.createErrorLocation());
+                default:
+                    throw new JSONException("Expected ',', ';' or '}' but got '" + c + "' at " + parser.createErrorLocation());
             }
         }
     }
 
-    public Object getValue(String key) {
-        return this.values.get(key);
+    public JSONObject(File file) throws FileNotFoundException {
+        this();
+
+        FileReader reader;
+        this.load(new JSONParser(reader = new FileReader(file)));
+        try {
+            reader.close();
+        } catch (IOException e) {
+            throw new JSONException(e);
+        }
+    }
+
+    public JSONObject(InputStream in) {
+        this();
+
+        InputStreamReader reader;
+        this.load(new JSONParser(reader = new InputStreamReader(in)));
+        try {
+            reader.close();
+        } catch (IOException e) {
+            throw new JSONException(e);
+        }
+    }
+
+    JSONObject(JSONParser parser) {
+        this();
+        this.load(parser);
     }
 
     public String getString(String key) {
@@ -118,8 +105,7 @@ public class JSONObject {
         if (value != null) {
             if (value instanceof String) {
                 return (String) value;
-            }
-            else if (value.equals(null)) {
+            } else if (value.equals(null)) {
                 return "null";
             }
 
@@ -128,13 +114,16 @@ public class JSONObject {
         return null;
     }
 
+    public Object getValue(String key) {
+        return this.values.get(key);
+    }
+
     public boolean getBoolean(String key) {
         Object value = this.getValue(key);
         if (value != null) {
             if (value instanceof Boolean) {
                 return ((Boolean) value).booleanValue();
-            }
-            else if (value.equals(null)) {
+            } else if (value.equals(null)) {
                 return false;
             }
 
@@ -148,8 +137,7 @@ public class JSONObject {
         if (value != null) {
             if (value instanceof Number) {
                 return (Number) value;
-            }
-            else if (value.equals(null)) {
+            } else if (value.equals(null)) {
                 return 0;
             }
 
@@ -163,8 +151,7 @@ public class JSONObject {
         if (value != null) {
             if (value instanceof JSONObject) {
                 return (JSONObject) value;
-            }
-            else if (value.equals(null)) {
+            } else if (value.equals(null)) {
                 return null;
             }
 
@@ -178,8 +165,7 @@ public class JSONObject {
         if (value != null) {
             if (value instanceof JSONArray) {
                 return (JSONArray) value;
-            }
-            else if (value.equals(null)) {
+            } else if (value.equals(null)) {
                 return null;
             }
 

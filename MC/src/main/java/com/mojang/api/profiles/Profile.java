@@ -1,9 +1,9 @@
-
 package com.mojang.api.profiles;
 
 import java.util.UUID;
 
 public class Profile {
+
     private String id;
     private String name;
 

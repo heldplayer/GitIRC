@@ -1,4 +1,3 @@
-
 package me.heldplayer.irc.git.event;
 
 import me.heldplayer.irc.api.event.Event;

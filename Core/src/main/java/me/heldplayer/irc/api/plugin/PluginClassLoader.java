@@ -1,11 +1,10 @@
-
 package me.heldplayer.irc.api.plugin;
+
+import me.heldplayer.irc.api.sandbox.SandboxBlacklist;
 
 import java.io.File;
 import java.net.MalformedURLException;
 import java.util.logging.Logger;
-
-import me.heldplayer.irc.api.sandbox.SandboxBlacklist;
 
 @SandboxBlacklist
 public class PluginClassLoader extends CustomClassLoader {
@@ -24,16 +23,14 @@ public class PluginClassLoader extends CustomClassLoader {
             Class<?> clazz;
             try {
                 clazz = Class.forName(info.mainClass, true, this);
-            }
-            catch (ClassNotFoundException e) {
+            } catch (ClassNotFoundException e) {
                 throw new PluginException(String.format("Could not find main class '%s'", info.mainClass), e);
             }
 
             Class<? extends Plugin> plugin;
             try {
                 plugin = clazz.asSubclass(Plugin.class);
-            }
-            catch (ClassCastException e) {
+            } catch (ClassCastException e) {
                 throw new PluginException(String.format("Main class '%s' does not extend Plugin", info.mainClass), e);
             }
 
@@ -42,11 +39,9 @@ public class PluginClassLoader extends CustomClassLoader {
             this.plugin.info = info;
             this.plugin.loader = this;
             this.plugin.logger = Logger.getLogger(info.name);
-        }
-        catch (InstantiationException e) {
+        } catch (InstantiationException e) {
             throw new PluginException(String.format("Could not create instance of '%s'", info.mainClass), e);
-        }
-        catch (IllegalAccessException e) {
+        } catch (IllegalAccessException e) {
             throw new PluginException(String.format("Main class '%s' does not have a public constructor", info.mainClass), e);
         }
     }

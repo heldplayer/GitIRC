@@ -1,10 +1,9 @@
-
 package me.heldplayer.irc;
-
-import java.io.File;
 
 import me.heldplayer.irc.api.IConfiguration;
 import me.heldplayer.irc.api.configuration.Configuration;
+
+import java.io.File;
 
 class BotConfiguration implements IConfiguration {
 
@@ -17,7 +16,7 @@ class BotConfiguration implements IConfiguration {
     private boolean classLoadingVerbose;
 
     public BotConfiguration() {
-        Configuration config = new Configuration(new File("." + File.separator + "settings.cfg"));
+        Configuration config = new Configuration(new File(IRCBotLauncher.rootDirectory, "settings.cfg"));
         config.setDefault("server-ip", "localhost");
         config.setDefault("server-port", "6667");
         config.setDefault("nickname", "bot");

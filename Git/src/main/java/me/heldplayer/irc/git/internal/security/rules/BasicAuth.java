@@ -1,10 +1,9 @@
-
 package me.heldplayer.irc.git.internal.security.rules;
-
-import javax.xml.bind.DatatypeConverter;
 
 import me.heldplayer.irc.git.RequestSource;
 import me.heldplayer.util.json.JSONObject;
+
+import javax.xml.bind.DatatypeConverter;
 
 public class BasicAuth implements Rule {
 

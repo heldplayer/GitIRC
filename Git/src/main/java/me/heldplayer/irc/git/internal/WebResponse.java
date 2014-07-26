@@ -1,5 +1,7 @@
-
 package me.heldplayer.irc.git.internal;
+
+import me.heldplayer.irc.git.GitPlugin;
+import me.heldplayer.irc.git.RequestSource;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -8,15 +10,12 @@ import java.io.IOException;
 import java.net.SocketException;
 import java.util.logging.Level;
 
-import me.heldplayer.irc.git.GitPlugin;
-import me.heldplayer.irc.git.RequestSource;
-
 public abstract class WebResponse {
 
-    private ByteArrayOutputStream headerBytes;
     protected DataOutputStream header;
-    private ByteArrayOutputStream bodyBytes;
     protected DataOutputStream body;
+    private ByteArrayOutputStream headerBytes;
+    private ByteArrayOutputStream bodyBytes;
 
     public WebResponse() throws IOException {
         this.headerBytes = new ByteArrayOutputStream();
@@ -48,42 +47,39 @@ public abstract class WebResponse {
                     stream.write(bits);
                 }
             }
-        }
-        catch (SocketException ex) {
+        } catch (SocketException ex) {
             GitPlugin.getLog().log(Level.WARNING, "Tried displaying page to a client, but the client closed the connection!", ex);
-        }
-        catch (IOException ex) {
+        } catch (IOException ex) {
             GitPlugin.getLog().log(Level.WARNING, "Tried displaying page to a client, but an error occoured", ex);
-        }
-        finally {
+        } finally {
             try {
                 if (header != null) {
                     header.close();
                 }
+            } catch (IOException ex) {
             }
-            catch (IOException ex) {}
             try {
                 this.header.close();
+            } catch (IOException ex) {
             }
-            catch (IOException ex) {}
             try {
                 this.headerBytes.close();
+            } catch (IOException ex) {
             }
-            catch (IOException ex) {}
             try {
                 if (body != null) {
                     body.close();
                 }
+            } catch (IOException ex) {
             }
-            catch (IOException ex) {}
             try {
                 this.body.close();
+            } catch (IOException ex) {
             }
-            catch (IOException ex) {}
             try {
                 this.bodyBytes.close();
+            } catch (IOException ex) {
             }
-            catch (IOException ex) {}
         }
     }
 

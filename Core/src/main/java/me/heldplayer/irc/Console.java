@@ -1,24 +1,20 @@
-
 package me.heldplayer.irc;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import me.heldplayer.irc.api.BotAPI;
 import me.heldplayer.irc.api.IConsole;
 import me.heldplayer.irc.api.event.user.CommandEvent;
-import me.heldplayer.irc.logging.FileLogHandler;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 class Console implements IConsole {
 
     private final Logger stdout;
     private final Logger stderr;
-    private FileLogHandler logfileHandler;
 
-    public Console(Logger stdout, Logger stderr, FileLogHandler fileHandler) {
+    public Console(Logger stdout, Logger stderr) {
         this.stdout = stdout;
         this.stderr = stderr;
-        this.logfileHandler = fileHandler;
     }
 
     @Override
@@ -40,9 +36,6 @@ class Console implements IConsole {
 
     @Override
     public void shutdown() {
-        if (this.logfileHandler != null) {
-            this.logfileHandler.close();
-        }
         IRCBotLauncher.unloadPlugins();
         System.exit(0);
     }
@@ -51,8 +44,7 @@ class Console implements IConsole {
     public void log(Level level, String message) {
         if (level.intValue() > 800) {
             this.stderr.log(level, message);
-        }
-        else {
+        } else {
             this.stdout.log(level, message);
         }
     }
@@ -61,8 +53,7 @@ class Console implements IConsole {
     public void log(Level level, String message, Throwable thrown) {
         if (level.intValue() > 800) {
             this.stderr.log(level, message, thrown);
-        }
-        else {
+        } else {
             this.stdout.log(level, message, thrown);
         }
     }

@@ -1,5 +1,6 @@
-
 package me.heldplayer.irc.api.sandbox;
+
+import me.heldplayer.irc.api.BotAPI;
 
 import java.lang.annotation.Annotation;
 import java.security.SecureClassLoader;
@@ -8,20 +9,16 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import me.heldplayer.irc.api.BotAPI;
-
 @SandboxBlacklist
 public abstract class SandboxedClassLoader extends SecureClassLoader {
 
     private static final Logger log = Logger.getLogger("Sandbox");
-
+    protected static Set<String> loaderExceptions = new HashSet<String>();
     private HashMap<String, Class<?>> classes = new HashMap<String, Class<?>>();
 
     public SandboxedClassLoader() {
         super(null);
     }
-
-    protected static Set<String> loaderExceptions = new HashSet<String>();
 
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
@@ -40,8 +37,7 @@ public abstract class SandboxedClassLoader extends SecureClassLoader {
 
             try {
                 result = this.defineClass(name, bytes, 0, bytes.length);
-            }
-            catch (Throwable e) {
+            } catch (Throwable e) {
                 throw new ClassNotFoundException(name, e);
             }
 
@@ -64,10 +60,10 @@ public abstract class SandboxedClassLoader extends SecureClassLoader {
         return result;
     }
 
+    public abstract String getName();
+
     Set<String> getClasses() {
         return this.classes.keySet();
     }
-
-    public abstract String getName();
 
 }

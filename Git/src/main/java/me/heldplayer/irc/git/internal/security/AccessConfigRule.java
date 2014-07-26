@@ -1,14 +1,13 @@
-
 package me.heldplayer.irc.git.internal.security;
-
-import java.io.File;
-import java.io.FileNotFoundException;
 
 import me.heldplayer.irc.git.GitPlugin;
 import me.heldplayer.irc.git.RequestSource;
 import me.heldplayer.irc.git.internal.security.rules.Rule;
 import me.heldplayer.util.json.JSONException;
 import me.heldplayer.util.json.JSONObject;
+
+import java.io.File;
+import java.io.FileNotFoundException;
 
 public class AccessConfigRule implements IAccessRule {
 
@@ -30,8 +29,7 @@ public class AccessConfigRule implements IAccessRule {
             JSONObject object = null;
             try {
                 object = new JSONObject(this.file);
-            }
-            catch (FileNotFoundException e) {
+            } catch (FileNotFoundException e) {
                 throw new JSONException("Failed reading access rule", e);
             }
 

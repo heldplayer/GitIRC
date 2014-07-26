@@ -1,4 +1,3 @@
-
 package me.heldplayer.irc.git.internal;
 
 public enum RequestMethod {

@@ -1,4 +1,3 @@
-
 package me.heldplayer.irc.git.internal.security;
 
 import me.heldplayer.irc.git.RequestSource;

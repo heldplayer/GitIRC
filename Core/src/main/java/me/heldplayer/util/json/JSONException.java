@@ -1,4 +1,3 @@
-
 package me.heldplayer.util.json;
 
 public class JSONException extends RuntimeException {

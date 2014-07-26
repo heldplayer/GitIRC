@@ -1,5 +1,7 @@
-
 package me.heldplayer.irc.git.internal;
+
+import me.heldplayer.irc.git.GitPlugin;
+import me.heldplayer.irc.git.internal.security.AccessManager;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -7,24 +9,17 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 
-import me.heldplayer.irc.git.GitPlugin;
-import me.heldplayer.irc.git.internal.security.AccessManager;
-
 public class RunnableWebserver implements Runnable {
 
     public static RunnableWebserver instance;
-
-    private ServerSocket serverSocket = null;
-    public boolean running = false;
-    public boolean hasStopped = false;
-
     private final int port;
     private final String host;
-
+    public boolean running = false;
+    public boolean hasStopped = false;
+    public AccessManager accessManager;
+    private ServerSocket serverSocket = null;
     private ThreadGroup threads;
     private ArrayList<RunnableHttpResponse> runningRequests;
-
-    public AccessManager accessManager;
 
     public RunnableWebserver(int port, String host) {
         super();
@@ -59,8 +54,8 @@ public class RunnableWebserver implements Runnable {
         this.threads.destroy();
         try {
             this.serverSocket.close();
+        } catch (IOException e) {
         }
-        catch (IOException e) {}
 
         this.accessManager.cleanup();
 
@@ -79,8 +74,7 @@ public class RunnableWebserver implements Runnable {
             }
 
             this.serverSocket = new ServerSocket(this.port, 0, adress);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             GitPlugin.getLog().severe("**** FAILED TO BIND TO PORT");
             GitPlugin.getLog().severe("The exception was: " + ex.toString());
             GitPlugin.getLog().severe("Perhaps something is already running on that port?");
@@ -100,9 +94,9 @@ public class RunnableWebserver implements Runnable {
                 this.runningRequests.add(response);
 
                 Thread.sleep(10L);
+            } catch (IOException e) {
+            } catch (InterruptedException e) {
             }
-            catch (IOException e) {}
-            catch (InterruptedException e) {}
         }
 
         this.hasStopped = true;

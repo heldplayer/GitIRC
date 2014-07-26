@@ -1,7 +1,7 @@
-
 package com.mojang.api.http;
 
 public class HttpHeader {
+
     private String name;
     private String value;
 

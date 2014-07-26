@@ -1,20 +1,11 @@
-
 package me.heldplayer.irc.base.java;
+
+import me.heldplayer.irc.base.java.parts.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-
-import me.heldplayer.irc.base.java.parts.FieldArrayPart;
-import me.heldplayer.irc.base.java.parts.FieldPart;
-import me.heldplayer.irc.base.java.parts.JavaPart;
-import me.heldplayer.irc.base.java.parts.MethodPart;
-import me.heldplayer.irc.base.java.parts.NumberPart;
-import me.heldplayer.irc.base.java.parts.PartialAccessPart;
-import me.heldplayer.irc.base.java.parts.StatementPart;
-import me.heldplayer.irc.base.java.parts.StringPart;
-import me.heldplayer.irc.base.java.parts.TextPart;
 
 public final class JavaReader {
 
@@ -32,8 +23,7 @@ public final class JavaReader {
     public JavaReader(Reader reader) {
         if (reader.markSupported()) {
             this.reader = reader;
-        }
-        else {
+        } else {
             this.reader = new BufferedReader(reader);
         }
 
@@ -61,8 +51,7 @@ public final class JavaReader {
 
         if (root instanceof StatementPart) {
             first = null;
-        }
-        else if (root instanceof TextPart) {
+        } else if (root instanceof TextPart) {
             if (firstChar == ' ') {
                 root = new StatementPart(((TextPart) root).name);
                 first = null;
@@ -173,8 +162,7 @@ public final class JavaReader {
             if (parent instanceof NumberPart) {
                 return null;
             }
-        }
-        else {
+        } else {
             if (first == '"') {
                 char c = this.readChar();
                 boolean escaped = false;
@@ -196,8 +184,7 @@ public final class JavaReader {
                             result.append('"');
                             continue;
                         }
-                    }
-                    else {
+                    } else {
                         if (c == '"') {
                             return new StringPart(result.toString());
                         }
@@ -220,16 +207,13 @@ public final class JavaReader {
             if (firstChar) {
                 if (Character.isDigit(c)) {
                     throw new JavaException("Identifier cannot start with a number: %s", c);
-                }
-                else if (c == '.') {
+                } else if (c == '.') {
                     if (parent == null) {
                         throw new JavaException("Identifier mustn't start with %s", c);
-                    }
-                    else {
+                    } else {
                         continue;
                     }
-                }
-                else if ("()[]{};".indexOf(c) >= 0) {
+                } else if ("()[]{};".indexOf(c) >= 0) {
                     throw new JavaException("Identifier mustn't start with %s", c);
                 }
                 firstChar = false;
@@ -298,6 +282,33 @@ public final class JavaReader {
         }
 
         return result.toString();
+    }
+
+    public char readChar() {
+        int c = 0;
+
+        if (this.usePrevious) {
+            this.usePrevious = false;
+            c = this.previous;
+        } else {
+            try {
+                if (this.reader.ready()) {
+                    c = this.reader.read();
+                }
+            } catch (IOException e) {
+                throw new JavaException(e);
+            }
+
+            if (c < 0) {
+                c = 0;
+            }
+        }
+
+        this.index++;
+
+        this.previous = (char) c;
+
+        return this.previous;
     }
 
     public char readNormalChar() {
@@ -389,13 +400,11 @@ public final class JavaReader {
                     c = this.readChar();
 
                     continue;
-                }
-                else if (firstChar && c == '-') {
+                } else if (firstChar && c == '-') {
                     negative = true;
 
                     continue;
-                }
-                else if (firstChar) {
+                } else if (firstChar) {
                     firstChar = false;
                     if (prev == '0' && (c == 'b' || c == 'B')) {
                         bit = true;
@@ -409,8 +418,7 @@ public final class JavaReader {
                 }
 
                 result.append(c);
-            }
-            else if (c == '.') {
+            } else if (c == '.') {
                 if (hasPoint) {
                     throw new JavaException("Invalid number character: '%s'", c);
                 }
@@ -419,36 +427,30 @@ public final class JavaReader {
                 firstChar = false;
 
                 result.append(c);
-            }
-            else {
+            } else {
                 if (c == 'f' || c == 'F') {
                     hasPoint = true;
                     bit = false;
                     hex = false;
                     terminated = true;
-                }
-                else if (c == 'd' || c == 'D') {
+                } else if (c == 'd' || c == 'D') {
                     hasPoint = true;
                     isExtended = true;
                     bit = false;
                     hex = false;
                     terminated = true;
-                }
-                else if (c == 'l' || c == 'L') {
+                } else if (c == 'l' || c == 'L') {
                     isExtended = true;
                     terminated = true;
-                }
-                else if (!hasPoint && (c == 'x' || c == 'X') && prev == '0') {
+                } else if (!hasPoint && (c == 'x' || c == 'X') && prev == '0') {
                     hex = true;
                     result = new StringBuilder();
                     firstChar = false;
-                }
-                else if (!hasPoint && (c == 'b' || c == 'B') && prev == '0') {
+                } else if (!hasPoint && (c == 'b' || c == 'B') && prev == '0') {
                     bit = true;
                     result = new StringBuilder();
                     firstChar = false;
-                }
-                else {
+                } else {
                     throw new JavaException("Invalid number character: '%s'", c);
                 }
             }
@@ -468,52 +470,39 @@ public final class JavaReader {
         if (hasPoint) {
             if (isExtended) {
                 return Double.parseDouble(output);
-            }
-            else {
+            } else {
                 return Float.parseFloat(output);
             }
-        }
-        else {
+        } else {
             if (isExtended) {
                 if (hex && bit) { // 001234567L
                     return Long.parseLong(output, 8);
-                }
-                else if (hex) { // 0x0123456789ABCDEFL
+                } else if (hex) { // 0x0123456789ABCDEFL
                     return Long.parseLong(output, 16);
-                }
-                else if (bit) { // 0b01L
+                } else if (bit) { // 0b01L
                     return Long.parseLong(output, 2);
-                }
-                else { // 0123457689L
+                } else { // 0123457689L
                     return Long.parseLong(output);
                 }
-            }
-            else {
+            } else {
                 try {
                     if (hex && bit) { // 001234567
                         return Integer.parseInt(output, 8);
-                    }
-                    else if (hex) { // 0x0123456789ABCDEF
+                    } else if (hex) { // 0x0123456789ABCDEF
                         return Integer.parseInt(output, 16);
-                    }
-                    else if (bit) { // 0b01
+                    } else if (bit) { // 0b01
                         return Integer.parseInt(output, 2);
-                    }
-                    else { // 0123457689
+                    } else { // 0123457689
                         return Integer.parseInt(output);
                     }
-                }
-                catch (NumberFormatException e) {
+                } catch (NumberFormatException e) {
                     if (hex && bit) { // 001234567L
                         return (int) Long.parseLong(output, 8);
-                    }
-                    else if (hex) { // 0x0123456789ABCDEFL
+                    } else if (hex) { // 0x0123456789ABCDEFL
                         return (int) Long.parseLong(output, 16);
-                    }
-                    else if (bit) { // 0b01L
+                    } else if (bit) { // 0b01L
                         return (int) Long.parseLong(output, 2);
-                    }
-                    else { // 0123457689L
+                    } else { // 0123457689L
                         return (int) Long.parseLong(output);
                     }
                 }
@@ -527,35 +516,6 @@ public final class JavaReader {
         }
         this.index--;
         this.usePrevious = true;
-    }
-
-    public char readChar() {
-        int c = 0;
-
-        if (this.usePrevious) {
-            this.usePrevious = false;
-            c = this.previous;
-        }
-        else {
-            try {
-                if (this.reader.ready()) {
-                    c = this.reader.read();
-                }
-            }
-            catch (IOException e) {
-                throw new JavaException(e);
-            }
-
-            if (c < 0) {
-                c = 0;
-            }
-        }
-
-        this.index++;
-
-        this.previous = (char) c;
-
-        return this.previous;
     }
 
 }

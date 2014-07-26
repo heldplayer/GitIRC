@@ -1,12 +1,11 @@
-
 package me.heldplayer.irc.api;
 
 import java.util.HashSet;
 
 public class IRCChannel {
 
-    private String channelName;
     public char[] channelModes = new char[0];
+    private String channelName;
     private HashSet<IRCUser> users = new HashSet<IRCUser>();
 
     public IRCChannel(String username) {

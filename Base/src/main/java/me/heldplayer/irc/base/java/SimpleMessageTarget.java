@@ -1,4 +1,3 @@
-
 package me.heldplayer.irc.base.java;
 
 import me.heldplayer.irc.api.BotAPI;

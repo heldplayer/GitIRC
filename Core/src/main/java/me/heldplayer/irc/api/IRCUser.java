@@ -1,12 +1,11 @@
-
 package me.heldplayer.irc.api;
 
 import java.util.UUID;
 
 public class IRCUser {
 
-    private String username;
     public char[] userModes = new char[0];
+    private String username;
     private UUID uuid;
 
     public IRCUser(String username) {
@@ -46,8 +45,7 @@ public class IRCUser {
             if (other.uuid != null) {
                 return false;
             }
-        }
-        else if (!this.uuid.equals(other.uuid)) {
+        } else if (!this.uuid.equals(other.uuid)) {
             return false;
         }
         return true;

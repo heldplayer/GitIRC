@@ -1,11 +1,10 @@
-
 package me.heldplayer.irc;
+
+import me.heldplayer.irc.api.BotAPI;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-
-import me.heldplayer.irc.api.BotAPI;
 
 class RunnableConsoleReader implements Runnable {
 
@@ -18,8 +17,7 @@ class RunnableConsoleReader implements Runnable {
             while ((input = reader.readLine()) != null) {
                 BotAPI.console.handleConsoleInput(input);
             }
-        }
-        catch (IOException ioexception) {
+        } catch (IOException ioexception) {
             ioexception.printStackTrace();
         }
     }

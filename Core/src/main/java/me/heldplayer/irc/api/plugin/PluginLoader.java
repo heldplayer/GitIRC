@@ -1,26 +1,19 @@
-
 package me.heldplayer.irc.api.plugin;
+
+import me.heldplayer.irc.IRCBotLauncher;
+import me.heldplayer.irc.api.IClassLoader;
+import me.heldplayer.irc.api.plugin.PluginInfo.DependencyOrder;
+import me.heldplayer.util.json.JSONObject;
 
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import me.heldplayer.irc.api.IClassLoader;
-import me.heldplayer.irc.api.plugin.PluginInfo.DependencyOrder;
-import me.heldplayer.util.json.JSONObject;
 
 public class PluginLoader implements IClassLoader {
 
@@ -38,14 +31,11 @@ public class PluginLoader implements IClassLoader {
 
             if (order0 == null && order1 == null) {
                 return 1;
-            }
-            else if (order0 == null) {
+            } else if (order0 == null) {
                 return -order1.compare;
-            }
-            else if (order1 == null) {
+            } else if (order1 == null) {
                 return order0.compare;
-            }
-            else {
+            } else {
                 if (order0.require && order1.require && order0.compare != -order1.compare) {
                     throw new PluginException("Conflicting entries for dependencies");
                 }
@@ -74,7 +64,7 @@ public class PluginLoader implements IClassLoader {
 
     public int loadPlugins() {
         int count = 0;
-        File plugins = new File("./plugins");
+        File plugins = new File(IRCBotLauncher.rootDirectory, "plugins");
 
         if (plugins.exists() && plugins.isDirectory()) {
             File[] files = plugins.listFiles(new FileFilter() {
@@ -92,8 +82,7 @@ public class PluginLoader implements IClassLoader {
                 try {
                     this.loadPlugin(file);
                     count++;
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
@@ -111,8 +100,7 @@ public class PluginLoader implements IClassLoader {
                 loader = new PluginClassLoader(this, null, info, this.getClass().getClassLoader());
                 this.plugins.add(loader);
                 count++;
-            }
-            catch (Throwable e) {
+            } catch (Throwable e) {
                 throw new PluginException(String.format("Failed loading plugin in '%s'", (Object) null), e);
             }
 
@@ -127,9 +115,84 @@ public class PluginLoader implements IClassLoader {
         return count;
     }
 
+    public Plugin loadPlugin(File file) {
+        if (file == null || !file.exists() || !file.isFile()) {
+            throw new IllegalArgumentException("file");
+        }
+
+        PluginInfo info = this.getPluginInfo(file);
+
+        if (info == null) {
+            PluginLoader.log.info(String.format("Plugin candidate '%s' did not have a plugin.cfg", file));
+        }
+
+        PluginClassLoader loader = null;
+        try {
+            loader = new PluginClassLoader(this, file, info, this.getClass().getClassLoader());
+            this.plugins.add(loader);
+        } catch (Throwable e) {
+            throw new PluginException(String.format("Failed loading plugin in '%s'", file), e);
+        }
+
+        this.pluginLoaders.put(info.name, loader);
+
+        return loader.plugin;
+    }
+
+    public void enablePlugin(PluginClassLoader loader) {
+        if (loader == null) {
+            throw new IllegalArgumentException("plugin");
+        }
+
+        if (!loader.plugin.isEnabled()) {
+            loader.plugin.logger.info(String.format("Enabling plugin %s", loader.getInfo().name));
+
+            if (!this.pluginLoaders.containsKey(loader.getInfo().name)) {
+                this.pluginLoaders.put(loader.getInfo().name, loader);
+            }
+
+            try {
+                loader.plugin.setEnabled(true);
+            } catch (Throwable e) {
+                loader.plugin.logger.log(Level.SEVERE, String.format("Error while enabling plugin %s", loader.getInfo().name), e);
+            }
+
+            loader.plugin.logger.info(String.format("Enabled plugin %s", loader.getInfo().name));
+        }
+    }
+
+    public PluginInfo getPluginInfo(File file) {
+        if (file == null || !file.exists() || !file.isFile()) {
+            throw new IllegalArgumentException("file");
+        }
+
+        JarFile jar = null;
+        try {
+            jar = new JarFile(file);
+
+            JarEntry info = jar.getJarEntry("plugin.cfg");
+
+            if (info == null) {
+                return null;
+            }
+
+            JSONObject object = new JSONObject(jar.getInputStream(info));
+            return new PluginInfo(object);
+        } catch (IOException e) {
+            throw new PluginException(String.format("Failed reading plugin information in '%s'", file), e);
+        } finally {
+            if (jar != null) {
+                try {
+                    jar.close();
+                } catch (IOException e) {
+                }
+            }
+        }
+    }
+
     public int loadLibraries() {
         int count = 0;
-        File libraries = new File("./libraries");
+        File libraries = new File(IRCBotLauncher.rootDirectory, "libraries");
 
         if (libraries.exists() && libraries.isDirectory()) {
             File[] files = libraries.listFiles(new FileFilter() {
@@ -147,14 +210,28 @@ public class PluginLoader implements IClassLoader {
                 try {
                     this.loadLibrary(file);
                     count++;
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         }
 
         return count;
+    }
+
+    public void loadLibrary(File file) {
+        if (file == null || !file.exists() || !file.isFile()) {
+            throw new IllegalArgumentException("file");
+        }
+
+        LibraryClassLoader loader = null;
+        try {
+            loader = new LibraryClassLoader(this, file, this.getClass().getClassLoader());
+        } catch (Throwable e) {
+            throw new PluginException(String.format("Failed loading plugin in '%s'", file), e);
+        }
+
+        this.libraryLoaders.add(loader);
     }
 
     public int unloadPlugins() {
@@ -168,6 +245,39 @@ public class PluginLoader implements IClassLoader {
         this.pluginLoaders.clear();
 
         return loaders.size();
+    }
+
+    public void disablePlugin(PluginClassLoader loader) {
+        if (loader == null) {
+            throw new IllegalArgumentException("plugin");
+        }
+
+        if (loader.plugin.isEnabled()) {
+            loader.plugin.logger.info(String.format("Disabling plugin %s", loader.getInfo().name));
+
+            try {
+                loader.plugin.setEnabled(false);
+            } catch (Throwable e) {
+                loader.plugin.logger.log(Level.SEVERE, String.format("Error while disabling plugin %s", loader.getInfo().name), e);
+            }
+
+            this.pluginLoaders.remove(loader.getInfo().name);
+
+            Set<String> classes = loader.getClasses();
+
+            for (String clazz : classes) {
+                this.removeClass(clazz);
+            }
+
+            loader.plugin.logger.info(String.format("Disabled plugin %s", loader.getInfo().name));
+        }
+    }
+
+    void removeClass(String name) {
+        if (this.classes.containsKey(name)) {
+            this.unloadedClasses.add(name);
+        }
+        this.classes.remove(name);
     }
 
     public int unloadLibraries() {
@@ -191,14 +301,13 @@ public class PluginLoader implements IClassLoader {
 
         if (result != null) {
             return result;
-        }
-        else {
+        } else {
             for (String current : this.pluginLoaders.keySet()) {
                 PluginClassLoader loader = this.pluginLoaders.get(current);
                 try {
                     result = loader.findClass(name, false);
+                } catch (ClassNotFoundException e) {
                 }
-                catch (ClassNotFoundException e) {}
 
                 if (result != null) {
                     return result;
@@ -208,8 +317,8 @@ public class PluginLoader implements IClassLoader {
             for (LibraryClassLoader loader : this.libraryLoaders) {
                 try {
                     result = loader.findClass(name, false);
+                } catch (ClassNotFoundException e) {
                 }
-                catch (ClassNotFoundException e) {}
 
                 if (result != null) {
                     return result;
@@ -220,8 +329,7 @@ public class PluginLoader implements IClassLoader {
         // Ok, you're desperate
         try {
             result = this.getClass().getClassLoader().loadClass(name);
-        }
-        catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
 
@@ -232,13 +340,6 @@ public class PluginLoader implements IClassLoader {
         if (!this.classes.containsKey(name)) {
             this.classes.put(name, clazz);
         }
-    }
-
-    void removeClass(String name) {
-        if (this.classes.containsKey(name)) {
-            this.unloadedClasses.add(name);
-        }
-        this.classes.remove(name);
     }
 
     public int getLoadedClassesCount() {
@@ -256,134 +357,11 @@ public class PluginLoader implements IClassLoader {
                     count++;
                     continue;
                 }
-            }
-            catch (Throwable e) {
+            } catch (Throwable e) {
                 i.remove();
             }
         }
         return count;
-    }
-
-    public PluginInfo getPluginInfo(File file) {
-        if (file == null || !file.exists() || !file.isFile()) {
-            throw new IllegalArgumentException("file");
-        }
-
-        JarFile jar = null;
-        try {
-            jar = new JarFile(file);
-
-            JarEntry info = jar.getJarEntry("plugin.cfg");
-
-            if (info == null) {
-                return null;
-            }
-
-            JSONObject object = new JSONObject(jar.getInputStream(info));
-            return new PluginInfo(object);
-        }
-        catch (IOException e) {
-            throw new PluginException(String.format("Failed reading plugin information in '%s'", file), e);
-        }
-        finally {
-            if (jar != null) {
-                try {
-                    jar.close();
-                }
-                catch (IOException e) {}
-            }
-        }
-    }
-
-    public Plugin loadPlugin(File file) {
-        if (file == null || !file.exists() || !file.isFile()) {
-            throw new IllegalArgumentException("file");
-        }
-
-        PluginInfo info = this.getPluginInfo(file);
-
-        if (info == null) {
-            PluginLoader.log.info(String.format("Plugin candidate '%s' did not have a plugin.cfg", file));
-        }
-
-        PluginClassLoader loader = null;
-        try {
-            loader = new PluginClassLoader(this, file, info, this.getClass().getClassLoader());
-            this.plugins.add(loader);
-        }
-        catch (Throwable e) {
-            throw new PluginException(String.format("Failed loading plugin in '%s'", file), e);
-        }
-
-        this.pluginLoaders.put(info.name, loader);
-
-        return loader.plugin;
-    }
-
-    public void enablePlugin(PluginClassLoader loader) {
-        if (loader == null) {
-            throw new IllegalArgumentException("plugin");
-        }
-
-        if (!loader.plugin.isEnabled()) {
-            loader.plugin.logger.info(String.format("Enabling plugin %s", loader.getInfo().name));
-
-            if (!this.pluginLoaders.containsKey(loader.getInfo().name)) {
-                this.pluginLoaders.put(loader.getInfo().name, loader);
-            }
-
-            try {
-                loader.plugin.setEnabled(true);
-            }
-            catch (Throwable e) {
-                loader.plugin.logger.log(Level.SEVERE, String.format("Error while enabling plugin %s", loader.getInfo().name), e);
-            }
-
-            loader.plugin.logger.info(String.format("Enabled plugin %s", loader.getInfo().name));
-        }
-    }
-
-    public void disablePlugin(PluginClassLoader loader) {
-        if (loader == null) {
-            throw new IllegalArgumentException("plugin");
-        }
-
-        if (loader.plugin.isEnabled()) {
-            loader.plugin.logger.info(String.format("Disabling plugin %s", loader.getInfo().name));
-
-            try {
-                loader.plugin.setEnabled(false);
-            }
-            catch (Throwable e) {
-                loader.plugin.logger.log(Level.SEVERE, String.format("Error while disabling plugin %s", loader.getInfo().name), e);
-            }
-
-            this.pluginLoaders.remove(loader.getInfo().name);
-
-            Set<String> classes = loader.getClasses();
-
-            for (String clazz : classes) {
-                this.removeClass(clazz);
-            }
-
-            loader.plugin.logger.info(String.format("Disabled plugin %s", loader.getInfo().name));
-        }
-    }
-
-    public void loadLibrary(File file) {
-        if (file == null || !file.exists() || !file.isFile()) {
-            throw new IllegalArgumentException("file");
-        }
-
-        LibraryClassLoader loader = null;
-        try {
-            loader = new LibraryClassLoader(this, file, this.getClass().getClassLoader());
-        }
-        catch (Throwable e) {
-            throw new PluginException(String.format("Failed loading plugin in '%s'", file), e);
-        }
-
-        this.libraryLoaders.add(loader);
     }
 
     @Override

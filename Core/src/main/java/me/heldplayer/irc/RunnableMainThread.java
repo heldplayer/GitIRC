@@ -1,4 +1,3 @@
-
 package me.heldplayer.irc;
 
 import me.heldplayer.irc.api.BotAPI;
@@ -28,8 +27,7 @@ class RunnableMainThread implements Runnable {
                 IRCBotLauncher.unloadPlugins();
                 try {
                     Thread.sleep(1000L);
-                }
-                catch (InterruptedException e) {
+                } catch (InterruptedException e) {
                     e.printStackTrace();
                     this.running = false;
                 }
@@ -44,8 +42,7 @@ class RunnableMainThread implements Runnable {
 
             try {
                 Thread.sleep(1L);
-            }
-            catch (InterruptedException e) {
+            } catch (InterruptedException e) {
                 e.printStackTrace();
                 this.running = false;
             }

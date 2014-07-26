@@ -1,10 +1,4 @@
-
 package me.heldplayer.irc.git.internal.security;
-
-import java.io.File;
-import java.lang.reflect.Constructor;
-import java.util.HashSet;
-import java.util.TreeMap;
 
 import me.heldplayer.irc.api.BotAPI;
 import me.heldplayer.irc.git.GitPlugin;
@@ -13,9 +7,21 @@ import me.heldplayer.irc.git.event.AccessManagerInitEvent;
 import me.heldplayer.irc.git.internal.security.rules.Rule;
 import me.heldplayer.util.json.JSONObject;
 
+import java.io.File;
+import java.lang.reflect.Constructor;
+import java.util.HashSet;
+import java.util.TreeMap;
+
 public class AccessManager {
 
     private static TreeMap<String, Class<? extends Rule>> ruleTypes = new TreeMap<String, Class<? extends Rule>>();
+    private TreeMap<String, AccessConfigRule> configRules = new TreeMap<String, AccessConfigRule>();
+    private HashSet<IAccessRule> globalRules = new HashSet<IAccessRule>();
+
+    public AccessManager() {
+        AccessManagerInitEvent event = new AccessManagerInitEvent();
+        BotAPI.eventBus.postEvent(event);
+    }
 
     public static void registerRule(String type, Class<? extends Rule> clazz) {
         AccessManager.ruleTypes.put(type, clazz);
@@ -36,18 +42,9 @@ public class AccessManager {
         try {
             Constructor<? extends Rule> constructor = clazz.getConstructor(JSONObject.class);
             return constructor.newInstance(object);
-        }
-        catch (Throwable e) {
+        } catch (Throwable e) {
             throw new RuntimeException("Failed creating AccessRule of type '" + type + "'", e);
         }
-    }
-
-    private TreeMap<String, AccessConfigRule> configRules = new TreeMap<String, AccessConfigRule>();
-    private HashSet<IAccessRule> globalRules = new HashSet<IAccessRule>();
-
-    public AccessManager() {
-        AccessManagerInitEvent event = new AccessManagerInitEvent();
-        BotAPI.eventBus.postEvent(event);
     }
 
     public void cleanup() {
@@ -74,8 +71,7 @@ public class AccessManager {
                 if (!rule.canAccess(source)) {
                     return false;
                 }
-            }
-            else {
+            } else {
                 File dir = new File(GitPlugin.webDirectory, currentPath);
                 if (!dir.exists()) {
                     continue;
@@ -91,8 +87,7 @@ public class AccessManager {
             if (i < location.length) {
                 currentPath += location[i] + "/";
             }
-        }
-        while (i < location.length);
+        } while (i < location.length);
 
         return true;
     }

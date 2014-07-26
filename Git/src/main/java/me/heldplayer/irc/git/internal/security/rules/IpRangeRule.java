@@ -1,11 +1,10 @@
-
 package me.heldplayer.irc.git.internal.security.rules;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 import me.heldplayer.irc.git.RequestSource;
 import me.heldplayer.util.json.JSONObject;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 public abstract class IpRangeRule implements Rule {
 
@@ -21,8 +20,7 @@ public abstract class IpRangeRule implements Rule {
             this.address = InetAddress.getByName(this.value);
             this.bytes = new byte[0];
             this.wildcards = new boolean[0];
-        }
-        catch (UnknownHostException e) {
+        } catch (UnknownHostException e) {
             String[] split = this.value.split("\\.");
             this.bytes = new byte[split.length];
             this.wildcards = new boolean[split.length];
@@ -30,8 +28,7 @@ public abstract class IpRangeRule implements Rule {
             for (int i = 0; i < this.bytes.length; i++) {
                 if (split[i].equals("*")) {
                     this.wildcards[i] = true;
-                }
-                else {
+                } else {
                     this.bytes[i] = (byte) Integer.parseInt(split[i]);
                 }
             }
@@ -49,8 +46,7 @@ public abstract class IpRangeRule implements Rule {
         for (int i = 0; i < bytes.length && i < this.bytes.length; i++) {
             if (this.wildcards[i] || this.bytes[i] == bytes[i]) {
                 continue;
-            }
-            else {
+            } else {
                 return false;
             }
         }

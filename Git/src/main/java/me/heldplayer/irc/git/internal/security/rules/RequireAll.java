@@ -1,12 +1,11 @@
-
 package me.heldplayer.irc.git.internal.security.rules;
-
-import java.util.ArrayList;
 
 import me.heldplayer.irc.git.RequestSource;
 import me.heldplayer.irc.git.internal.security.AccessManager;
 import me.heldplayer.util.json.JSONArray;
 import me.heldplayer.util.json.JSONObject;
+
+import java.util.ArrayList;
 
 public class RequireAll implements Rule {
 

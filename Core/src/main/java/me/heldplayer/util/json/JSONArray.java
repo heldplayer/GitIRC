@@ -1,4 +1,3 @@
-
 package me.heldplayer.util.json;
 
 import java.util.ArrayList;
@@ -9,10 +8,6 @@ public class JSONArray {
 
     public JSONArray(String input) {
         this(new JSONParser(input));
-    }
-
-    public JSONArray() {
-        this.values = new ArrayList<Object>();
     }
 
     JSONArray(JSONParser parser) {
@@ -32,35 +27,34 @@ public class JSONArray {
                 if (c == ',') {
                     parser.goBack();
                     this.values.add(JSONParser.NULL);
-                }
-                else {
+                } else {
                     parser.goBack();
                     this.values.add(parser.readValue());
                 }
 
                 c = parser.readNormalChar();
                 switch (c) {
-                case ',':
-                    if (parser.readChar() == ']') {
+                    case ',':
+                        if (parser.readChar() == ']') {
+                            return;
+                        }
+                        parser.goBack();
+                        break;
+                    case ']':
                         return;
-                    }
-                    parser.goBack();
-                break;
-                case ']':
-                    return;
-                default:
-                    throw new JSONException("Expected ',', or ']' but got '" + c + "' at " + parser.createErrorLocation());
+                    default:
+                        throw new JSONException("Expected ',', or ']' but got '" + c + "' at " + parser.createErrorLocation());
                 }
             }
         }
     }
 
-    public int size() {
-        return this.values.size();
+    public JSONArray() {
+        this.values = new ArrayList<Object>();
     }
 
-    public Object getValue(int index) {
-        return this.values.get(index);
+    public int size() {
+        return this.values.size();
     }
 
     public String getString(int index) {
@@ -68,8 +62,7 @@ public class JSONArray {
         if (value != null) {
             if (value instanceof String) {
                 return (String) value;
-            }
-            else if (value.equals(null)) {
+            } else if (value.equals(null)) {
                 return "null";
             }
 
@@ -78,13 +71,16 @@ public class JSONArray {
         return null;
     }
 
+    public Object getValue(int index) {
+        return this.values.get(index);
+    }
+
     public boolean getBoolean(int index) {
         Object value = this.getValue(index);
         if (value != null) {
             if (value instanceof Boolean) {
                 return ((Boolean) value).booleanValue();
-            }
-            else if (value.equals(null)) {
+            } else if (value.equals(null)) {
                 return false;
             }
 
@@ -98,8 +94,7 @@ public class JSONArray {
         if (value != null) {
             if (value instanceof Number) {
                 return (Number) value;
-            }
-            else if (value.equals(null)) {
+            } else if (value.equals(null)) {
                 return 0;
             }
 
@@ -113,8 +108,7 @@ public class JSONArray {
         if (value != null) {
             if (value instanceof JSONObject) {
                 return (JSONObject) value;
-            }
-            else if (value.equals(null)) {
+            } else if (value.equals(null)) {
                 return null;
             }
 
@@ -128,8 +122,7 @@ public class JSONArray {
         if (value != null) {
             if (value instanceof JSONArray) {
                 return (JSONArray) value;
-            }
-            else if (value.equals(null)) {
+            } else if (value.equals(null)) {
                 return null;
             }
 

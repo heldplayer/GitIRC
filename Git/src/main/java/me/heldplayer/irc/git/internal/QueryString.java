@@ -1,4 +1,3 @@
-
 package me.heldplayer.irc.git.internal;
 
 import java.io.UnsupportedEncodingException;
@@ -9,10 +8,6 @@ import java.util.TreeMap;
 public class QueryString {
 
     public Map<String, String> values;
-
-    public QueryString() {
-        this.values = new TreeMap<String, String>();
-    }
 
     public QueryString(String data) {
         this();
@@ -29,14 +24,17 @@ public class QueryString {
             if (keyValue.length > 1) {
                 try {
                     value = URLDecoder.decode(keyValue[1], "UTF-8");
-                }
-                catch (UnsupportedEncodingException e) {
+                } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
                 }
             }
 
             this.values.put(key, value);
         }
+    }
+
+    public QueryString() {
+        this.values = new TreeMap<String, String>();
     }
 
 }

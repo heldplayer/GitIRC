@@ -1,4 +1,3 @@
-
 package me.heldplayer.test;
 
 import me.heldplayer.util.json.JSONException;
@@ -21,8 +20,7 @@ public class JSONTest {
 
             String newResultString = JSONWriter.write(newObject);
             System.out.println(newResultString);
-        }
-        catch (JSONException e) {
+        } catch (JSONException e) {
             e.printStackTrace();
         }
     }

@@ -1,4 +1,3 @@
-
 package me.heldplayer.irc.base.java.parts;
 
 public class FieldArrayPart extends NamedPart {

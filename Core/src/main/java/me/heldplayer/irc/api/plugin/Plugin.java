@@ -1,14 +1,13 @@
-
 package me.heldplayer.irc.api.plugin;
 
 import java.util.logging.Logger;
 
 public abstract class Plugin {
 
-    private boolean enabled;
     PluginInfo info;
     PluginClassLoader loader;
     Logger logger;
+    private boolean enabled;
 
     public final boolean isEnabled() {
         return this.enabled;
@@ -19,13 +18,16 @@ public abstract class Plugin {
             if (enabled) {
                 this.onEnable();
                 this.enabled = true;
-            }
-            else {
+            } else {
                 this.enabled = false;
                 this.onDisable();
             }
         }
     }
+
+    public abstract void onEnable();
+
+    public abstract void onDisable();
 
     public final PluginInfo getInfo() {
         return this.info;
@@ -34,9 +36,5 @@ public abstract class Plugin {
     public final Logger getLogger() {
         return this.logger;
     }
-
-    public abstract void onEnable();
-
-    public abstract void onDisable();
 
 }

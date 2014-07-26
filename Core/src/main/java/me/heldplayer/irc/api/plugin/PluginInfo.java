@@ -1,12 +1,11 @@
-
 package me.heldplayer.irc.api.plugin;
+
+import me.heldplayer.util.json.JSONArray;
+import me.heldplayer.util.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import me.heldplayer.util.json.JSONArray;
-import me.heldplayer.util.json.JSONObject;
 
 public class PluginInfo {
 
@@ -60,18 +59,6 @@ public class PluginInfo {
         return null;
     }
 
-    public static class Dependency {
-
-        public final DependencyOrder order;
-        public final String name;
-
-        public Dependency(DependencyOrder order, String name) {
-            this.order = order;
-            this.name = name;
-        }
-
-    }
-
     public static enum DependencyOrder {
 
         REQUIRE_BEFORE(true, 1), BEFORE(false, 1), AFTER(false, -1), REQUIRE_AFTER(true, -1);
@@ -82,6 +69,18 @@ public class PluginInfo {
         private DependencyOrder(boolean require, int compare) {
             this.require = require;
             this.compare = compare;
+        }
+
+    }
+
+    public static class Dependency {
+
+        public final DependencyOrder order;
+        public final String name;
+
+        public Dependency(DependencyOrder order, String name) {
+            this.order = order;
+            this.name = name;
         }
 
     }

@@ -1,4 +1,3 @@
-
 package com.mojang.api.http;
 
 public class HttpBody {

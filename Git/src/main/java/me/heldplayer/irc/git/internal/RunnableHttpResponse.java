@@ -1,17 +1,4 @@
-
 package me.heldplayer.irc.git.internal;
-
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.Socket;
-import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Map.Entry;
-import java.util.TreeMap;
-import java.util.logging.Level;
 
 import me.heldplayer.irc.api.BotAPI;
 import me.heldplayer.irc.git.GitPlugin;
@@ -19,13 +6,21 @@ import me.heldplayer.irc.git.RequestSource;
 import me.heldplayer.irc.git.event.HttpRequestEvent;
 import me.heldplayer.irc.git.internal.ErrorResponse.ErrorType;
 
+import java.io.*;
+import java.net.Socket;
+import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.Map.Entry;
+import java.util.TreeMap;
+import java.util.logging.Level;
+
 public class RunnableHttpResponse implements Runnable {
 
     private final Socket socket;
+    protected boolean finished = false;
     private DataOutputStream out;
     private BufferedReader in;
     private long timeout = 0;
-    protected boolean finished = false;
 
     public RunnableHttpResponse(Socket socket) {
         this.socket = socket;
@@ -52,8 +47,7 @@ public class RunnableHttpResponse implements Runnable {
                     }
                     try {
                         Thread.sleep(1L);
-                    }
-                    catch (InterruptedException e) {
+                    } catch (InterruptedException e) {
                         break;
                     }
                 }
@@ -114,8 +108,7 @@ public class RunnableHttpResponse implements Runnable {
                     String[] headerSplit = line.split(": ", 2);
                     if (headerSplit.length < 2) {
                         headers.put(headerSplit[0], "");
-                    }
-                    else {
+                    } else {
                         headers.put(headerSplit[0], headerSplit[1]);
                     }
                 }
@@ -153,8 +146,7 @@ public class RunnableHttpResponse implements Runnable {
                     break main;
                 }
 
-                File root = new File("web");
-                File file = new File(root, location).getAbsoluteFile();
+                File file = new File(GitPlugin.webDirectory, location).getAbsoluteFile();
 
                 if (!RunnableWebserver.instance.accessManager.canView(splitLocation, source)) {
                     GitPlugin.getLog().info(String.format("Denied access to view '%s' from '%s'", source.path, source.address.getHostAddress()));
@@ -175,8 +167,7 @@ public class RunnableHttpResponse implements Runnable {
                     event.response.writeResponse(source).flush(source, this.out);
 
                     break main;
-                }
-                else if (event.error != null) {
+                } else if (event.error != null) {
                     new ErrorResponse(event.error).writeResponse(source).flush(source, this.out);
 
                     break main;
@@ -186,22 +177,18 @@ public class RunnableHttpResponse implements Runnable {
                     new ErrorResponse(ErrorType.Forbidden).writeResponse(source).flush(source, this.out);
 
                     break main;
-                }
-                else if (file.exists()) {
+                } else if (file.exists()) {
                     new FileResponse(file).writeResponse(source).flush(source, this.out);
 
                     break main;
-                }
-                else {
+                } else {
                     new ErrorResponse(ErrorType.NotFound).writeResponse(source).flush(source, this.out);
 
                     break main;
                 }
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
-            }
-            catch (RuntimeException ex) {
+            } catch (RuntimeException ex) {
                 if (!ex.getMessage().equalsIgnoreCase("break")) {
                     GitPlugin.getLog().log(Level.SEVERE, "Exception while responding to web client", ex);
                     GitPlugin.getLog().log(Level.SEVERE, "Request: " + location);
@@ -209,18 +196,17 @@ public class RunnableHttpResponse implements Runnable {
 
                 try {
                     new ErrorResponse(ErrorType.InternalServerError).writeResponse(source).flush(source, this.out);
+                } catch (IOException e) {
                 }
-                catch (IOException e) {}
-            }
-            finally {
+            } finally {
                 try {
                     this.out.close();
                     this.in.close();
                     this.socket.close();
                     this.finished = true;
                     return;
+                } catch (IOException e) {
                 }
-                catch (IOException e) {}
             }
         }
 
@@ -230,8 +216,8 @@ public class RunnableHttpResponse implements Runnable {
             this.socket.close();
             this.finished = true;
             return;
+        } catch (IOException e) {
         }
-        catch (IOException e) {}
 
         this.finished = true;
     }

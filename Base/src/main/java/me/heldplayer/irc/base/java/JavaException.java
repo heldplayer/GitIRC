@@ -1,4 +1,3 @@
-
 package me.heldplayer.irc.base.java;
 
 public class JavaException extends RuntimeException {

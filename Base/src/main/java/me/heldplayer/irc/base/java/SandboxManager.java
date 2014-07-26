@@ -1,10 +1,9 @@
-
 package me.heldplayer.irc.base.java;
-
-import java.util.HashMap;
 
 import me.heldplayer.irc.api.IRCChannel;
 import me.heldplayer.irc.api.IRCUser;
+
+import java.util.HashMap;
 
 public final class SandboxManager {
 
@@ -37,15 +36,13 @@ public final class SandboxManager {
                     while (sandbox.running) {
                         try {
                             sandbox.delegate.run();
-                        }
-                        catch (Throwable e) {
+                        } catch (Throwable e) {
                             e.printStackTrace();
                         }
 
                         Thread.sleep(50L);
                     }
-                }
-                catch (InterruptedException e) {
+                } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }

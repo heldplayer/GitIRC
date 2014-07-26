@@ -1,4 +1,3 @@
-
 package me.heldplayer.irc.util;
 
 public enum Format {
@@ -16,8 +15,7 @@ public enum Format {
     public String combine(Format background) {
         if (this.isColor && background.isColor) {
             return this.toString() + "," + background.code;
-        }
-        else {
+        } else {
             return this.toString();
         }
     }

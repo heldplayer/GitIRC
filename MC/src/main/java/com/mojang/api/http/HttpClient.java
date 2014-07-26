@@ -1,4 +1,3 @@
-
 package com.mojang.api.http;
 
 import java.io.IOException;

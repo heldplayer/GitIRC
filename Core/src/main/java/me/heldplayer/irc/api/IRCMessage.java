@@ -1,4 +1,3 @@
-
 package me.heldplayer.irc.api;
 
 public class IRCMessage {
@@ -31,32 +30,27 @@ public class IRCMessage {
         if (processing.startsWith(":")) {
             this.prefix = processing.substring(1, processing.indexOf(" "));
             processing = processing.substring(processing.indexOf(" ") + 1);
-        }
-        else {
+        } else {
             this.prefix = null;
         }
         if (processing.indexOf(" ") > 0) {
             this.command = processing.substring(0, processing.indexOf(" "));
             processing = processing.substring(processing.indexOf(" ") + 1);
-        }
-        else {
+        } else {
             this.command = processing;
         }
         if (processing.indexOf(" :") > 0) {
             this.trailing = processing.substring(processing.indexOf(" :") + 2);
             processing = processing.substring(0, processing.indexOf(" :"));
-        }
-        else if (processing.indexOf(':') == 0) {
+        } else if (processing.indexOf(':') == 0) {
             this.trailing = processing.substring(processing.indexOf(":") + 1);
             processing = processing.substring(0, processing.indexOf(":"));
-        }
-        else {
+        } else {
             this.trailing = null;
         }
         if (!processing.trim().isEmpty()) {
             this.params = processing.split(" ");
-        }
-        else {
+        } else {
             this.params = new String[0];
         }
     }

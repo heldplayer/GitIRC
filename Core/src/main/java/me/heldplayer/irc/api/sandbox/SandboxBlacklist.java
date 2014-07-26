@@ -1,4 +1,3 @@
-
 package me.heldplayer.irc.api.sandbox;
 
 import java.lang.annotation.ElementType;

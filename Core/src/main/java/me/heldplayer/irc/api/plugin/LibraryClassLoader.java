@@ -1,10 +1,9 @@
-
 package me.heldplayer.irc.api.plugin;
+
+import me.heldplayer.irc.api.sandbox.SandboxBlacklist;
 
 import java.io.File;
 import java.net.MalformedURLException;
-
-import me.heldplayer.irc.api.sandbox.SandboxBlacklist;
 
 @SandboxBlacklist
 public class LibraryClassLoader extends CustomClassLoader {

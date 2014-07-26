@@ -1,4 +1,3 @@
-
 package me.heldplayer.test;
 
 import me.heldplayer.irc.api.BotAPI;
@@ -6,11 +5,7 @@ import me.heldplayer.irc.api.IRCChannel;
 import me.heldplayer.irc.api.IRCUser;
 import me.heldplayer.irc.api.event.Event;
 import me.heldplayer.irc.api.event.IEventBus;
-import me.heldplayer.irc.base.java.ISandboxDelegate;
-import me.heldplayer.irc.base.java.JavaException;
-import me.heldplayer.irc.base.java.JavaExpression;
-import me.heldplayer.irc.base.java.JavaReader;
-import me.heldplayer.irc.base.java.SandboxManager;
+import me.heldplayer.irc.base.java.*;
 
 public class JavaTest {
 
@@ -123,8 +118,7 @@ public class JavaTest {
             }
             System.out.println(input + " = (" + number.getClass().getSimpleName() + ") " + number);
             return true;
-        }
-        catch (Throwable e) {
+        } catch (Throwable e) {
             System.err.println(input + " = " + e.getClass().getSimpleName() + ": " + e.getMessage());
             return false;
         }
@@ -134,10 +128,12 @@ public class JavaTest {
         BotAPI.eventBus = new IEventBus() {
 
             @Override
-            public void unregisterEventHandler(Object obj) {}
+            public void registerEventHandler(Object obj) {
+            }
 
             @Override
-            public void registerEventHandler(Object obj) {}
+            public void unregisterEventHandler(Object obj) {
+            }
 
             @Override
             public boolean postEvent(Event event) {
@@ -145,7 +141,8 @@ public class JavaTest {
             }
 
             @Override
-            public void cleanup() {}
+            public void cleanup() {
+            }
         };
 
         System.out.println("Loaded " + BotAPI.pluginLoader.loadPlugins() + " plugins");

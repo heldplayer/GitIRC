@@ -1,4 +1,3 @@
-
 package me.heldplayer.irc;
 
 import me.heldplayer.irc.api.BotAPI;
@@ -15,8 +14,7 @@ class RunnableReconnectTimeout implements Runnable {
     public void run() {
         try {
             Thread.sleep(60000L);
-        }
-        catch (InterruptedException e) {
+        } catch (InterruptedException e) {
             e.printStackTrace();
             BotAPI.console.shutdown();
             return;
@@ -24,8 +22,7 @@ class RunnableReconnectTimeout implements Runnable {
 
         try {
             this.connection.connect(this.connection.getNickname());
-        }
-        catch (Throwable e) {
+        } catch (Throwable e) {
             e.printStackTrace();
             BotAPI.console.shutdown();
         }

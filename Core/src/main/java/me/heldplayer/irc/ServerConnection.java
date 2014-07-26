@@ -1,5 +1,15 @@
-
 package me.heldplayer.irc;
+
+import me.heldplayer.irc.api.BotAPI;
+import me.heldplayer.irc.api.IRCMessage;
+import me.heldplayer.irc.api.IServerConnection;
+import me.heldplayer.irc.api.Network;
+import me.heldplayer.irc.api.event.EventHandler;
+import me.heldplayer.irc.api.event.connection.ServerConnectedEvent;
+import me.heldplayer.irc.api.event.connection.ServerDisconnectedEvent;
+import me.heldplayer.irc.api.event.connection.ServerLoggedInEvent;
+import me.heldplayer.irc.api.event.user.CommandEvent;
+import me.heldplayer.irc.api.event.user.RawMessageEvent;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,35 +25,21 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import me.heldplayer.irc.api.BotAPI;
-import me.heldplayer.irc.api.IRCMessage;
-import me.heldplayer.irc.api.IServerConnection;
-import me.heldplayer.irc.api.Network;
-import me.heldplayer.irc.api.event.EventHandler;
-import me.heldplayer.irc.api.event.connection.ServerConnectedEvent;
-import me.heldplayer.irc.api.event.connection.ServerDisconnectedEvent;
-import me.heldplayer.irc.api.event.connection.ServerLoggedInEvent;
-import me.heldplayer.irc.api.event.user.CommandEvent;
-import me.heldplayer.irc.api.event.user.RawMessageEvent;
-
 class ServerConnection implements IServerConnection {
 
     private static final Logger log = Logger.getLogger("RawIRC");
 
     private static final Logger ircIn = Logger.getLogger("IRC-In");
     private static final Logger ircOut = Logger.getLogger("IRC-Out");
-
+    public Socket socket;
+    public PrintWriter out;
+    public BufferedReader in;
     private List<String> sendQueue;
     private boolean connected;
     private boolean initialized;
     private boolean shouldQuit;
     private boolean isDisconnecting;
-
     private Network network;
-
-    public Socket socket;
-    public PrintWriter out;
-    public BufferedReader in;
     private long lastRead;
 
     private String host;
@@ -69,8 +65,7 @@ class ServerConnection implements IServerConnection {
         if (this.localHost != null && !this.localHost.isEmpty()) {
             InetAddress local = InetAddress.getByName(this.localHost);
             this.socket = new Socket(remote, this.port, local, 0);
-        }
-        else {
+        } else {
             this.socket = new Socket(remote, this.port);
         }
 
@@ -93,8 +88,7 @@ class ServerConnection implements IServerConnection {
         if (event.message.command.equals("PING")) { // PING
             BotAPI.serverConnection.addToSendQueue("PONG :%s", event.message.trailing);
             event.setHandled();
-        }
-        else if (event.message.command.equals("ERROR")) { // Server disconnected
+        } else if (event.message.command.equals("ERROR")) { // Server disconnected
             this.connected = this.initialized = false;
             BotAPI.eventBus.postEvent(new ServerDisconnectedEvent(this));
 
@@ -102,8 +96,7 @@ class ServerConnection implements IServerConnection {
             reconnectThread.setName("Reconnect Thread");
             reconnectThread.setDaemon(true);
             reconnectThread.start();
-        }
-        else if (event.message.command.equals("001")) { // Welcome
+        } else if (event.message.command.equals("001")) { // Welcome
             this.initialized = true;
 
             List<String> perform = IRCBotLauncher.readPerform();
@@ -112,25 +105,20 @@ class ServerConnection implements IServerConnection {
             }
 
             BotAPI.eventBus.postEvent(new ServerLoggedInEvent(this));
-        }
-        else if (event.message.command.equals("433")) { // Nickname taken
+        } else if (event.message.command.equals("433")) { // Nickname taken
             this.nickname += "_";
             this.addToSendQueue("NICK %s", this.nickname);
-        }
-        else if (event.message.command.equals("005")) { // Modes
+        } else if (event.message.command.equals("005")) { // Modes
             for (int i = 1; i < event.message.params.length; i++) {
                 String param = event.message.params[i];
                 String[] parts = param.split("=", 2);
                 if (parts[0].startsWith("NETWORK")) {
                     this.network.name = parts[1];
-                }
-                else if (parts[0].startsWith("MODES")) {
+                } else if (parts[0].startsWith("MODES")) {
                     this.network.maxChannelModes = Integer.parseInt(parts[1]);
-                }
-                else if (parts[0].startsWith("CHANTYPES")) {
+                } else if (parts[0].startsWith("CHANTYPES")) {
                     this.network.availableChannelTypes = parts[1].toCharArray();
-                }
-                else if (parts[0].startsWith("PREFIX")) {
+                } else if (parts[0].startsWith("PREFIX")) {
                     String modeNames = parts[1].substring(parts[1].indexOf('(') + 1, parts[1].indexOf(')'));
                     String mdePrefixes = parts[1].substring(parts[1].indexOf(')') + 1);
                     char[] modes = modeNames.toCharArray();
@@ -139,8 +127,7 @@ class ServerConnection implements IServerConnection {
                     for (int j = 0; j < modes.length; j++) {
                         this.network.prefixes[j] = new char[] { modes[j], prefixes[j] };
                     }
-                }
-                else if (parts[0].startsWith("CHANMODES")) {
+                } else if (parts[0].startsWith("CHANMODES")) {
                     char[] modes = parts[1].toCharArray();
                     int count = modes.length;
                     for (char mode : modes) {
@@ -176,8 +163,7 @@ class ServerConnection implements IServerConnection {
                 this.in.close();
                 this.out.close();
                 this.socket.close();
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
@@ -189,8 +175,7 @@ class ServerConnection implements IServerConnection {
             IRCMessage message = new IRCMessage(command);
             if (message.command.equalsIgnoreCase("QUIT")) {
                 this.shouldQuit = true;
-            }
-            else if (message.command.equalsIgnoreCase("ERROR")) {
+            } else if (message.command.equalsIgnoreCase("ERROR")) {
                 this.shouldQuit = true;
                 command = "QUIT :Errored: " + message.trailing;
             }
@@ -205,8 +190,7 @@ class ServerConnection implements IServerConnection {
             IRCMessage message = new IRCMessage(result);
             if (message.command.equalsIgnoreCase("QUIT")) {
                 this.shouldQuit = true;
-            }
-            else if (message.command.equalsIgnoreCase("ERROR")) {
+            } else if (message.command.equalsIgnoreCase("ERROR")) {
                 this.shouldQuit = true;
                 result = "QUIT :Errored: " + message.trailing;
             }
@@ -227,8 +211,7 @@ class ServerConnection implements IServerConnection {
                 ServerConnection.log.log(Level.INFO, "-> " + line);
                 this.lastRead = System.currentTimeMillis();
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             //throw new RuntimeException("Error parsing incoming data", e);
         }
 
@@ -268,15 +251,13 @@ class ServerConnection implements IServerConnection {
                     try {
                         if (count > 2) {
                             Thread.sleep(1000L);
-                        }
-                        else if (count > 5) {
+                        } else if (count > 5) {
                             Thread.sleep(2000L);
-                        }
-                        else if (count > 10) {
+                        } else if (count > 10) {
                             Thread.sleep(3000L);
                         }
+                    } catch (InterruptedException e) {
                     }
-                    catch (InterruptedException e) {}
                     count++;
                     this.lastRead = System.currentTimeMillis();
                 }
@@ -305,8 +286,7 @@ class ServerConnection implements IServerConnection {
     public void setNickname(String nickname) {
         if (this.connected) {
             this.addToSendQueue("NICK %s", nickname);
-        }
-        else {
+        } else {
             this.nickname = nickname;
         }
     }

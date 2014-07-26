@@ -1,4 +1,3 @@
-
 package me.heldplayer.irc.api.event.connection;
 
 import me.heldplayer.irc.api.IServerConnection;

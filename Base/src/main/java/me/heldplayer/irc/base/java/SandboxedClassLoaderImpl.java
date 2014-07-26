@@ -1,17 +1,16 @@
-
 package me.heldplayer.irc.base.java;
-
-import java.lang.reflect.Constructor;
 
 import me.heldplayer.irc.api.IRCChannel;
 import me.heldplayer.irc.api.IRCUser;
 import me.heldplayer.irc.api.sandbox.SandboxedClassLoader;
 
+import java.lang.reflect.Constructor;
+
 public class SandboxedClassLoaderImpl extends SandboxedClassLoader {
 
-    private IRCUser user;
     protected ISandboxDelegate delegate;
     protected boolean running = true;
+    private IRCUser user;
 
     public SandboxedClassLoaderImpl(IRCUser user, IRCChannel channel) {
         super();
@@ -30,11 +29,9 @@ public class SandboxedClassLoaderImpl extends SandboxedClassLoader {
             Constructor<?> evaluatorConstructor = evaluatorClass.getDeclaredConstructor(IMessageTarget.class);
             evaluatorConstructor.setAccessible(true);
             this.delegate = (ISandboxDelegate) delegateConstructor.newInstance(evaluatorConstructor.newInstance(new SimpleMessageTarget(user, channel)));
-        }
-        catch (JavaException e) {
+        } catch (JavaException e) {
             throw e;
-        }
-        catch (Throwable e) {
+        } catch (Throwable e) {
             throw new JavaException(e);
         }
     }

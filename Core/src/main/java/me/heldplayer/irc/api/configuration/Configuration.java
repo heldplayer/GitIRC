@@ -1,12 +1,6 @@
-
 package me.heldplayer.irc.api.configuration;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.TreeMap;
 
 public class Configuration {
@@ -22,8 +16,7 @@ public class Configuration {
         if (!file.exists() || !file.isFile()) {
             try {
                 file.createNewFile();
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 throw new IllegalArgumentException("file", e);
             }
         }
@@ -57,8 +50,7 @@ public class Configuration {
             String entry = this.entries.get(key);
             try {
                 return Integer.parseInt(entry);
-            }
-            catch (NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 throw new ConfigurationException(e);
             }
         }
@@ -66,8 +58,7 @@ public class Configuration {
             String entry = this.defaults.get(key);
             try {
                 return Integer.parseInt(entry);
-            }
-            catch (NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 throw new ConfigurationException(e);
             }
         }
@@ -107,23 +98,20 @@ public class Configuration {
                     String[] split = line.split("=", 2);
                     if (split.length >= 2) {
                         this.entries.put(split[0].trim(), split[1].trim());
-                    }
-                    else {
+                    } else {
                         throw new ConfigurationException("Configuration requires 'key=value' on line " + lineNumber);
                     }
                 }
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new ConfigurationException("Failed reading configuration", e);
-        }
-        finally {
+        } finally {
             try {
                 if (reader != null) {
                     reader.close();
                 }
+            } catch (IOException e) {
             }
-            catch (IOException e) {}
         }
 
         boolean defaultMissing = false;
@@ -153,17 +141,15 @@ public class Configuration {
                     writer.write(key + "=" + merged.get(key));
                     writer.newLine();
                 }
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 throw new ConfigurationException("Failed writing configuration", e);
-            }
-            finally {
+            } finally {
                 try {
                     if (writer != null) {
                         writer.close();
                     }
+                } catch (IOException e) {
                 }
-                catch (IOException e) {}
             }
         }
     }

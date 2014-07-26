@@ -1,9 +1,8 @@
-
 package me.heldplayer.test;
 
-import java.util.Arrays;
-
 import me.heldplayer.irc.api.event.user.CommandEvent;
+
+import java.util.Arrays;
 
 public class CommandTest {
 

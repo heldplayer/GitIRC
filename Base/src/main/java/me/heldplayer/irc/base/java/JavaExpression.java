@@ -1,11 +1,10 @@
-
 package me.heldplayer.irc.base.java;
+
+import me.heldplayer.irc.base.java.parts.JavaPart;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-
-import me.heldplayer.irc.base.java.parts.JavaPart;
 
 public class JavaExpression {
 
@@ -15,23 +14,22 @@ public class JavaExpression {
         this.load(new JavaReader(input));
     }
 
+    void load(JavaReader parser) {
+        this.value = parser.readExpression();
+    }
+
     public JavaExpression(InputStream in) {
         InputStreamReader reader;
         this.load(new JavaReader(reader = new InputStreamReader(in)));
         try {
             reader.close();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new JavaException(e);
         }
     }
 
     JavaExpression(JavaReader parser) {
         this.load(parser);
-    }
-
-    void load(JavaReader parser) {
-        this.value = parser.readExpression();
     }
 
 }

@@ -1,4 +1,3 @@
-
 package me.heldplayer.irc.api;
 
 import java.util.TreeMap;

@@ -1,37 +1,38 @@
-
 package me.heldplayer.irc;
+
+import me.heldplayer.irc.api.BotAPI;
+import me.heldplayer.irc.api.configuration.ConfigurationException;
+import me.heldplayer.irc.api.sandbox.SandboxBlacklist;
+import net.specialattack.loader.Service;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-import me.heldplayer.irc.api.BotAPI;
-import me.heldplayer.irc.api.configuration.ConfigurationException;
-import me.heldplayer.irc.api.sandbox.SandboxBlacklist;
-import me.heldplayer.irc.logging.ConsoleLogFormatter;
-import me.heldplayer.irc.logging.ConsoleLogHandler;
-import me.heldplayer.irc.logging.FileLogFormatter;
-import me.heldplayer.irc.logging.FileLogHandler;
-import me.heldplayer.irc.logging.LoggerOutputStream;
-
 @SandboxBlacklist
+@Service
 public final class IRCBotLauncher {
 
-    static Thread mainThread;
-
     private static final Logger log = Logger.getLogger("API");
+    public static File rootDirectory = new File("." + File.separator + "GitIRC");
+    static Thread mainThread;
     private static boolean pluginsLoaded = false;
 
-    private static PrintStream stdOut;
-    private static PrintStream stdErr;
+    public static void startService() {
+        new RunnableMainThread();
+        IRCBotLauncher.mainThread = new Thread(RunnableMainThread.instance);
+        IRCBotLauncher.mainThread.setName("Main Thread");
+        IRCBotLauncher.mainThread.start();
+    }
+
+    public static void stopService() {
+
+    }
 
     public static void main(String[] args) {
         Thread consoleReader = new Thread(new RunnableConsoleReader());
@@ -45,77 +46,6 @@ public final class IRCBotLauncher {
         IRCBotLauncher.mainThread.start();
     }
 
-    private static void setupLoggers() {
-        if (BotAPI.console != null) {
-            IRCBotLauncher.resetLoggers();
-        }
-        IRCBotLauncher.stdOut = System.out;
-        IRCBotLauncher.stdErr = System.err;
-
-        Logger stdout = Logger.getLogger("STDOUT");
-        Logger stderr = Logger.getLogger("STDERR");
-        Logger global = Logger.getLogger("");
-        Logger rawIRC = Logger.getLogger("RawIRC");
-        stdout.setUseParentHandlers(false);
-        stderr.setUseParentHandlers(false);
-        global.setUseParentHandlers(false);
-        rawIRC.setUseParentHandlers(false);
-
-        // Disable stupid logger
-        Logger httpURLConnection = Logger.getLogger("sun.net.www.protocol.http.HttpURLConnection");
-        httpURLConnection.setLevel(Level.OFF);
-
-        ConsoleLogHandler stdoutHandler = new ConsoleLogHandler(System.out);
-        ConsoleLogHandler stderrHandler = new ConsoleLogHandler(System.out); // Was System.err, but caused issues with eclipse mangling the timing
-        ConsoleLogFormatter formatter = new ConsoleLogFormatter();
-        stdoutHandler.setFormatter(formatter);
-        stdoutHandler.setLevel(Level.INFO);
-        stderrHandler.setFormatter(formatter);
-        stderrHandler.setLevel(Level.INFO);
-
-        stdout.addHandler(stdoutHandler);
-        stdout.setLevel(Level.ALL);
-        stderr.addHandler(stderrHandler);
-        stderr.setLevel(Level.ALL);
-
-        for (Handler handler : global.getHandlers()) {
-            global.removeHandler(handler);
-        }
-        global.addHandler(stdoutHandler);
-        global.setLevel(Level.ALL);
-
-        FileLogHandler fileHandler = null;
-        try {
-            fileHandler = new FileLogHandler("./raw.log", true);
-            fileHandler.setFormatter(new FileLogFormatter());
-            fileHandler.setLevel(Level.ALL);
-            rawIRC.addHandler(fileHandler);
-
-            fileHandler = new FileLogHandler(BotAPI.configuration.getLogFile(), true);
-            fileHandler.setFormatter(new FileLogFormatter());
-            fileHandler.setLevel(Level.ALL);
-            stdout.addHandler(fileHandler);
-            stderr.addHandler(fileHandler);
-            global.addHandler(fileHandler);
-        }
-        catch (Throwable e) {
-            e.printStackTrace();
-        }
-
-        System.setOut(new PrintStream(new LoggerOutputStream(stdout, Level.INFO), true));
-        System.setErr(new PrintStream(new LoggerOutputStream(stderr, Level.WARNING), true));
-
-        BotAPI.console = new Console(stdout, stderr, fileHandler);
-    }
-
-    private static void resetLoggers() {
-        BotAPI.console = null;
-
-        System.setOut(IRCBotLauncher.stdOut);
-        System.setErr(IRCBotLauncher.stdErr);
-        LogManager.getLogManager().reset();
-    }
-
     public static void loadPlugins() {
         if (IRCBotLauncher.pluginsLoaded) {
             throw new RuntimeException("Plugins already loaded");
@@ -123,7 +53,7 @@ public final class IRCBotLauncher {
 
         BotAPI.configuration = new BotConfiguration();
 
-        IRCBotLauncher.setupLoggers();
+        BotAPI.console = new Console(Logger.getLogger("IRC-OUT"), Logger.getLogger("IRC-ERR"));
 
         IRCBotLauncher.log.info("Loaded " + BotAPI.pluginLoader.loadLibraries() + " libraries");
 
@@ -150,8 +80,7 @@ public final class IRCBotLauncher {
 
         try {
             connection.connect(nickname);
-        }
-        catch (Throwable e) {
+        } catch (Throwable e) {
             BotAPI.console.log(Level.SEVERE, "Failed connecting to the server", e);
             BotAPI.console.shutdown();
         }
@@ -183,7 +112,7 @@ public final class IRCBotLauncher {
         System.gc();
         IRCBotLauncher.log.info("There are " + BotAPI.pluginLoader.getUnloadingClassesCount() + " classes pending for unload");
 
-        IRCBotLauncher.resetLoggers();
+        BotAPI.console = null;
 
         BotAPI.configuration = null;
 
@@ -195,7 +124,7 @@ public final class IRCBotLauncher {
     public static List<String> readPerform() {
         ArrayList<String> result = new ArrayList<String>();
 
-        File perform = new File("." + File.separator + "perform.txt");
+        File perform = new File(IRCBotLauncher.rootDirectory, "perform.txt");
         if (!perform.exists()) {
             return result;
         }
@@ -211,15 +140,14 @@ public final class IRCBotLauncher {
                     result.add(line);
                 }
             }
-        }
-        catch (IOException e) {}
-        finally {
+        } catch (IOException e) {
+        } finally {
             try {
                 if (reader != null) {
                     reader.close();
                 }
+            } catch (IOException e) {
             }
-            catch (IOException e) {}
         }
 
         return result;

@@ -1,4 +1,3 @@
-
 package me.heldplayer.irc.api;
 
 import me.heldplayer.irc.api.event.IEventBus;
@@ -6,8 +5,7 @@ import me.heldplayer.irc.api.plugin.PluginLoader;
 
 public final class BotAPI {
 
-    private BotAPI() {}
-
+    public final static PluginLoader pluginLoader = new PluginLoader();
     public static long startTime;
 
     public static IServerConnection serverConnection;
@@ -18,6 +16,7 @@ public final class BotAPI {
 
     public static IConfiguration configuration;
 
-    public final static PluginLoader pluginLoader = new PluginLoader();
+    private BotAPI() {
+    }
 
 }

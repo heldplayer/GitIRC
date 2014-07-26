@@ -1,9 +1,8 @@
-
 package me.heldplayer.irc.git.internal;
 
-import java.io.IOException;
-
 import me.heldplayer.irc.git.RequestSource;
+
+import java.io.IOException;
 
 public class EmptyResponse extends WebResponse {
 

@@ -1,5 +1,9 @@
-
 package me.heldplayer.irc;
+
+import me.heldplayer.irc.api.event.CancellableEvent;
+import me.heldplayer.irc.api.event.Event;
+import me.heldplayer.irc.api.event.EventHandler;
+import me.heldplayer.irc.api.event.IEventBus;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -7,17 +11,11 @@ import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import me.heldplayer.irc.api.event.CancellableEvent;
-import me.heldplayer.irc.api.event.Event;
-import me.heldplayer.irc.api.event.EventHandler;
-import me.heldplayer.irc.api.event.IEventBus;
-
 class EventBus implements IEventBus {
 
+    private static Object lock = new Object();
     private HashSet<Object> eventHandlers = new HashSet<Object>();
     private HashMap<Class<? extends Event>, Events> methods = new HashMap<Class<? extends Event>, Events>();
-
-    private static Object lock = new Object();
 
     @SuppressWarnings("unchecked")
     @Override
@@ -36,8 +34,7 @@ class EventBus implements IEventBus {
                             if (this.methods.containsKey(paramType)) {
                                 Events events = this.methods.get(paramType);
                                 events.addMethod(obj, method);
-                            }
-                            else {
+                            } else {
                                 Events events = new Events();
                                 events.addMethod(obj, method);
                                 this.methods.put((Class<? extends Event>) paramType, events);
@@ -86,8 +83,7 @@ class EventBus implements IEventBus {
                     for (MethodClassLink method : events.classes) {
                         try {
                             method.method.invoke(method.obj, event);
-                        }
-                        catch (Throwable e) {
+                        } catch (Throwable e) {
                             e.printStackTrace();
                         }
                     }

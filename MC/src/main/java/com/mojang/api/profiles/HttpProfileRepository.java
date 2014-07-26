@@ -1,5 +1,12 @@
-
 package com.mojang.api.profiles;
+
+import com.mojang.api.http.BasicHttpClient;
+import com.mojang.api.http.HttpBody;
+import com.mojang.api.http.HttpClient;
+import com.mojang.api.http.HttpHeader;
+import me.heldplayer.util.json.JSONArray;
+import me.heldplayer.util.json.JSONObject;
+import me.heldplayer.util.json.JSONWriter;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -7,15 +14,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import me.heldplayer.util.json.JSONArray;
-import me.heldplayer.util.json.JSONObject;
-import me.heldplayer.util.json.JSONWriter;
-
-import com.mojang.api.http.BasicHttpClient;
-import com.mojang.api.http.HttpBody;
-import com.mojang.api.http.HttpClient;
-import com.mojang.api.http.HttpHeader;
 
 public class HttpProfileRepository implements ProfileRepository {
 
@@ -56,10 +54,8 @@ public class HttpProfileRepository implements ProfileRepository {
 
                 start = end;
                 i++;
-            }
-            while (start < namesCount);
-        }
-        catch (Exception e) {
+            } while (start < namesCount);
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -73,20 +69,38 @@ public class HttpProfileRepository implements ProfileRepository {
             headers.add(new HttpHeader("Content-Type", "application/json"));
 
             return this.get(this.getSessionUrl(uuid), headers);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
     }
 
-    private URL getProfilesUrl() throws MalformedURLException {
-        // To lookup Minecraft profiles, agent should be "minecraft"
-        return new URL("https://api.mojang.com/profiles/" + this.agent);
+    private Profile get(URL url, List<HttpHeader> headers) throws IOException {
+        String response = this.client.get(url, headers);
+
+        if (response.isEmpty()) {
+            return null;
+        }
+
+        JSONObject object = new JSONObject(response);
+
+        Profile profile = new Profile();
+        profile.setId(object.getString("id"));
+        profile.setName(object.getString("name"));
+
+        return profile;
     }
 
     private URL getSessionUrl(String uuid) throws MalformedURLException {
         return new URL("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid);
+    }
+
+    private static HttpBody getHttpBody(String... namesBatch) {
+        JSONArray array = new JSONArray();
+        for (String name : namesBatch) {
+            array.values.add(name);
+        }
+        return new HttpBody(JSONWriter.write(array));
     }
 
     private Profile[] post(URL url, HttpBody body, List<HttpHeader> headers) throws IOException {
@@ -113,28 +127,9 @@ public class HttpProfileRepository implements ProfileRepository {
         return profiles;
     }
 
-    private Profile get(URL url, List<HttpHeader> headers) throws IOException {
-        String response = this.client.get(url, headers);
-
-        if (response.isEmpty()) {
-            return null;
-        }
-
-        JSONObject object = new JSONObject(response);
-
-        Profile profile = new Profile();
-        profile.setId(object.getString("id"));
-        profile.setName(object.getString("name"));
-
-        return profile;
-    }
-
-    private static HttpBody getHttpBody(String... namesBatch) {
-        JSONArray array = new JSONArray();
-        for (String name : namesBatch) {
-            array.values.add(name);
-        }
-        return new HttpBody(JSONWriter.write(array));
+    private URL getProfilesUrl() throws MalformedURLException {
+        // To lookup Minecraft profiles, agent should be "minecraft"
+        return new URL("https://api.mojang.com/profiles/" + this.agent);
     }
 
 }

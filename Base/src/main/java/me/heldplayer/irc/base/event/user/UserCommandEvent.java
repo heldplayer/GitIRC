@@ -1,11 +1,10 @@
-
 package me.heldplayer.irc.base.event.user;
-
-import java.util.Arrays;
 
 import me.heldplayer.irc.api.IRCChannel;
 import me.heldplayer.irc.api.IRCUser;
 import me.heldplayer.irc.api.event.CancellableEvent;
+
+import java.util.Arrays;
 
 public class UserCommandEvent extends CancellableEvent {
 

@@ -1,19 +1,13 @@
-
 package me.heldplayer.irc.util;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import me.heldplayer.irc.api.configuration.Configuration;
+
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import me.heldplayer.irc.api.configuration.Configuration;
 
 public final class Util {
 
@@ -25,8 +19,7 @@ public final class Util {
 
         try {
             reader = new BufferedReader(new InputStreamReader(url.openStream()));
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             Util.log.log(Level.SEVERE, "Failed opening resource '" + path + "'", e);
         }
 
@@ -39,8 +32,7 @@ public final class Util {
 
         try {
             reader = new BufferedReader(new FileReader(file));
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             Util.log.log(Level.SEVERE, "Failed opening file '" + filename + "'", e);
         }
 
@@ -66,8 +58,7 @@ public final class Util {
             in.close();
 
             return response;
-        }
-        catch (Throwable e) {
+        } catch (Throwable e) {
             throw new RuntimeException("Failed creating git.io link", e);
         }
     }

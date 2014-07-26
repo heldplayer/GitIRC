@@ -1,15 +1,6 @@
-
 package me.heldplayer.irc.git;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+import me.heldplayer.irc.IRCBotLauncher;
 import me.heldplayer.irc.api.BotAPI;
 import me.heldplayer.irc.api.configuration.Configuration;
 import me.heldplayer.irc.api.event.EventHandler;
@@ -23,49 +14,45 @@ import me.heldplayer.irc.git.internal.ErrorResponse.ErrorType;
 import me.heldplayer.irc.git.internal.QueryString;
 import me.heldplayer.irc.git.internal.RunnableWebserver;
 import me.heldplayer.irc.git.internal.security.AccessManager;
-import me.heldplayer.irc.git.internal.security.rules.AllowFrom;
-import me.heldplayer.irc.git.internal.security.rules.BasicAuth;
-import me.heldplayer.irc.git.internal.security.rules.DenyFrom;
-import me.heldplayer.irc.git.internal.security.rules.IpRangeRule;
-import me.heldplayer.irc.git.internal.security.rules.RequireAll;
-import me.heldplayer.irc.git.internal.security.rules.RequireNone;
-import me.heldplayer.irc.git.internal.security.rules.RequireOne;
+import me.heldplayer.irc.git.internal.security.rules.*;
 import me.heldplayer.irc.util.Format;
 import me.heldplayer.irc.util.Util;
 import me.heldplayer.util.json.JSONArray;
 import me.heldplayer.util.json.JSONObject;
 import me.heldplayer.util.json.JSONWriter;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class GitPlugin extends Plugin {
 
     public static Configuration config;
 
     public static File webDirectory;
-
+    private static GitPlugin instance;
+    private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss");
     private RunnableWebserver webServer;
     private Thread webServerThread;
-
     private String channel;
-
-    private static GitPlugin instance;
-
-    public static Logger getLog() {
-        return GitPlugin.instance.getLogger();
-    }
 
     @Override
     public void onEnable() {
         GitPlugin.instance = this;
 
-        GitPlugin.config = new Configuration(new File("." + File.separator + "webserver.cfg"));
+        GitPlugin.config = new Configuration(new File(IRCBotLauncher.rootDirectory, "webserver.cfg"));
         GitPlugin.config.load();
 
         String directory = GitPlugin.config.getString("web-directory");
-        File file = GitPlugin.webDirectory = new File(directory);
+        File file = GitPlugin.webDirectory = new File(IRCBotLauncher.rootDirectory, directory);
         if (!file.exists()) {
             file.mkdirs();
-        }
-        else if (!file.isDirectory()) {
+        } else if (!file.isDirectory()) {
             throw new RuntimeException("Web directory '" + directory + "' is not a directory");
         }
 
@@ -87,8 +74,7 @@ public class GitPlugin extends Plugin {
         while (this.webServerThread.isAlive()) {
             try {
                 Thread.sleep(10L);
-            }
-            catch (InterruptedException e) {
+            } catch (InterruptedException e) {
                 e.printStackTrace();
                 break;
             }
@@ -112,15 +98,13 @@ public class GitPlugin extends Plugin {
                         temp.values.put("payload", obj);
 
                         saveReport(JSONWriter.write(temp));
-                    }
-                    catch (Throwable e) {
+                    } catch (Throwable e) {
                         getLog().log(Level.WARNING, "Failed saving github report", e);
                     }
 
                     if (eventType.equals("ping")) {
                         BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :Zen: %s", this.channel, obj.getString("zen"));
-                    }
-                    else if (eventType.equals("push")) {
+                    } else if (eventType.equals("push")) {
                         JSONArray commits = obj.getArray("commits");
                         String repository = obj.getObject("repository").getString("name");
                         String ref = obj.getString("ref").substring(11);
@@ -133,8 +117,7 @@ public class GitPlugin extends Plugin {
                             String url = commit.getString("url");
                             try {
                                 url = "http://git.io/" + Util.createGitIO(url);
-                            }
-                            catch (Throwable e) {
+                            } catch (Throwable e) {
                                 e.printStackTrace();
                             }
 
@@ -143,8 +126,7 @@ public class GitPlugin extends Plugin {
 
                             BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s", this.channel, output);
                         }
-                    }
-                    else if (eventType.equals("issues")) {
+                    } else if (eventType.equals("issues")) {
                         String repository = obj.getObject("repository").getString("name");
 
                         JSONObject issue = obj.getObject("issue");
@@ -156,8 +138,7 @@ public class GitPlugin extends Plugin {
 
                         if (action.equals("opened")) {
                             actionString = "openend a new issue";
-                        }
-                        else {
+                        } else {
                             actionString = action + " an issue";
                         }
 
@@ -167,8 +148,7 @@ public class GitPlugin extends Plugin {
                         output = String.format(output, repository, issuer, actionString, url);
 
                         BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s", this.channel, output);
-                    }
-                    else {
+                    } else {
                         String output = "Received an unknown event from github, please contact heldplayer";
                         BotAPI.serverConnection.addToSendQueue("PRIVMSG %s :%s", this.channel, output);
 
@@ -177,24 +157,47 @@ public class GitPlugin extends Plugin {
 
                         throw new RuntimeException("Unknown event");
                     }
-                }
-                catch (Throwable e) {
+                } catch (Throwable e) {
                     e.printStackTrace();
                     event.error = ErrorType.InternalServerError;
                 }
 
                 try {
                     event.response = new EmptyResponse();
-                }
-                catch (IOException e) {
+                } catch (IOException e) {
                     e.printStackTrace();
                     event.error = ErrorType.InternalServerError;
                 }
-            }
-            else {
+            } else {
                 event.error = ErrorType.BadRequest;
             }
         }
+    }
+
+    private static void saveReport(String content) throws IOException {
+        File reportsDir = new File(IRCBotLauncher.rootDirectory, "git" + File.separator + "reports");
+        if (!reportsDir.exists()) {
+            reportsDir.mkdirs();
+        }
+        if (!reportsDir.isDirectory()) {
+            throw new PluginException("'" + reportsDir.getPath() + "' is not a directory file");
+        }
+
+        File report = new File(reportsDir, "report-" + dateFormat.format(new Date(System.currentTimeMillis())) + ".txt");
+
+        if (!report.exists()) {
+            report.createNewFile();
+        }
+
+        BufferedWriter writer = new BufferedWriter(new FileWriter(report));
+
+        writer.append(content);
+
+        writer.close();
+    }
+
+    public static Logger getLog() {
+        return GitPlugin.instance.getLogger();
     }
 
     @EventHandler
@@ -213,36 +216,11 @@ public class GitPlugin extends Plugin {
         if (event.command.equals("GIT")) {
             if (event.params.length == 1) {
                 this.channel = event.params[0];
-            }
-            else {
+            } else {
                 BotAPI.console.log(Level.WARNING, "Expected 1 parameter for command /git");
             }
             event.setHandled();
         }
-    }
-
-    private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss");
-
-    private static void saveReport(String content) throws IOException {
-        File reportsDir = new File("git" + File.separator + "reports");
-        if (!reportsDir.exists()) {
-            reportsDir.mkdirs();
-        }
-        if (!reportsDir.isDirectory()) {
-            throw new PluginException("'git" + File.separator + "reports' is not a directory file");
-        }
-
-        File report = new File(reportsDir, "report-" + dateFormat.format(new Date(System.currentTimeMillis())) + ".txt");
-
-        if (!report.exists()) {
-            report.createNewFile();
-        }
-
-        BufferedWriter writer = new BufferedWriter(new FileWriter(report));
-
-        writer.append(content);
-
-        writer.close();
     }
 
 }

@@ -1,4 +1,3 @@
-
 package me.heldplayer.irc.api.plugin;
 
 public class PluginException extends RuntimeException {

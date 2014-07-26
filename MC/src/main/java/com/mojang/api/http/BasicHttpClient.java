@@ -1,4 +1,3 @@
-
 package com.mojang.api.http;
 
 import java.io.BufferedReader;
@@ -17,7 +16,8 @@ public class BasicHttpClient implements HttpClient {
 
     private static BasicHttpClient instance;
 
-    private BasicHttpClient() {}
+    private BasicHttpClient() {
+    }
 
     public static BasicHttpClient getInstance() {
         if (BasicHttpClient.instance == null) {
